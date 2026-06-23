@@ -1,0 +1,14 @@
+<h1>Eliminar sucursal</h1>
+
+<p>
+    ¿Deseas eliminar la sucursal
+    "{{ object.nombre }}"?
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit">
+        Eliminar
+    </button>
+</form>

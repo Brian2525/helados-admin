@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Empleados</title>
+</head>
+<body>
+
+    <h1>Lista de Empleados</h1>
+
+    <p>
+        <a href="{% url 'nomina:empleado_create' %}">
+            Nuevo empleado
+        </a>
+    </p>
+
+    <table border="1" cellpadding="5">
+
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Sucursal</th>
+                <th>Puesto</th>
+                <th>Sueldo Semanal</th>
+                <th>Fecha Ingreso</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for empleado in empleados %}
+
+                <tr>
+
+                    <td>
+                        {{ empleado.nombre }}
+                    </td>
+
+                    <td>
+                        {{ empleado.sucursal }}
+                    </td>
+
+                    <td>
+                        {{ empleado.puesto }}
+                    </td>
+
+                    <td>
+                        ${{ empleado.sueldo_semanal }}
+                    </td>
+
+                    <td>
+                        {{ empleado.fecha_ingreso }}
+                    </td>
+
+                    <td>
+                        {% if empleado.activo %}
+                            Sí
+                        {% else %}
+                            No
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        <a href="{% url 'nomina:empleado_update' empleado.pk %}">
+                            Editar
+                        </a>
+
+                        |
+
+                        <a href="{% url 'nomina:empleado_delete' empleado.pk %}">
+                            Eliminar
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="7">
+                        No hay empleados registrados.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</body>
+</html>

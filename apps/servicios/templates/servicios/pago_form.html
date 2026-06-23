@@ -1,0 +1,38 @@
+
+
+{% block content %}
+
+<h2>Registrar Pago de Servicio</h2>
+
+<p>
+    Verifica el monto y la fecha del pago.
+</p>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    {{ form.servicio }}
+
+    <p>
+        <strong>Fecha de pago:</strong><br>
+        {{ form.fecha_pago }}
+    </p>
+
+    <p>
+        <strong>Monto:</strong><br>
+        {{ form.monto }}
+    </p>
+
+    <p>
+        <strong>Observaciones:</strong><br>
+        {{ form.observaciones }}
+    </p>
+
+    <button type="submit">
+        Registrar Pago
+    </button>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,212 @@
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Dashboard</h1>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+
+        <div class="col-12">
+
+            <form method="get">
+
+                <label for="mes">Mes:</label>
+
+                <select id="mes" name="mes">
+
+                    <option value="1" {% if mes_seleccionado == 1 %}selected{% endif %}>Enero</option>
+                    <option value="2" {% if mes_seleccionado == 2 %}selected{% endif %}>Febrero</option>
+                    <option value="3" {% if mes_seleccionado == 3 %}selected{% endif %}>Marzo</option>
+                    <option value="4" {% if mes_seleccionado == 4 %}selected{% endif %}>Abril</option>
+                    <option value="5" {% if mes_seleccionado == 5 %}selected{% endif %}>Mayo</option>
+                    <option value="6" {% if mes_seleccionado == 6 %}selected{% endif %}>Junio</option>
+                    <option value="7" {% if mes_seleccionado == 7 %}selected{% endif %}>Julio</option>
+                    <option value="8" {% if mes_seleccionado == 8 %}selected{% endif %}>Agosto</option>
+                    <option value="9" {% if mes_seleccionado == 9 %}selected{% endif %}>Septiembre</option>
+                    <option value="10" {% if mes_seleccionado == 10 %}selected{% endif %}>Octubre</option>
+                    <option value="11" {% if mes_seleccionado == 11 %}selected{% endif %}>Noviembre</option>
+                    <option value="12" {% if mes_seleccionado == 12 %}selected{% endif %}>Diciembre</option>
+
+                </select>
+
+                <label>Sucursal:</label>
+
+                <select name="sucursal">
+
+                    <option value="">
+                        Todas las sucursales
+                    </option>
+
+                    {% for sucursal in sucursales %}
+
+                        <option
+                            value="{{ sucursal.id }}"
+                            {% if sucursal.id == sucursal_seleccionada %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ sucursal.nombre }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <label for="anio">Año:</label>
+
+                <input
+                    id="anio"
+                    type="number"
+                    name="anio"
+                    value="{{ anio_seleccionado }}"
+                >
+
+                <button type="submit">
+                    Filtrar
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Tarjetas -->
+    <div class="row">
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h5>Ventas Totales</h5>
+
+                    <h2>
+                        ${{ total_ventas }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h5>Gastos Totales</h5>
+
+                    <h2>
+                        ${{ total_gastos }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h5>Utilidad</h5>
+
+                    <h2>
+                        ${{ utilidad }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+             <div class="card">
+
+                <div class="card-body">
+
+                    <h5>Ventas efectivo</h5>
+
+                    <h2>
+                        ${{ ventas_efectivo}}
+                    </h2>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h5>Margen</h5>
+
+                    <h2>
+                        {{margen | floatformat:2}}%
+                    </h2>
+
+                </div>
+
+            </div>
+
+<h3>⚠ Servicios vencidos</h3>
+
+<ul>
+
+{% for item in servicios_vencidos %}
+
+    <li>
+        {{ item.servicio.nombre }}
+        -
+        {{ item.servicio.sucursal }}
+        -
+        Vencido hace {{ item.dias_restantes|add:"0"|cut:"-" }} días
+    </li>
+
+{% empty %}
+
+    <li>No hay servicios vencidos.</li>
+
+{% endfor %}
+
+</ul>
+
+
+<h3>📅 Próximos vencimientos</h3>
+
+<ul>
+
+{% for item in servicios_por_vencer %}
+
+    <li>
+        {{ item.servicio.nombre }}
+        -
+        {{ item.servicio.sucursal }}
+        -
+        Vence en {{ item.dias_restantes }} días
+    </li>
+
+{% empty %}
+
+    <li>No hay servicios próximos a vencer.</li>
+
+{% endfor %}
+
+</ul>
+
+            
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

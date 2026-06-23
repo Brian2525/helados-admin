@@ -1,0 +1,76 @@
+
+{% block content %}
+
+<h1>Servicios Pendientes</h1>
+
+<table>
+
+    <thead>
+
+        <tr>
+            <th>Sucursal</th>
+            <th>Servicio</th>
+            <th>Día Pago</th>
+            <th>Estado</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+        {%if servicios|length == 0 %}
+            <tr>
+                <td colspan="4">No hay servicios pendientes.</td>
+            </tr>
+        {% endif %}
+
+        {% for item in servicios %}
+
+        <tr>
+
+            <td>
+                {{ item.servicio.sucursal }}
+            </td>
+
+            <td>
+                {{ item.servicio.nombre }}
+            </td>
+
+            <td>
+                {{ item.servicio.dia_pago }}
+            </td>
+
+            <td>
+
+                {% if item.dias_restantes < 0 %}
+
+                    Vencido hace {{ item.dias_restantes|add:"0"|cut:"-" }} días
+
+                {% elif item.dias_restantes == 0 %}
+
+                    Vence hoy
+
+                {% elif item.dias_restantes <= 3 %}
+
+                    Vence en {{ item.dias_restantes }} días 
+
+                {% else %}
+
+                    Pendiente
+
+                {% endif %}
+
+            </td>
+
+            <td>
+                <a href="{% url 'servicios:registrar_pago' item.servicio.pk %}">Registrar Pago</a>
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

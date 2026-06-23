@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Empleado</title>
+</head>
+<body>
+
+    {% if object %}
+        <h1>Editar Empleado</h1>
+    {% else %}
+        <h1>Nuevo Empleado</h1>
+    {% endif %}
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <p>
+            {{ form.nombre.label_tag }}
+            <br>
+            {{ form.nombre }}
+            {{ form.nombre.errors }}
+        </p>
+
+        <p>
+            {{ form.sucursal.label_tag }}
+            <br>
+            {{ form.sucursal }}
+            {{ form.sucursal.errors }}
+        </p>
+
+        <p>
+            {{ form.puesto.label_tag }}
+            <br>
+            {{ form.puesto }}
+            {{ form.puesto.errors }}
+        </p>
+
+        <p>
+            {{ form.sueldo_semanal.label_tag }}
+            <br>
+            {{ form.sueldo_semanal }}
+            {{ form.sueldo_semanal.errors }}
+        </p>
+
+        <p>
+            {{ form.fecha_ingreso.label_tag }}
+            <br>
+            {{ form.fecha_ingreso }}
+            {{ form.fecha_ingreso.errors }}
+        </p>
+
+        <p>
+            {{ form.activo.label_tag }}
+            {{ form.activo }}
+            {{ form.activo.errors }}
+        </p>
+
+        <button type="submit">
+            Guardar
+        </button>
+
+    </form>
+
+    <p>
+        <a href="{% url 'nomina:empleado_list' %}">
+            Regresar
+        </a>
+    </p>
+
+</body>
+</html>

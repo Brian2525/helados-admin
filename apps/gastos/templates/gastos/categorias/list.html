@@ -1,0 +1,45 @@
+
+
+{% block content %}
+
+<h1>Categorías de Gastos</h1>
+
+<a href="{% url 'gastos:categoria_create' %}"
+   class="btn btn-primary">
+    Nueva Categoría
+</a>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Activa</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for categoria in categorias %}
+        <tr>
+            <td>{{ categoria.nombre }}</td>
+            <td>{{ categoria.activa|yesno:"Sí,No" }}</td>
+            <td>
+
+                <a href="{% url 'gastos:categoria_update' categoria.pk %}"
+                   class="btn btn-warning btn-sm">
+                    Editar
+                </a>
+
+                <a href="{% url 'gastos:categoria_delete' categoria.pk %}"
+                   class="btn btn-danger btn-sm">
+                    Eliminar
+                </a>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}

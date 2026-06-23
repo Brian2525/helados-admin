@@ -1,0 +1,15 @@
+
+{% block content %}
+
+<h1>Editar Categoría de Gasto</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit">Guardar Cambios</button>
+    <a href="{% url 'categoria_gasto_list' %}">Cancelar</a>
+</form>
+
+{% endblock %}

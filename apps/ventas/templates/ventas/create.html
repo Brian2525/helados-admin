@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nuevo Resumen</title>
+</head>
+<body>
+
+<h1>Nuevo Resumen Semanal</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit">
+        Guardar
+    </button>
+</form>
+
+<p>
+    <a href="{% url 'resumen_list' %}">
+        Volver
+    </a>
+</p>
+
+</body>
+</html>

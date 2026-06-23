@@ -1,0 +1,95 @@
+
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Gastos</h3>
+
+        <a href="{% url 'gastos:create' %}"
+           class="btn btn-primary">
+            Nuevo gasto
+        </a>
+    </div>
+
+    <table class="table table-striped">
+
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Sucursal</th>
+                <th>Categoría</th>
+                <th>Monto</th>
+                <th>Comprobante</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% if gastos %}
+        {% for gasto in gastos %}
+                <tr>
+                <td>{{ gasto.fecha }}</td>
+
+                <td>{{ gasto.sucursal }}</td>
+
+                <td>{{ gasto.categoria }}</td>
+
+                <td>${{ gasto.monto }}</td>
+
+                <td>
+
+                    {% if gasto.comprobante %}
+                        <a href="{{ gasto.comprobante.url }}"
+                           target="_blank">
+                            Ver
+                        </a>
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    <a href="{% url 'gastos:update' gasto.id %}"
+                       class="btn btn-warning btn-sm">
+                        Editar
+                    </a>
+
+                    <a href="{% url 'gastos:delete' gasto.id %}"
+                       class="btn btn-danger btn-sm">
+                        Eliminar
+                    </a>
+
+                </td>
+
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="6">
+                    No existen gastos registrados.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+        {% else %}
+
+            <tr>
+                <td colspan="6">
+                    No existen gastos registrados.
+                </td>
+            </tr>
+
+        {% endif %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

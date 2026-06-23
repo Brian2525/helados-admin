@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resúmenes Semanales</title>
+</head>
+<body>
+
+<h1>Resúmenes Semanales</h1>
+
+<p>
+    <a href="{% url 'resumen_create' %}">
+        Nuevo resumen
+    </a>
+</p>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Sucursal</th>
+            <th>Periodo</th>
+            <th>Efectivo</th>
+            <th>Tarjeta</th>
+            <th>Total</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for resumen in resumenes %}
+        <tr>
+            <td>{{ resumen.sucursal }}</td>
+            <td>
+                {{ resumen.fecha_inicio }}
+                -
+                {{ resumen.fecha_fin }}
+            </td>
+            <td>${{ resumen.efectivo }}</td>
+            <td>${{ resumen.tarjeta }}</td>
+            <td>${{ resumen.total_ventas }}</td>
+            <td>
+                <a href="{% url 'resumen_update' resumen.pk %}">
+                    Editar
+                </a>
+
+                |
+
+                <a href="{% url 'resumen_delete' resumen.pk %}">
+                    Eliminar
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">
+                No hay registros.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+
+</body>
+</html>

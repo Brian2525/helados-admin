@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eliminar Resumen</title>
+</head>
+<body>
+
+<h1>Eliminar Resumen</h1>
+
+<p>
+    ¿Deseas eliminar el siguiente resumen?
+</p>
+
+<p>
+    <strong>{{ object }}</strong>
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit">
+        Sí, eliminar
+    </button>
+</form>
+
+<p>
+    <a href="{% url 'resumen_list' %}">
+        Cancelar
+    </a>
+</p>
+
+</body>
+</html>
