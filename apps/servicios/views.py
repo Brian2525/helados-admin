@@ -15,44 +15,31 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class ServicioRecurrenteListView(LoginRequiredMixin, ListView):
-
     model = ServicioRecurrente
-
-
-    hoy = date.today()
-
-    servicios = ServicioRecurrente.objects.filter(activo=True)
-
-    for servicio in servicios:
-
-        pagado = PagoServicio.objects.filter(
-            servicio=servicio,
-            fecha_pago__year=hoy.year,
-            fecha_pago__month=hoy.month
-        ).exists()
-
-        servicio.pagado = pagado
-        servicio.dias_restantes = servicio.dia_pago - hoy.day 
-
-
-
+    template_name = "servicios/list.html"
+    context_object_name = "servicios"
+    paginate_by = 20
 
     def get_queryset(self):
+        hoy = date.today()
 
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(activo=True)
 
-        if self.request.user.is_superuser:
-            return queryset
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(
+                sucursal__usuarios=self.request.user
+            )
 
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
+        for servicio in queryset:
+            servicio.pagado = PagoServicio.objects.filter(
+                servicio=servicio,
+                fecha_pago__year=hoy.year,
+                fecha_pago__month=hoy.month
+            ).exists()
 
-    template_name = "servicios/list.html"
+            servicio.dias_restantes = servicio.dia_pago - hoy.day
 
-    context_object_name = "servicios"
-
-    paginate_by = 20
+        return queryset
 
 
 class ServicioRecurrenteCreateView(LoginRequiredMixin, CreateView):
