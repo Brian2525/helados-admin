@@ -1,9 +1,11 @@
 from django import forms
+from apps.core.forms import TailwindModelForm
+
 
 from .models import ServicioRecurrente, PagoServicio
 
 
-class ServicioRecurrenteForm(forms.ModelForm):
+class ServicioRecurrenteForm(TailwindModelForm):
 
     class Meta:
         model = ServicioRecurrente
@@ -44,7 +46,7 @@ class ServicioRecurrenteForm(forms.ModelForm):
 
 
 
-class PagoServicioForm(forms.ModelForm):
+class PagoServicioForm(TailwindModelForm):
 
     class Meta:
 

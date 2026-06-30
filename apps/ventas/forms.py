@@ -1,8 +1,9 @@
 from django import forms
 from .models import ResumenSemanal
+from apps.core.forms import TailwindModelForm
 
 
-class ResumenSemanalForm(forms.ModelForm):
+class ResumenSemanalForm(TailwindModelForm):
 
     class Meta:
         model = ResumenSemanal

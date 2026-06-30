@@ -1,39 +1,79 @@
 
+{% extends 'core/base_dashboard.html' %}
+
+{% block title %}
+Eliminar gasto
+{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="max-w-xl mx-auto p-6">
 
-    <div class="alert alert-danger">
+    <div class="bg-white rounded-xl shadow">
 
-        <h4>Eliminar gasto</h4>
+        <div class="bg-red-50 border-b border-red-200 px-6 py-4">
 
-        <p>
-            ¿Deseas eliminar este gasto?
-        </p>
+            <h1 class="text-2xl font-bold text-red-700">
+                Eliminar gasto
+            </h1>
 
-        <p>
-            <strong>
-                {{ object.categoria }}
-                - ${{ object.monto }}
-            </strong>
-        </p>
+            <p class="text-red-600 mt-2">
+                Esta acción no se puede deshacer.
+            </p>
 
-        <form method="post">
+        </div>
 
-            {% csrf_token %}
+        <div class="p-6">
 
-            <button type="submit"
-                    class="btn btn-danger">
-                Eliminar
-            </button>
+            <p class="text-gray-700 mb-4">
+                ¿Estás seguro de que deseas eliminar el siguiente gasto?
+            </p>
 
-            <a href="{% url 'gastos:list' %}"
-               class="btn btn-secondary">
-                Cancelar
-            </a>
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 mb-6">
 
-        </form>
+                <p class="text-sm text-gray-500">
+                    Categoría
+                </p>
+
+                <p class="font-semibold text-lg">
+                    {{ object.categoria }}
+                </p>
+
+                <p class="text-sm text-gray-500 mt-4">
+                    Monto
+                </p>
+
+                <p class="text-xl font-bold text-red-600">
+                    ${{ object.monto }}
+                </p>
+
+            </div>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-3">
+
+                    <a
+                        href="{% url 'gastos:list' %}"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    >
+                        Eliminar gasto
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
 
     </div>
 

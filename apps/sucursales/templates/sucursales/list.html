@@ -1,35 +1,112 @@
-<h1>Sucursales</h1>
+{% extends 'core/base_dashboard.html' %}
 
-<a href="{% url 'sucursales:create' %}">
-    Nueva sucursal
-</a>
+{% block content %}
 
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Responsable</th>
-            <th>Activa</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+<div class="p-6">
 
-    <tbody>
-        {% for sucursal in sucursales %}
-        <tr>
-            <td>{{ sucursal.nombre }}</td>
-            <td>{{ sucursal.responsable }}</td>
-            <td>{{ sucursal.activa }}</td>
-            <td>
-                <a href="{% url 'sucursales:update' sucursal.pk %}">
-                    Editar
-                </a>
+    <div class="flex justify-between items-center mb-6">
 
-                <a href="{% url 'sucursales:delete' sucursal.pk %}">
-                    Eliminar
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <h1 class="text-3xl font-bold">
+            Sucursales
+        </h1>
+
+        <a
+            href="{% url 'sucursales:create' %}"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+        >
+            Nueva sucursal
+        </a>
+
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+
+        <table class="w-full">
+
+            <thead class="bg-gray-100">
+
+                <tr>
+
+                    <th class="px-4 py-3 text-left">
+                        Nombre
+                    </th>
+
+                    <th class="px-4 py-3 text-left">
+                        Responsable
+                    </th>
+
+                    <th class="px-4 py-3 text-left">
+                        Activa
+                    </th>
+
+                    <th class="px-4 py-3 text-left">
+                        Acciones
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for sucursal in sucursales %}
+
+                <tr class="border-t">
+
+                    <td class="px-4 py-3">
+                        {{ sucursal.nombre }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ sucursal.responsable }}
+                    </td>
+
+                    <td class="px-4 py-3">
+
+                        {% if sucursal.activa %}
+
+                            <span class="text-green-600 font-medium">
+                                Sí
+                            </span>
+
+                        {% else %}
+
+                            <span class="text-red-600 font-medium">
+                                No
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="px-4 py-3 space-x-2">
+
+                        <a
+                            href="{% url 'sucursales:update' sucursal.pk %}"
+                            class="text-blue-600 hover:underline"
+                        >
+                            Editar
+                        </a>
+
+                        <a
+                            href="{% url 'sucursales:delete' sucursal.pk %}"
+                            class="text-red-600 hover:underline"
+                        >
+                            Eliminar
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

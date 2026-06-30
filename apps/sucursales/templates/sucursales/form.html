@@ -1,10 +1,90 @@
-<h1>Sucursal</h1>
+{% extends 'core/base_dashboard.html' %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white shadow rounded-xl p-6">
 
-    <button type="submit">
-        Guardar
-    </button>
-</form>
+    <h1 class="text-2xl font-bold mb-6">
+        Sucursal
+    </h1>
+
+    <form method="post" class="space-y-6">
+
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Nombre
+            </label>
+            {{ form.nombre }}
+            {{ form.nombre.errors }}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Dirección
+            </label>
+            {{ form.direccion }}
+            {{ form.direccion.errors }}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Teléfono
+            </label>
+            {{ form.telefono }}
+            {{ form.telefono.errors }}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Responsable
+            </label>
+            {{ form.responsable }}
+            {{ form.responsable.errors }}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Fecha de apertura
+            </label>
+            {{ form.fecha_apertura }}
+            {{ form.fecha_apertura.errors }}
+        </div>
+
+        <div class="flex items-center gap-3">
+            {{ form.activa }}
+            <label class="text-sm font-medium text-gray-700">
+                Sucursal activa
+            </label>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Notas
+            </label>
+            {{ form.notas }}
+            {{ form.notas.errors }}
+        </div>
+
+        <div class="flex gap-3">
+
+            <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+            >
+                Guardar
+            </button>
+
+            <a
+                href="{% url 'sucursales:list' %}"
+                class="bg-gray-200 hover:bg-gray-300 px-6 py-2 rounded-lg font-medium"
+            >
+                Cancelar
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}

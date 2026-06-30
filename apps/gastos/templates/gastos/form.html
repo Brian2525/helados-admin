@@ -1,36 +1,79 @@
+{% extends 'core/base_dashboard.html' %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="max-w-3xl mx-auto p-6">
 
-    <div class="card">
+    <div class="bg-white rounded-xl shadow">
 
-        <div class="card-header">
-            Registrar gasto
+        <div class="border-b border-gray-200 px-6 py-4">
+
+            <h1 class="text-2xl font-bold text-gray-800">
+                Registrar gasto
+            </h1>
+
+            <p class="text-sm text-gray-500 mt-1">
+                Completa la información del gasto.
+            </p>
+
         </div>
 
-        <div class="card-body">
+        <form
+            method="post"
+            enctype="multipart/form-data"
+            class="p-6 space-y-5"
+        >
 
-            <form method="post"
-                  enctype="multipart/form-data">
+            {% csrf_token %}
 
-                {% csrf_token %}
+            {% for field in form %}
 
-                {{ form.as_p }}
+                <div>
 
-                <button type="submit"
-                        class="btn btn-success">
-                    Guardar
-                </button>
+                    <label
+                        for="{{ field.id_for_label }}"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                        {{ field.label }}
+                    </label>
 
-                <a href="{% url 'gastos:list' %}"
-                   class="btn btn-secondary">
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ field.help_text }}
+                        </p>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+
+                <a
+                    href="{% url 'gastos:list' %}"
+                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                >
                     Cancelar
                 </a>
 
-            </form>
+                <button
+                    type="submit"
+                    class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                    Guardar
+                </button>
 
-        </div>
+            </div>
+
+        </form>
 
     </div>
 

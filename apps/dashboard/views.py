@@ -9,53 +9,55 @@ from apps.gastos.models import Gasto
 from apps.ventas.models import ResumenSemanal
 from apps.sucursales.models import Sucursal
 from apps.servicios.models import ServicioRecurrente, PagoServicio
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 
-servicios_por_vencer = []
-servicios_vencidos = []
 
-class DashboardView(TemplateView):
-
+class DashboardView(LoginRequiredMixin, TemplateView):
 
     template_name = "dashboard/home.html"
-    
-    hoy = date.today()
 
-    for servicio in ServicioRecurrente.objects.filter(
-    activo=True
-    ):
-        
-        pagado = PagoServicio.objects.filter(
-        servicio=servicio,
-        fecha_pago__year=hoy.year,
-        fecha_pago__month=hoy.month,
-        ).exists()
+    def dispatch(self, request, *args, **kwargs):
+        print("Usuario:", request.user)
+        print("Autenticado:", request.user.is_authenticated)
 
-        if pagado:
-            continue
-
-        dias_restantes = servicio.dia_pago - hoy.day
-
-        item = {
-            "servicio": servicio,
-            "dias_restantes": dias_restantes,
-        }
-
-        if dias_restantes < 0:
-            servicios_vencidos.append(item)
-
-        elif dias_restantes <= 5:
-            servicios_por_vencer.append(item)
-
-
-        
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
 
         context = super().get_context_data(**kwargs)
 
         hoy = date.today()
+
+        servicios_por_vencer = []
+        servicios_vencidos = []
+
+        for servicio in ServicioRecurrente.objects.filter(
+            activo=True
+        ):
+
+            pagado = PagoServicio.objects.filter(
+                servicio=servicio,
+                fecha_pago__year=hoy.year,
+                fecha_pago__month=hoy.month,
+            ).exists()
+
+            if pagado:
+                continue
+
+            dias_restantes = servicio.dia_pago - hoy.day
+
+            item = {
+                "servicio": servicio,
+                "dias_restantes": dias_restantes,
+            }
+
+            if dias_restantes < 0:
+                servicios_vencidos.append(item)
+
+            elif dias_restantes <= 5:
+                servicios_por_vencer.append(item)
 
         anio = int(
             self.request.GET.get(
@@ -104,12 +106,6 @@ class DashboardView(TemplateView):
             ]
         )
 
-        
-
-
-
-
-        # Filtrar por sucursal si fue seleccionada
         if sucursal_id:
 
             ventas = ventas.filter(
@@ -152,7 +148,9 @@ class DashboardView(TemplateView):
             total_gastos
         )
 
-        margen = (utilidad / total_ventas * 100) if total_ventas else Decimal("0.00")
+        margen = (
+            utilidad / total_ventas * 100
+        ) if total_ventas else Decimal("0.00")
 
         context["ventas_efectivo"] = ventas_efectivo
         context["ventas_tarjeta"] = ventas_tarjeta
@@ -160,6 +158,7 @@ class DashboardView(TemplateView):
         context["total_gastos"] = total_gastos
         context["utilidad"] = utilidad
         context["margen"] = margen
+
         context["servicios_vencidos"] = servicios_vencidos
         context["servicios_por_vencer"] = servicios_por_vencer
 

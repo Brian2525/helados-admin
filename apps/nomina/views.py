@@ -12,9 +12,10 @@ from django.views.generic import (
 
 from .models import Empleado
 from .forms import EmpleadoForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class EmpleadoListView(ListView):
+class EmpleadoListView(LoginRequiredMixin, ListView):
 
     model = Empleado
 
@@ -23,7 +24,7 @@ class EmpleadoListView(ListView):
     context_object_name = "empleados"
 
 
-class EmpleadoCreateView(CreateView):
+class EmpleadoCreateView(LoginRequiredMixin, CreateView):
 
     model = Empleado
 
@@ -36,7 +37,7 @@ class EmpleadoCreateView(CreateView):
     )
 
 
-class EmpleadoUpdateView(UpdateView):
+class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
 
     model = Empleado
 
@@ -49,9 +50,19 @@ class EmpleadoUpdateView(UpdateView):
     )
 
 
-class EmpleadoDeleteView(DeleteView):
+class EmpleadoDeleteView(LoginRequiredMixin, DeleteView):
 
     model = Empleado
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            sucursal__usuarios=self.request.user
+        )
 
     template_name = "nomina/empleado_delete.html"
 

@@ -1,15 +1,86 @@
 
+{% extends 'core/base_dashboard.html' %}
+
+{% block title %}
+Editar categoría de gasto
+{% endblock %}
+
 {% block content %}
 
-<h1>Editar Categoría de Gasto</h1>
+<div class="max-w-2xl mx-auto p-6">
 
-<form method="post">
-    {% csrf_token %}
+    <div class="bg-white rounded-xl shadow">
 
-    {{ form.as_p }}
+        <div class="border-b border-gray-200 px-6 py-4">
 
-    <button type="submit">Guardar Cambios</button>
-    <a href="{% url 'categoria_gasto_list' %}">Cancelar</a>
-</form>
+            <h1 class="text-2xl font-bold text-gray-800">
+                Editar categoría de gasto
+            </h1>
+
+            <p class="text-sm text-gray-500 mt-1">
+                Modifica la información de la categoría.
+            </p>
+
+        </div>
+
+        <form
+            method="post"
+            class="p-6 space-y-5"
+        >
+
+            {% csrf_token %}
+
+            {% for field in form %}
+
+                <div>
+
+                    <label
+                        for="{{ field.id_for_label }}"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ field.help_text }}
+                        </p>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+
+                <a
+                    href="{% url 'gastos:categoria_list' %}"
+                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                    Guardar cambios
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 {% endblock %}

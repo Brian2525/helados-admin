@@ -1,76 +1,151 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block title %}
+Servicios pendientes
+{% endblock %}
 
 {% block content %}
 
-<h1>Servicios Pendientes</h1>
+<div class="max-w-7xl mx-auto p-6">
 
-<table>
+    <div class="flex items-center justify-between mb-6">
 
-    <thead>
+        <div>
 
-        <tr>
-            <th>Sucursal</th>
-            <th>Servicio</th>
-            <th>Día Pago</th>
-            <th>Estado</th>
-        </tr>
+            <h1 class="text-3xl font-bold text-gray-900">
+                Servicios pendientes
+            </h1>
 
-    </thead>
+            <p class="mt-1 text-gray-500">
+                Servicios recurrentes que requieren registrar su pago.
+            </p>
 
-    <tbody>
-        {%if servicios|length == 0 %}
-            <tr>
-                <td colspan="4">No hay servicios pendientes.</td>
-            </tr>
-        {% endif %}
+        </div>
 
-        {% for item in servicios %}
+    </div>
 
-        <tr>
+    <div class="bg-white rounded-xl shadow overflow-hidden">
 
-            <td>
-                {{ item.servicio.sucursal }}
-            </td>
+        <table class="min-w-full divide-y divide-gray-200">
 
-            <td>
-                {{ item.servicio.nombre }}
-            </td>
+            <thead class="bg-gray-50">
 
-            <td>
-                {{ item.servicio.dia_pago }}
-            </td>
+                <tr>
 
-            <td>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Sucursal
+                    </th>
 
-                {% if item.dias_restantes < 0 %}
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Servicio
+                    </th>
 
-                    Vencido hace {{ item.dias_restantes|add:"0"|cut:"-" }} días
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Día de pago
+                    </th>
 
-                {% elif item.dias_restantes == 0 %}
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Estado
+                    </th>
 
-                    Vence hoy
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Acción
+                    </th>
 
-                {% elif item.dias_restantes <= 3 %}
+                </tr>
 
-                    Vence en {{ item.dias_restantes }} días 
+            </thead>
+
+            <tbody class="divide-y divide-gray-100 bg-white">
+
+                {% if servicios %}
+
+                    {% for item in servicios %}
+
+                    <tr class="hover:bg-gray-50">
+
+                        <td class="px-6 py-4">
+                            {{ item.servicio.sucursal }}
+                        </td>
+
+                        <td class="px-6 py-4 font-medium">
+                            {{ item.servicio.nombre }}
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+                            {{ item.servicio.dia_pago }}
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            {% if item.dias_restantes < 0 %}
+
+                                <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                                    Vencido hace {{ item.dias_restantes|add:"0"|cut:"-" }} días
+                                </span>
+
+                            {% elif item.dias_restantes == 0 %}
+
+                                <span class="inline-flex px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-sm font-medium">
+                                    Vence hoy
+                                </span>
+
+                            {% elif item.dias_restantes <= 3 %}
+
+                                <span class="inline-flex px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium">
+                                    Vence en {{ item.dias_restantes }} días
+                                </span>
+
+                            {% else %}
+
+                                <span class="inline-flex px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+                                    Pendiente
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <div class="flex justify-center">
+
+                                <a
+                                    href="{% url 'servicios:registrar_pago' item.servicio.pk %}"
+                                    class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm transition"
+                                >
+                                    Registrar pago
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
 
                 {% else %}
 
-                    Pendiente
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="px-6 py-10 text-center text-gray-500"
+                        >
+                            🎉 No hay servicios pendientes.
+                        </td>
+
+                    </tr>
 
                 {% endif %}
 
-            </td>
+            </tbody>
 
-            <td>
-                <a href="{% url 'servicios:registrar_pago' item.servicio.pk %}">Registrar Pago</a>
-            </td>
+        </table>
 
-        </tr>
+    </div>
 
-        {% endfor %}
-
-    </tbody>
-
-</table>
+</div>
 
 {% endblock %}

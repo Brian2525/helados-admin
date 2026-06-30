@@ -1,6 +1,8 @@
 
 # Create your models here.
 from django.db import models
+from django.contrib.auth.models import User
+
 
 
 class Sucursal(models.Model):
@@ -11,6 +13,11 @@ class Sucursal(models.Model):
 
     )
 
+    usuarios= models.ManyToManyField(
+        User,
+        related_name="sucursales",
+        blank=True,
+        )
 
     direccion = models.TextField(
         blank=True,

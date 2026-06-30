@@ -1,96 +1,165 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Empleados</title>
-</head>
-<body>
+{% extends 'core/base_dashboard.html' %}
 
-    <h1>Lista de Empleados</h1>
+{% block title %}
+Empleados
+{% endblock %}
 
-    <p>
-        <a href="{% url 'nomina:empleado_create' %}">
-            Nuevo empleado
+{% block content %}
+
+<div class="max-w-7xl mx-auto p-6">
+
+    <div class="flex items-center justify-between mb-6">
+
+        <div>
+
+            <h1 class="text-3xl font-bold text-gray-900">
+                Empleados
+            </h1>
+
+            <p class="mt-1 text-gray-500">
+                Administración de empleados registrados.
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'nomina:empleado_create' %}"
+            class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition"
+        >
+            + Nuevo empleado
         </a>
-    </p>
 
-    <table border="1" cellpadding="5">
+    </div>
 
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Sucursal</th>
-                <th>Puesto</th>
-                <th>Sueldo Semanal</th>
-                <th>Fecha Ingreso</th>
-                <th>Activo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+    <div class="bg-white rounded-xl shadow overflow-hidden">
 
-        <tbody>
+        <table class="min-w-full divide-y divide-gray-200">
 
-            {% for empleado in empleados %}
+            <thead class="bg-gray-50">
 
                 <tr>
 
-                    <td>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Nombre
+                    </th>
+
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Sucursal
+                    </th>
+
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Puesto
+                    </th>
+
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+                        Sueldo semanal
+                    </th>
+
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Fecha ingreso
+                    </th>
+
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Estado
+                    </th>
+
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Acciones
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody class="divide-y divide-gray-100 bg-white">
+
+                {% for empleado in empleados %}
+
+                <tr class="hover:bg-gray-50">
+
+                    <td class="px-6 py-4">
                         {{ empleado.nombre }}
                     </td>
 
-                    <td>
+                    <td class="px-6 py-4">
                         {{ empleado.sucursal }}
                     </td>
 
-                    <td>
+                    <td class="px-6 py-4">
                         {{ empleado.puesto }}
                     </td>
 
-                    <td>
+                    <td class="px-6 py-4 text-right font-semibold">
                         ${{ empleado.sueldo_semanal }}
                     </td>
 
-                    <td>
+                    <td class="px-6 py-4 text-center">
                         {{ empleado.fecha_ingreso }}
                     </td>
 
-                    <td>
+                    <td class="px-6 py-4 text-center">
+
                         {% if empleado.activo %}
-                            Sí
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                                Activo
+                            </span>
+
                         {% else %}
-                            No
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                                Inactivo
+                            </span>
+
                         {% endif %}
+
                     </td>
 
-                    <td>
+                    <td class="px-6 py-4">
 
-                        <a href="{% url 'nomina:empleado_update' empleado.pk %}">
-                            Editar
-                        </a>
+                        <div class="flex justify-center gap-2">
 
-                        |
+                            <a
+                                href="{% url 'nomina:empleado_update' empleado.pk %}"
+                                class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm transition"
+                            >
+                                Editar
+                            </a>
 
-                        <a href="{% url 'nomina:empleado_delete' empleado.pk %}">
-                            Eliminar
-                        </a>
+                            <a
+                                href="{% url 'nomina:empleado_delete' empleado.pk %}"
+                                class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                            >
+                                Eliminar
+                            </a>
+
+                        </div>
 
                     </td>
 
                 </tr>
 
-            {% empty %}
+                {% empty %}
 
                 <tr>
-                    <td colspan="7">
+
+                    <td
+                        colspan="7"
+                        class="px-6 py-10 text-center text-gray-500"
+                    >
                         No hay empleados registrados.
                     </td>
+
                 </tr>
 
-            {% endfor %}
+                {% endfor %}
 
-        </tbody>
+            </tbody>
 
-    </table>
+        </table>
 
-</body>
-</html>
+    </div>
+
+</div>
+
+{% endblock %}

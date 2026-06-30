@@ -1,9 +1,10 @@
 from django import forms
 from .models import CategoriaGasto, Gasto
+from apps.core.forms import TailwindModelForm
 from apps.servicios.models import PagoServicio
 
 
-class CategoriaGastoForm(forms.ModelForm):
+class CategoriaGastoForm(TailwindModelForm):
 
     class Meta:
         model = CategoriaGasto
@@ -26,7 +27,7 @@ class CategoriaGastoForm(forms.ModelForm):
 
 
 
-class GastoForm(forms.ModelForm):
+class GastoForm(TailwindModelForm):
 
     class Meta:
         model = Gasto
@@ -35,11 +36,16 @@ class GastoForm(forms.ModelForm):
             "fecha",
             "categoria",
             "monto",
+            "descripcion",
           
         ]
 
         widgets = {
-           
+            "descripcion": forms.Textarea(
+                attrs={
+                    "rows": 3
+                }
+            ),
             "monto": forms.NumberInput(
                 attrs={
                     "class": "form-control",
@@ -60,7 +66,7 @@ class GastoForm(forms.ModelForm):
             ),
         }
 
-class PagoServicioForm(forms.ModelForm):
+class PagoServicioForm(TailwindModelForm):
 
     class Meta:
 

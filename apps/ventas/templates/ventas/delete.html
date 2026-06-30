@@ -1,33 +1,73 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Eliminar Resumen</title>
-</head>
-<body>
+{% extends 'core/base_dashboard.html' %}
 
-<h1>Eliminar Resumen</h1>
+{% block title %}
+Eliminar resumen semanal
+{% endblock %}
 
-<p>
-    ¿Deseas eliminar el siguiente resumen?
-</p>
+{% block content %}
 
-<p>
-    <strong>{{ object }}</strong>
-</p>
+<div class="max-w-xl mx-auto p-6">
 
-<form method="post">
-    {% csrf_token %}
+    <div class="bg-white rounded-xl shadow">
 
-    <button type="submit">
-        Sí, eliminar
-    </button>
-</form>
+        <div class="bg-red-50 border-b border-red-200 px-6 py-4">
 
-<p>
-    <a href="{% url 'resumen_list' %}">
-        Cancelar
-    </a>
-</p>
+            <h1 class="text-2xl font-bold text-red-700">
+                Eliminar resumen semanal
+            </h1>
 
-</body>
-</html>
+            <p class="mt-2 text-red-600">
+                Esta acción no se puede deshacer.
+            </p>
+
+        </div>
+
+        <div class="p-6">
+
+            <p class="text-gray-700 mb-4">
+                ¿Estás seguro de que deseas eliminar el siguiente resumen?
+            </p>
+
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 mb-6">
+
+                <p class="text-sm text-gray-500">
+                    Resumen
+                </p>
+
+                <p class="text-lg font-semibold text-gray-900">
+                    {{ object }}
+                </p>
+
+            </div>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-3">
+
+                    <a
+                        href="{% url 'resumen_list' %}"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    >
+                        Sí, eliminar
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

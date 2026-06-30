@@ -1,22 +1,75 @@
 
 
+{% extends 'core/base_dashboard.html' %}
+
+{% block title %}
+Eliminar categoría de gasto
+{% endblock %}
+
 {% block content %}
 
-<h1>Eliminar Categoría de Gasto</h1>
+<div class="max-w-xl mx-auto p-6">
 
-<p>
-    ¿Estás seguro de que deseas eliminar la categoría:
-    <strong>{{ object.nombre }}</strong>?
-</p>
+    <div class="bg-white rounded-xl shadow">
 
-<form method="post">
-    {% csrf_token %}
+        <div class="bg-red-50 border-b border-red-200 px-6 py-4">
 
-    <button type="submit">
-        Sí, eliminar
-    </button>
+            <h1 class="text-2xl font-bold text-red-700">
+                Eliminar categoría de gasto
+            </h1>
 
-   
-</form>
+            <p class="text-red-600 mt-2">
+                Esta acción no se puede deshacer.
+            </p>
+
+        </div>
+
+        <div class="p-6">
+
+            <p class="text-gray-700 mb-4">
+                ¿Estás seguro de que deseas eliminar la siguiente categoría?
+            </p>
+
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 mb-6">
+
+                <p class="text-sm text-gray-500">
+                    Nombre
+                </p>
+
+                <p class="text-lg font-semibold text-gray-900">
+                    {{ object.nombre }}
+                </p>
+
+            </div>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-3">
+
+                    <a
+                        href="{% url 'gastos:categoria_list' %}"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    >
+                        Eliminar categoría
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

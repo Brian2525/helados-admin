@@ -1,14 +1,89 @@
-<h1>Eliminar sucursal</h1>
+{% extends 'core/base_dashboard.html' %}
 
-<p>
-    ¿Deseas eliminar la sucursal
-    "{{ object.nombre }}"?
-</p>
+{% block title %}
+Eliminar sucursal
+{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
+{% block content %}
 
-    <button type="submit">
-        Eliminar
-    </button>
-</form>
+<div class="max-w-xl mx-auto p-6">
+
+    <div class="bg-white rounded-xl shadow">
+
+        <div class="bg-red-50 border-b border-red-200 px-6 py-4">
+
+            <h1 class="text-2xl font-bold text-red-700">
+                Eliminar sucursal
+            </h1>
+
+            <p class="text-red-600 mt-2">
+                Esta acción no se puede deshacer.
+            </p>
+
+        </div>
+
+        <div class="p-6">
+
+            <p class="text-gray-700 mb-4">
+                ¿Estás seguro de que deseas eliminar la siguiente sucursal?
+            </p>
+
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 mb-6">
+
+                <p class="text-sm text-gray-500">
+                    Nombre
+                </p>
+
+                <p class="text-lg font-semibold text-gray-900">
+                    {{ object.nombre }}
+                </p>
+
+                <p class="text-sm text-gray-500 mt-4">
+                    Responsable
+                </p>
+
+                <p class="font-medium text-gray-800">
+                    {{ object.responsable|default:"No asignado" }}
+                </p>
+
+                <p class="text-sm text-gray-500 mt-4">
+                    Dirección
+                </p>
+
+                <p class="font-medium text-gray-800">
+                    {{ object.direccion|default:"Sin dirección registrada" }}
+                </p>
+
+            </div>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-3">
+
+                    <a
+                        href="{% url 'sucursales:list' %}"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                    >
+                        Eliminar sucursal
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,81 +1,180 @@
+{% extends 'core/base_dashboard.html' %}
+
+{% block title %}
+Servicios recurrentes
+{% endblock %}
 
 {% block content %}
 
-<h1>Servicios Recurrentes</h1>
+<div class="max-w-7xl mx-auto p-6">
 
-<p>
-    <a href="{% url 'servicios:create' %}">
-        Nuevo servicio
-    </a>
-</p>
+    <div class="flex items-center justify-between mb-6">
 
-<table>
+        <div>
 
-    <thead>
-        <tr>
-            <th>Sucursal</th>
-            <th>Servicio</th>
-            <th>Categoría</th>
-            <th>Proveedor</th>
-            <th>Monto</th>
-            <th>Día Pago</th>
-            <th>Activo</th>
-            <th></th>
-        </tr>
-    </thead>
+            <h1 class="text-3xl font-bold text-gray-900">
+                Servicios recurrentes
+            </h1>
 
-    <tbody>
+            <p class="mt-1 text-gray-500">
+                Administra los servicios que generan gastos periódicos.
+            </p>
 
-        {% for servicio in servicios %}
+        </div>
 
-        <tr>
+        <a
+            href="{% url 'servicios:create' %}"
+            class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition"
+        >
+            + Nuevo servicio
+        </a>
 
-            <td>{{ servicio.sucursal }}</td>
+    </div>
 
-            <td>{{ servicio.nombre }}</td>
+    <div class="bg-white rounded-xl shadow overflow-hidden">
 
-            <td>{{ servicio.categoria }}</td>
+        <table class="min-w-full divide-y divide-gray-200">
 
-            <td>{{ servicio.proveedor }}</td>
+            <thead class="bg-gray-50">
 
-            <td>${{ servicio.monto_estimado }}</td>
+                <tr>
 
-            <td>{{ servicio.dia_pago }}</td>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Sucursal
+                    </th>
 
-            <td>
-                {{ servicio.activo|yesno:"Sí,No" }}
-            </td>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Servicio
+                    </th>
 
-            <td>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Categoría
+                    </th>
 
-                <a href="{% url 'servicios:update' servicio.pk %}">
-                    Editar
-                </a>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                        Proveedor
+                    </th>
 
-                <a href="{% url 'servicios:delete' servicio.pk %}">
-                    Eliminar
-                </a>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+                        Monto
+                    </th>
 
-            </td>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Día de pago
+                    </th>
 
-        </tr>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                        Estado
+                    </th>
 
-        {% empty %}
+                    
 
-        <tr>
+                </tr>
 
-            <td colspan="8">
+            </thead>
 
-                No existen servicios registrados.
+            <tbody class="divide-y divide-gray-100 bg-white">
 
-            </td>
+                {% for servicio in servicios %}
 
-        </tr>
+                <tr class="hover:bg-gray-50">
 
-        {% endfor %}
+                    <td class="px-6 py-4">
+                        {{ servicio.sucursal }}
+                    </td>
 
-    </tbody>
+                    <td class="px-6 py-4 font-medium">
+                        {{ servicio.nombre }}
+                    </td>
 
-</table>
+                    <td class="px-6 py-4">
+                        {{ servicio.categoria }}
+                    </td>
+
+                    <td class="px-6 py-4">
+                        {{ servicio.proveedor|default:"—" }}
+                    </td>
+
+                    <td class="px-6 py-4 text-right font-semibold">
+                        ${{ servicio.monto_estimado }}
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+                        {{ servicio.dia_pago }}
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+
+                        {% if servicio.activo %}
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                                Activo
+                            </span>
+
+                        {% else %}
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                                Inactivo
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    
+                    <td class="px-6 py-4">
+
+                        <div class="flex justify-center gap-2">
+
+                            <a
+                                href="{% url 'servicios:update' servicio.pk %}"
+                                class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm"
+                            >
+                                Editar
+                            </a>
+
+                            <a
+                                href="{% url 'servicios:delete' servicio.pk %}"
+                                class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                            >
+                                Eliminar
+                            </a>
+
+                            
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        class="px-6 py-10 text-center text-gray-500"
+                    >
+                        No existen servicios registrados.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+
+
+
+
 
 {% endblock %}

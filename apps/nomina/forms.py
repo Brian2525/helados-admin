@@ -1,9 +1,9 @@
 from django import forms
-
+from apps.core.forms import TailwindModelForm
 from .models import Empleado
 
 
-class EmpleadoForm(forms.ModelForm):
+class EmpleadoForm(TailwindModelForm):
 
     class Meta:
         model = Empleado

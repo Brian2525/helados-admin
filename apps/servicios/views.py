@@ -11,11 +11,42 @@ from django.views.generic import (
 
 from .models import ServicioRecurrente, PagoServicio
 from .forms import ServicioRecurrenteForm, PagoServicioForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class ServicioRecurrenteListView(ListView):
+class ServicioRecurrenteListView(LoginRequiredMixin, ListView):
 
     model = ServicioRecurrente
+
+
+    hoy = date.today()
+
+    servicios = ServicioRecurrente.objects.filter(activo=True)
+
+    for servicio in servicios:
+
+        pagado = PagoServicio.objects.filter(
+            servicio=servicio,
+            fecha_pago__year=hoy.year,
+            fecha_pago__month=hoy.month
+        ).exists()
+
+        servicio.pagado = pagado
+        servicio.dias_restantes = servicio.dia_pago - hoy.day 
+
+
+
+
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            sucursal__usuarios=self.request.user
+        )
 
     template_name = "servicios/list.html"
 
@@ -24,9 +55,19 @@ class ServicioRecurrenteListView(ListView):
     paginate_by = 20
 
 
-class ServicioRecurrenteCreateView(CreateView):
+class ServicioRecurrenteCreateView(LoginRequiredMixin, CreateView):
 
     model = ServicioRecurrente
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            sucursal__usuarios=self.request.user
+        )
 
     form_class = ServicioRecurrenteForm
 
@@ -37,9 +78,19 @@ class ServicioRecurrenteCreateView(CreateView):
     )
 
 
-class ServicioRecurrenteUpdateView(UpdateView):
+class ServicioRecurrenteUpdateView(LoginRequiredMixin, UpdateView):
 
     model = ServicioRecurrente
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            sucursal__usuarios=self.request.user
+        )
 
     form_class = ServicioRecurrenteForm
 
@@ -50,9 +101,19 @@ class ServicioRecurrenteUpdateView(UpdateView):
     )
 
 
-class ServicioRecurrenteDeleteView(DeleteView):
+class ServicioRecurrenteDeleteView(LoginRequiredMixin, DeleteView):
 
     model = ServicioRecurrente
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            sucursal__usuarios=self.request.user
+        )
 
     template_name = "servicios/delete.html"
 
@@ -60,7 +121,7 @@ class ServicioRecurrenteDeleteView(DeleteView):
         "servicios:list"
     )
 
-class ServiciosPendientesView(TemplateView):
+class ServiciosPendientesView(LoginRequiredMixin, TemplateView):
 
     template_name = "servicios/pendientes.html"
 
@@ -101,9 +162,20 @@ class ServiciosPendientesView(TemplateView):
         return context
 
 
-class RegistrarPagoServicioView(CreateView):
+class RegistrarPagoServicioView(LoginRequiredMixin, CreateView):
 
     model = PagoServicio
+
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            sucursal__usuarios=self.request.user
+        )
 
     form_class = PagoServicioForm
 

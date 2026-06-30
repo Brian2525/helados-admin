@@ -82,6 +82,12 @@ class Gasto(models.Model):
         on_delete=models.PROTECT
     )
 
+    descripcion = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
     monto = models.DecimalField(
         max_digits=12,
         decimal_places=2
@@ -93,6 +99,10 @@ class Gasto(models.Model):
         null=True,
         blank=True
     )
+
+
+
+    
 
 
 

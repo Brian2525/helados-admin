@@ -1,75 +1,123 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Empleado</title>
-</head>
-<body>
+{% extends 'core/base_dashboard.html' %}
 
-    {% if object %}
-        <h1>Editar Empleado</h1>
-    {% else %}
-        <h1>Nuevo Empleado</h1>
-    {% endif %}
+{% block title %}
+{% if object %}
+Editar empleado
+{% else %}
+Nuevo empleado
+{% endif %}
+{% endblock %}
 
-    <form method="post">
+{% block content %}
 
-        {% csrf_token %}
+<div class="max-w-3xl mx-auto p-6">
 
-        {{ form.non_field_errors }}
+    <div class="bg-white rounded-xl shadow">
 
-        <p>
-            {{ form.nombre.label_tag }}
-            <br>
-            {{ form.nombre }}
-            {{ form.nombre.errors }}
-        </p>
+        <div class="border-b border-gray-200 px-6 py-4">
 
-        <p>
-            {{ form.sucursal.label_tag }}
-            <br>
-            {{ form.sucursal }}
-            {{ form.sucursal.errors }}
-        </p>
+            <h1 class="text-2xl font-bold text-gray-800">
 
-        <p>
-            {{ form.puesto.label_tag }}
-            <br>
-            {{ form.puesto }}
-            {{ form.puesto.errors }}
-        </p>
+                {% if object %}
+                    Editar empleado
+                {% else %}
+                    Nuevo empleado
+                {% endif %}
 
-        <p>
-            {{ form.sueldo_semanal.label_tag }}
-            <br>
-            {{ form.sueldo_semanal }}
-            {{ form.sueldo_semanal.errors }}
-        </p>
+            </h1>
 
-        <p>
-            {{ form.fecha_ingreso.label_tag }}
-            <br>
-            {{ form.fecha_ingreso }}
-            {{ form.fecha_ingreso.errors }}
-        </p>
+            <p class="text-sm text-gray-500 mt-1">
 
-        <p>
-            {{ form.activo.label_tag }}
-            {{ form.activo }}
-            {{ form.activo.errors }}
-        </p>
+                {% if object %}
+                    Modifica la información del empleado.
+                {% else %}
+                    Captura la información del nuevo empleado.
+                {% endif %}
 
-        <button type="submit">
-            Guardar
-        </button>
+            </p>
 
-    </form>
+        </div>
 
-    <p>
-        <a href="{% url 'nomina:empleado_list' %}">
-            Regresar
-        </a>
-    </p>
+        <form
+            method="post"
+            class="p-6 space-y-5"
+        >
 
-</body>
-</html>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+
+                <div class="rounded-lg bg-red-50 border border-red-200 p-4 text-red-700">
+
+                    {{ form.non_field_errors }}
+
+                </div>
+
+            {% endif %}
+
+            {% for field in form %}
+
+                <div>
+
+                    <label
+                        for="{{ field.id_for_label }}"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ field.help_text }}
+                        </p>
+
+                    {% endif %}
+
+                    {% if field.errors %}
+
+                        <div class="mt-1 text-sm text-red-600">
+
+                            {{ field.errors }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+
+                <a
+                    href="{% url 'nomina:empleado_list' %}"
+                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+
+                    {% if object %}
+                        Guardar cambios
+                    {% else %}
+                        Crear empleado
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

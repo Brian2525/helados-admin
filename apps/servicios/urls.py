@@ -36,6 +36,7 @@ urlpatterns = [
         ServicioRecurrenteDeleteView.as_view(),
         name="delete"
     ),
+    
     path("pendientes/", ServiciosPendientesView.as_view(), name="pendientes"),
 
     path(
