@@ -11,8 +11,9 @@ class EmpleadoForm(TailwindModelForm):
         fields = [
             "nombre",
             "sucursal",
+            "tipo_nomina",
             "puesto",
-            "sueldo_semanal",
+            "salario_periodo",
             "fecha_ingreso",
             "activo",
         ]

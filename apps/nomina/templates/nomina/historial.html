@@ -1,0 +1,117 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+<h1 class="text-3xl font-bold mb-6">
+
+Historial de pagos
+
+</h1>
+
+<div class="bg-white rounded-xl shadow">
+
+<table class="min-w-full">
+
+<thead>
+
+<tr>
+
+<th class="p-4">
+
+Fecha
+
+</th>
+
+<th>
+
+Empleado
+
+</th>
+
+<th>
+
+Periodo
+
+</th>
+
+<th>
+
+Monto
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for pago in pagos %}
+
+<tr class="border-t">
+
+<td class="p-4">
+
+{{ pago.fecha_pago }}
+
+</td>
+
+<td>
+
+{{ pago.empleado.nombre }}
+
+</td>
+
+<td>
+
+{{ pago.fecha_inicio }} - {{ pago.fecha_fin }}
+
+</td>
+
+<td>
+
+${{ pago.monto }}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="mt-6 flex justify-center">
+
+{% if is_paginated %}
+
+{% if page_obj.has_previous %}
+
+<a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+
+{% endif %}
+
+<span class="mx-4">
+
+{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+
+</span>
+
+{% if page_obj.has_next %}
+
+<a href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+
+{% endif %}
+
+{% endif %}
+
+</div>
+
+</div>
+
+{% endblock %}

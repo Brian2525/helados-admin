@@ -9,7 +9,7 @@ from django.views.generic import (
 from .models import CategoriaGasto, Gasto
 from .forms import CategoriaGastoForm, GastoForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from apps.sucursales.models import Sucursal
 
 class CategoriaGastoListView(LoginRequiredMixin, ListView):
     model = CategoriaGasto
@@ -42,19 +42,54 @@ class CategoriaGastoDeleteView(LoginRequiredMixin, DeleteView):
 
 class GastoListView(LoginRequiredMixin, ListView):
     model = Gasto
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
     template_name = "gastos/list.html"
     context_object_name = "gastos"
     paginate_by = 20
+
+    def get_queryset(self):
+
+        queryset = Gasto.objects.all()
+
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(
+                sucursal__usuarios=self.request.user
+            )
+
+        # Filtros
+        sucursal = self.request.GET.get("sucursal")
+        categoria = self.request.GET.get("categoria")
+        fecha_inicio = self.request.GET.get("fecha_inicio")
+        fecha_fin = self.request.GET.get("fecha_fin")
+
+        if sucursal:
+            queryset = queryset.filter(sucursal_id=sucursal)
+
+        if categoria:
+            queryset = queryset.filter(categoria_id=categoria)
+
+        if fecha_inicio:
+            queryset = queryset.filter(fecha__gte=fecha_inicio)
+
+        if fecha_fin:
+            queryset = queryset.filter(fecha__lte=fecha_fin)
+
+        # Orden histórico (más reciente primero)
+        return queryset.order_by("-fecha", "-id")
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_superuser:
+            context["sucursales"] = Sucursal.objects.all()
+        else:
+            context["sucursales"] = Sucursal.objects.filter(
+                usuarios=self.request.user
+            )
+
+        context["categorias"] = CategoriaGasto.objects.all()
+
+        return context
 
 
 class GastoCreateView(LoginRequiredMixin, CreateView):

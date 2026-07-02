@@ -1,0 +1,133 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+<div class="flex justify-between mb-6">
+
+<h1 class="text-3xl font-bold">
+
+Nóminas pendientes
+
+</h1>
+
+<a
+href="{% url 'nomina:pagar_todo' %}"
+class="bg-green-600 text-white px-5 py-2 rounded-lg"
+>
+
+Pagar todo
+
+</a>
+
+</div>
+
+<div class="bg-white rounded-xl shadow">
+
+<table class="min-w-full">
+
+<thead>
+
+<tr>
+
+<th class="p-4 text-left">
+
+Empleado
+
+</th>
+
+<th>
+
+Sucursal
+
+</th>
+
+<th>
+
+Tipo
+
+</th>
+
+<th>
+
+Sueldo
+
+</th>
+
+<th>
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for empleado in empleados %}
+
+<tr class="border-t">
+
+<td class="p-4">
+
+{{ empleado.nombre }}
+
+</td>
+
+<td>
+
+{{ empleado.sucursal }}
+
+</td>
+
+<td>
+
+{{ empleado.get_tipo_nomina_display }}
+
+</td>
+
+<td>
+
+${{ empleado.sueldo }}
+
+</td>
+
+<td>
+
+<a
+href="{% url 'nomina:pagar' empleado.id %}"
+class="bg-blue-600 text-white px-4 py-2 rounded"
+>
+
+Pagar
+
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="5" class="text-center py-10">
+
+No existen pagos pendientes.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

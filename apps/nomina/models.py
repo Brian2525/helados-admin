@@ -1,9 +1,15 @@
 from django.db import models
 
 from apps.sucursales.models import Sucursal
+from apps.gastos.models import Gasto, CategoriaGasto
+
 
 
 class Empleado(models.Model):
+    TIPO_NOMINA = [
+        ("SEMANA", "Lunes a Viernes"),
+        ("FIN_SEMANA", "Sábado y Domingo"),
+    ]
 
     nombre = models.CharField(
         max_length=200
@@ -19,12 +25,20 @@ class Empleado(models.Model):
         max_length=100
     )
 
-    sueldo_semanal = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
 
     fecha_ingreso = models.DateField()
+
+    tipo_nomina = models.CharField(
+        max_length=20,
+        choices=TIPO_NOMINA,
+        default="SEMANA"
+    )
+
+    salario_periodo = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00
+    )
 
     activo = models.BooleanField(
         default=True
@@ -83,3 +97,21 @@ class PagoNomina(models.Model):
             f"{self.empleado.nombre} "
             f"{self.fecha_pago}"
         )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        categoria = CategoriaGasto.objects.get(nombre="Nómina")
+
+        Gasto.objects.update_or_create(
+            pago_nomina=self,
+            defaults={
+                "sucursal": self.empleado.sucursal,
+                "categoria": categoria,
+                "fecha": self.fecha_pago,
+                "monto": self.monto,
+                "descripcion": f"Nómina {self.empleado.nombre}",
+            }
+        )
+
+        

@@ -17,64 +17,71 @@
 
     <nav class="flex-1 p-4 space-y-2">
 
-        <a href="{% url 'dashboard:home' %}"
+{% for item in sidebar_menu %}
+
+    {% if item.submenu %}
+
+        <div>
+
+            <button
+                class="sidebar-toggle w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-slate-800 transition"
+                data-target="menu{{ forloop.counter }}">
+
+                <span>
+
+                    {{ item.icono }}
+                    {{ item.titulo }}
+
+                </span>
+
+                <svg class="arrow w-4 h-4 transition-transform"
+                     fill="none"
+                     stroke="currentColor"
+                     viewBox="0 0 24 24">
+
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"/>
+
+                </svg>
+
+            </button>
+
+            <div
+                id="menu{{ forloop.counter }}"
+                class="hidden ml-4 mt-2 space-y-1">
+
+                {% for opcion in item.submenu %}
+
+                    <a href="{{ opcion.url }}"
+                       class="block px-4 py-2 rounded-lg hover:bg-slate-800 transition">
+
+                        {{ opcion.titulo }}
+
+                    </a>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <a href="{{ item.url }}"
            class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
 
-            📊 Dashboard
+            {{ item.icono }}
+            {{ item.titulo }}
 
         </a>
 
-        <a href="{% url 'servicios:pendientes' %}"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
+    {% endif %}
 
-            🏪 Pagos pendientes
+{% endfor %}
 
-        </a>
-
-
-        <a href="{% url 'resumen_list' %}"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
-
-            🏪 Ventas
-
-        </a>
-
-        <a href="{% url 'sucursales:list' %}"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
-
-            🏪 Sucursales
-
-        </a>
-
-        <a href="#"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
-
-            📦 Inventario
-
-        </a>
-
-        <a href="{% url 'gastos:list' %}"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
-
-            💰 Gastos
-
-        </a>
-
-        <a href="{% url 'nomina:empleado_list' %}"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
-
-            👥 Nómina
-
-        </a>
-
-        <a href="{% url 'servicios:list' %}"
-           class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition">
-
-            📅 Servicios
-
-        </a>
-
-    </nav>
+</nav>
 
     <div class="border-t border-slate-800 p-4">
 
@@ -99,3 +106,23 @@
     </div>
 
 </aside>
+
+<script>
+document.querySelectorAll(".sidebar-toggle").forEach(button => {
+
+    button.addEventListener("click", function () {
+
+        const menu = document.getElementById(this.dataset.target);
+
+        menu.classList.toggle("hidden");
+
+        const arrow = this.querySelector(".arrow");
+
+        if (arrow) {
+            arrow.classList.toggle("rotate-180");
+        }
+
+    });
+
+});
+</script>

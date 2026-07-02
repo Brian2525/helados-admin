@@ -5,6 +5,10 @@ from .views import (
     EmpleadoCreateView,
     EmpleadoUpdateView,
     EmpleadoDeleteView,
+    NominaPendienteListView,
+    PagoNominaListView,
+    registrar_todos,
+    registrar_pago,
 )
 
 app_name = "nomina"
@@ -33,5 +37,29 @@ urlpatterns = [
         "empleados/<int:pk>/eliminar/",
         EmpleadoDeleteView.as_view(),
         name="empleado_delete"
+    ),
+
+    path(
+        "",
+        NominaPendienteListView.as_view(),
+        name="pendientes"
+    ),
+
+    path(
+        "historial/",
+        PagoNominaListView.as_view(),
+        name="historial"
+    ),
+
+    path(
+        "pagar/<int:empleado_id>/",
+        registrar_pago,
+        name="pagar"
+    ),
+
+    path(
+        "pagar-todo/",
+        registrar_todos,
+        name="pagar_todo"
     ),
 ]

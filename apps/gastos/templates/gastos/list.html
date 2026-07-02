@@ -25,6 +25,129 @@
 
     </div>
 
+        <div class="bg-white rounded-xl shadow p-5 mb-6">
+
+        <form method="GET">
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                <div>
+
+                    <label class="block text-sm font-medium mb-1">
+                        Sucursal
+                    </label>
+
+                    <select
+                        name="sucursal"
+                        class="w-full rounded-lg border-gray-300"
+                    >
+
+                        <option value="">
+                            Todas
+                        </option>
+
+                        {% for sucursal in sucursales %}
+
+                        <option
+                            value="{{ sucursal.id }}"
+                            {% if request.GET.sucursal == sucursal.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ sucursal.nombre }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div>
+
+                    <label class="block text-sm font-medium mb-1">
+                        Categoría
+                    </label>
+
+                    <select
+                        name="categoria"
+                        class="w-full rounded-lg border-gray-300"
+                    >
+
+                        <option value="">
+                            Todas
+                        </option>
+
+                        {% for categoria in categorias %}
+
+                        <option
+                            value="{{ categoria.id }}"
+                            {% if request.GET.categoria == categoria.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ categoria }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div>
+
+                    <label class="block text-sm font-medium mb-1">
+                        Desde
+                    </label>
+
+                    <input
+                        type="date"
+                        name="fecha_inicio"
+                        value="{{ request.GET.fecha_inicio }}"
+                        class="w-full rounded-lg border-gray-300"
+                    >
+
+                </div>
+
+                <div>
+
+                    <label class="block text-sm font-medium mb-1">
+                        Hasta
+                    </label>
+
+                    <input
+                        type="date"
+                        name="fecha_fin"
+                        value="{{ request.GET.fecha_fin }}"
+                        class="w-full rounded-lg border-gray-300"
+                    >
+
+                </div>
+
+                <div class="flex items-end gap-2">
+
+                    <button
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    >
+                        Filtrar
+                    </button>
+
+                    <a
+                        href="{% url 'gastos:list' %}"
+                        class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+                    >
+                        Limpiar
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
     <div class="bg-white rounded-xl shadow overflow-hidden">
 
         <table class="min-w-full divide-y divide-gray-200">
@@ -159,6 +282,60 @@
         </table>
 
     </div>
+
+    {% if is_paginated %}
+
+<div class="mt-6 flex justify-center">
+
+    <nav class="flex items-center gap-2">
+
+        {% if page_obj.has_previous %}
+
+            <a
+                href="?page=1&sucursal={{ request.GET.sucursal }}&categoria={{ request.GET.categoria }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}"
+                class="px-3 py-2 rounded border"
+            >
+                «
+            </a>
+
+            <a
+                href="?page={{ page_obj.previous_page_number }}&sucursal={{ request.GET.sucursal }}&categoria={{ request.GET.categoria }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}"
+                class="px-3 py-2 rounded border"
+            >
+                Anterior
+            </a>
+
+        {% endif %}
+
+        <span class="px-4 py-2 bg-blue-600 text-white rounded">
+
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+
+        </span>
+
+        {% if page_obj.has_next %}
+
+            <a
+                href="?page={{ page_obj.next_page_number }}&sucursal={{ request.GET.sucursal }}&categoria={{ request.GET.categoria }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}"
+                class="px-3 py-2 rounded border"
+            >
+                Siguiente
+            </a>
+
+            <a
+                href="?page={{ page_obj.paginator.num_pages }}&sucursal={{ request.GET.sucursal }}&categoria={{ request.GET.categoria }}&fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}"
+                class="px-3 py-2 rounded border"
+            >
+                »
+            </a>
+
+        {% endif %}
+
+    </nav>
+
+</div>
+
+{% endif %}
 
 </div>
 
