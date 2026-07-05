@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -9,8 +9,9 @@ from django.views.generic import (
     DeleteView,
 )
 
-from .models import Proveedor
-from .forms import ProveedorForm
+from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar
+from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm
+from django.db.models import Q
 
 
 class ProveedorListView(LoginRequiredMixin, ListView):
@@ -55,3 +56,123 @@ class ProveedorDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "compras/proveedor_confirm_delete.html"
 
     success_url = reverse_lazy("compras:proveedor_list")
+
+
+
+class CuentaPorPagarListView(LoginRequiredMixin,ListView):
+
+    model = CuentaPorPagar
+
+    template_name = "compras/cuenta_list.html"
+
+    context_object_name = "cuentas"
+
+    paginate_by = 20
+
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if not self.request.user.is_superuser:
+
+            queryset = queryset.filter(
+                sucursal__usuarios=self.request.user
+            )
+
+        q = self.request.GET.get("q")
+
+        if q:
+
+            queryset = queryset.filter(
+
+            Q(proveedor__nombre__icontains=q) |
+            Q(descripcion__icontains=q)
+
+    )
+
+        return queryset.select_related(
+            "proveedor",
+            "categoria",
+            "sucursal"
+        )
+
+
+class CuentaPorPagarCreateView(LoginRequiredMixin,CreateView):
+
+    model = CuentaPorPagar
+
+    form_class = CuentaPorPagarForm
+
+    template_name = "compras/cuenta_form.html"
+
+    success_url = reverse_lazy(
+        "compras:cuenta_list"
+    )
+
+    def form_valid(self, form):
+
+        form.instance.saldo = form.instance.monto_total
+
+        return super().form_valid(form)
+
+
+class RegistrarPagoCuentaView(
+    LoginRequiredMixin,
+    CreateView
+):
+
+    model = PagoCuentaPorPagar
+
+    form_class = PagoCuentaForm
+
+    template_name = "compras/pago_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+
+        self.cuenta = get_object_or_404(
+            CuentaPorPagar,
+            pk=self.kwargs["pk"]
+        )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+
+        form.instance.cuenta = self.cuenta
+
+        return super().form_valid(form)
+
+
+class CuentaPorPagarDeleteView(LoginRequiredMixin,DeleteView):
+
+    model = CuentaPorPagar
+
+    template_name = "compras/cuenta_confirm_delete.html"
+
+    success_url = reverse_lazy(
+        "compras:cuenta_list"
+    )
+
+
+class RegistrarPagoCuentaView(LoginRequiredMixin,CreateView):
+
+    model = PagoCuentaPorPagar
+
+    form_class = PagoCuentaForm
+
+    template_name = "compras/pago_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+
+        self.cuenta = get_object_or_404(
+            CuentaPorPagar,
+            pk=self.kwargs["pk"]
+        )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+
+        form.instance.cuenta = self.cuenta
+
+        return super().form_valid(form)

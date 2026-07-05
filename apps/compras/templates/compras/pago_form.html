@@ -1,0 +1,339 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Información de la cuenta -->
+
+        <div class="lg:col-span-2">
+
+            <div class="bg-white rounded-xl shadow border border-gray-200">
+
+                <div class="px-6 py-5 border-b">
+
+                    <h1 class="text-2xl font-bold">
+
+                        Registrar pago
+
+                    </h1>
+
+                    <p class="text-gray-500 mt-1">
+
+                        {{ cuenta.proveedor.nombre }}
+
+                    </p>
+
+                </div>
+
+                <div class="p-6">
+
+                    <div class="grid grid-cols-2 gap-6">
+
+                        <div>
+
+                            <label class="text-sm text-gray-500">
+
+                                Proveedor
+
+                            </label>
+
+                            <p class="font-semibold">
+
+                                {{ cuenta.proveedor.nombre }}
+
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <label class="text-sm text-gray-500">
+
+                                Sucursal
+
+                            </label>
+
+                            <p class="font-semibold">
+
+                                {{ cuenta.sucursal }}
+
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <label class="text-sm text-gray-500">
+
+                                Fecha
+
+                            </label>
+
+                            <p>
+
+                                {{ cuenta.fecha }}
+
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <label class="text-sm text-gray-500">
+
+                                Vencimiento
+
+                            </label>
+
+                            <p>
+
+                                {{ cuenta.fecha_vencimiento }}
+
+                            </p>
+
+                        </div>
+
+                        <div class="col-span-2">
+
+                            <label class="text-sm text-gray-500">
+
+                                Descripción
+
+                            </label>
+
+                            <p>
+
+                                {{ cuenta.descripcion }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <hr class="my-6">
+
+                    <div class="grid grid-cols-3 gap-6">
+
+                        <div>
+
+                            <p class="text-gray-500 text-sm">
+
+                                Monto total
+
+                            </p>
+
+                            <p class="text-xl font-bold">
+
+                                ${{ cuenta.monto_total }}
+
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-gray-500 text-sm">
+
+                                Pagado
+
+                            </p>
+
+                            <p class="text-xl font-bold text-green-600">
+
+                                ${{ cuenta.total_pagado }}
+
+                            </p>
+
+                        </div>
+
+                        <div>
+
+                            <p class="text-gray-500 text-sm">
+
+                                Saldo
+
+                            </p>
+
+                            <p class="text-xl font-bold text-red-600">
+
+                                ${{ cuenta.saldo }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Historial -->
+
+            <div class="bg-white rounded-xl shadow border border-gray-200 mt-6">
+
+                <div class="px-6 py-4 border-b">
+
+                    <h2 class="font-semibold">
+
+                        Historial de pagos
+
+                    </h2>
+
+                </div>
+
+                <table class="w-full">
+
+                    <thead class="bg-gray-50">
+
+                        <tr>
+
+                            <th class="text-left px-6 py-3">
+
+                                Fecha
+
+                            </th>
+
+                            <th class="text-right px-6 py-3">
+
+                                Monto
+
+                            </th>
+
+                            <th class="text-left px-6 py-3">
+
+                                Observaciones
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for pago in cuenta.pagos.all %}
+
+                        <tr class="border-t">
+
+                            <td class="px-6 py-3">
+
+                                {{ pago.fecha }}
+
+                            </td>
+
+                            <td class="px-6 py-3 text-right">
+
+                                ${{ pago.monto }}
+
+                            </td>
+
+                            <td class="px-6 py-3">
+
+                                {{ pago.observaciones }}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="3"
+                                class="text-center py-6 text-gray-500">
+
+                                No hay pagos registrados.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- Formulario -->
+
+        <div>
+
+            <div class="bg-white rounded-xl shadow border border-gray-200 sticky top-6">
+
+                <div class="px-6 py-5 border-b">
+
+                    <h2 class="font-semibold">
+
+                        Nuevo pago
+
+                    </h2>
+
+                </div>
+
+                <form method="post" class="p-6 space-y-5">
+
+                    {% csrf_token %}
+
+                    <div>
+
+                        <label class="block mb-2 text-sm font-medium">
+
+                            Fecha
+
+                        </label>
+
+                        {{ form.fecha }}
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 text-sm font-medium">
+
+                            Monto
+
+                        </label>
+
+                        {{ form.monto }}
+
+                    </div>
+
+                    <div>
+
+                        <label class="block mb-2 text-sm font-medium">
+
+                            Observaciones
+
+                        </label>
+
+                        {{ form.observaciones }}
+
+                    </div>
+
+                    <button
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg">
+
+                        Registrar pago
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex justify-between items-center mb-6">
+
+        <div>
+
+            <h1 class="text-2xl font-bold text-gray-800">
+
+                Cuentas por pagar
+
+            </h1>
+
+            <p class="text-gray-500">
+
+                Compromisos con proveedores
+
+            </p>
+
+        </div>
+
+        <a href="{% url 'compras:cuenta_create' %}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+
+            + Nueva cuenta
+
+        </a>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow border border-gray-200">
+
+        <div class="p-5 border-b">
+
+            <form method="get">
+
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ request.GET.q }}"
+                    placeholder="Buscar proveedor o descripción..."
+                    class="w-full rounded-lg border-gray-300">
+
+            </form>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="min-w-full divide-y divide-gray-200">
+
+                <thead class="bg-gray-50">
+
+                    <tr>
+
+                        <th class="px-6 py-3 text-left">Proveedor</th>
+
+                        <th class="px-6 py-3 text-left">Descripción</th>
+
+                        <th class="px-6 py-3 text-center">Vence</th>
+
+                        <th class="px-6 py-3 text-right">Total</th>
+
+                        <th class="px-6 py-3 text-right">Saldo</th>
+
+                        <th class="px-6 py-3 text-center">Estado</th>
+
+                        <th class="px-6 py-3 text-center">Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+
+                {% for cuenta in cuentas %}
+
+                    <tr class="hover:bg-gray-50">
+
+                        <td class="px-6 py-4">
+
+                            {{ cuenta.proveedor.nombre }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {{ cuenta.descripcion }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            {{ cuenta.fecha_vencimiento }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-right">
+
+                            ${{ cuenta.monto_total }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-right font-semibold">
+
+                            ${{ cuenta.saldo }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            {% if cuenta.estatus == "pendiente" %}
+
+                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
+
+                                    Pendiente
+
+                                </span>
+
+                            {% elif cuenta.estatus == "parcial" %}
+
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
+
+                                    Parcial
+
+                                </span>
+
+                            {% elif cuenta.estatus == "pagado" %}
+
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
+
+                                    Pagado
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">
+
+                                    Vencido
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            <div class="flex justify-center gap-2">
+                                      <!--Hace falta una de detail --->
+                                <a href=""
+                                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
+
+                                    Ver
+
+                                </a>
+
+
+                                <a href="{% url 'compras:cuenta_pagar' cuenta.pk %}"
+                                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
+
+                                    Pagar
+
+                                </a>
+
+                                <a href="{% url 'compras:cuenta_delete' cuenta.pk %}"
+                                   class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">
+
+                                    Eliminar
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="7"
+                            class="text-center py-8 text-gray-500">
+
+                            No existen cuentas por pagar.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    {% if is_paginated %}
+
+    <div class="flex justify-between mt-6">
+
+        {% if page_obj.has_previous %}
+
+            <a href="?page={{ page_obj.previous_page_number }}"
+               class="px-4 py-2 border rounded-lg">
+
+                ← Anterior
+
+            </a>
+
+        {% else %}
+
+            <div></div>
+
+        {% endif %}
+
+        <span>
+
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+
+        </span>
+
+        {% if page_obj.has_next %}
+
+            <a href="?page={{ page_obj.next_page_number }}"
+               class="px-4 py-2 border rounded-lg">
+
+                Siguiente →
+
+            </a>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

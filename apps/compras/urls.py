@@ -5,6 +5,10 @@ from .views import (
     ProveedorCreateView,
     ProveedorUpdateView,
     ProveedorDeleteView,
+    CuentaPorPagarListView,
+    CuentaPorPagarCreateView,
+    CuentaPorPagarDeleteView,
+    RegistrarPagoCuentaView,
 )
 
 app_name = "compras"
@@ -34,5 +38,37 @@ urlpatterns = [
         ProveedorDeleteView.as_view(),
         name="proveedor_delete",
     ),
+
+    path(
+    "cuentas/",
+    CuentaPorPagarListView.as_view(),
+    name="cuenta_list",
+    ),
+
+    path(
+        "cuentas/nueva/",
+        CuentaPorPagarCreateView.as_view(),
+        name="cuenta_create",
+    ),
+
+   
+
+
+    path(
+        "cuentas/<int:pk>/eliminar/",
+        CuentaPorPagarDeleteView.as_view(),
+        name="cuenta_delete",
+    ),
+
+    path(
+    "cuentas/<int:pk>/pagar/",
+    RegistrarPagoCuentaView.as_view(),
+    name="cuenta_pagar",
+),
+
+
+
+
+
 
 ]

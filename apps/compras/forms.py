@@ -1,7 +1,7 @@
 from django import forms
 from apps.core.forms import TailwindModelForm
 
-from .models import Proveedor
+from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar
 
 
 class ProveedorForm(TailwindModelForm):
@@ -62,3 +62,59 @@ class ProveedorForm(TailwindModelForm):
             ),
 
         }
+
+
+class CuentaPorPagarForm(TailwindModelForm):
+
+    class Meta:
+
+        model = CuentaPorPagar
+
+        fields = [
+            "sucursal",
+            "proveedor",
+            "categoria",
+            "fecha",
+            "fecha_vencimiento",
+            "descripcion",
+            "monto_total",
+            "observaciones",
+        ]
+
+        widgets = {
+
+            "fecha": forms.DateInput(
+                attrs={
+                    "type": "date"
+                }
+            ),
+
+            "fecha_vencimiento": forms.DateInput(
+                attrs={
+                    "type": "date"
+                }
+            ),
+
+            "observaciones": forms.Textarea(
+                attrs={
+                    "rows": 3
+                }
+            ),
+
+        }
+
+class PagoCuentaForm(TailwindModelForm):
+
+    class Meta:
+
+        model = PagoCuentaPorPagar
+
+        fields = [
+
+            "fecha",
+
+            "monto",
+
+            "observaciones",
+
+        ]

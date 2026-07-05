@@ -1,8 +1,11 @@
 from django.db import models
-import datetime
+import datetime 
+from django.utils import timezone
 from apps.gastos.models import CategoriaGasto
 from apps.sucursales.models import Sucursal
-
+from decimal import Decimal
+from django.db.models import Sum
+from apps.gastos.models import Gasto, CategoriaGasto
 
 # Create your models here.
 class Proveedor(models.Model):
@@ -125,8 +128,8 @@ class PagoCuentaPorPagar(models.Model):
 
     cuenta = models.ForeignKey(
         CuentaPorPagar,
-        on_delete=models.CASCADE,
-        related_name="pagos"
+        related_name="pagos",
+        on_delete=models.CASCADE
     )
 
     fecha = models.DateField(
@@ -141,3 +144,63 @@ class PagoCuentaPorPagar(models.Model):
     observaciones = models.TextField(
         blank=True
     )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    
+    )
+
+    class Meta:
+
+        ordering = ["-fecha"]
+
+    def save(self, *args, **kwargs):
+
+        nuevo = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if nuevo:
+
+            cuenta = self.cuenta
+
+            cuenta.saldo -= self.monto
+
+            if cuenta.saldo <= Decimal("0"):
+
+                cuenta.saldo = Decimal("0")
+
+                cuenta.estatus = "pagado"
+
+            elif cuenta.saldo < cuenta.monto_total:
+
+                cuenta.estatus = "parcial"
+
+            cuenta.save()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        categoria = self.cuenta.categoria
+
+        Gasto.objects.create(
+
+            sucursal=self.cuenta.sucursal,
+
+            categoria=categoria,
+
+            fecha=self.fecha,
+
+            monto=self.monto,
+
+            descripcion=f"Pago a {self.cuenta.proveedor.nombre}",
+
+        )
+    @property
+    def total_pagado(self):
+
+        return self.pagos.aggregate(
+
+            total=Sum("monto")
+
+        )["total"] or 0
