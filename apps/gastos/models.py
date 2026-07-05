@@ -102,7 +102,6 @@ class Gasto(models.Model):
 
 
 
-    
 
 
 

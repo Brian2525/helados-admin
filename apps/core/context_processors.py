@@ -27,6 +27,22 @@ def sidebar_menu(request):
                 "icono": "🏪",
                 "url": reverse("resumen_list"),
             },
+            {
+                "titulo": "Proveedores",
+                "icono": "🏪",
+                "submenu": [
+                    {
+                        "titulo": "Crear",
+                        "url": reverse("compras:proveedor_create"),
+                    },
+
+                    {
+                        "titulo": "listado",
+                        "url": reverse("compras:proveedor_list"),
+                    },
+                ]
+            
+            },
 
             {
                 "titulo": "Sucursales",
