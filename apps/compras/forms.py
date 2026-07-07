@@ -106,15 +106,25 @@ class CuentaPorPagarForm(TailwindModelForm):
 class PagoCuentaForm(TailwindModelForm):
 
     class Meta:
-
         model = PagoCuentaPorPagar
+        fields = ["fecha", "monto", "observaciones"]
 
-        fields = [
-
-            "fecha",
-
-            "monto",
-
-            "observaciones",
-
-        ]
+        widgets = {
+            "fecha": forms.DateInput(
+                attrs={
+                    "type": "date",
+                    "class": "w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500",
+                }
+            ),
+            "monto": forms.NumberInput(
+                attrs={
+                    "class": "w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500",
+                }
+            ),
+            "observaciones": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "class": "w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500",
+                }
+            ),
+        }

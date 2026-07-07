@@ -90,16 +90,7 @@ class CuentaPorPagar(models.Model):
         decimal_places=2
     )
 
-    saldo = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
-
-    estatus = models.CharField(
-        max_length=20,
-        choices=ESTATUS,
-        default="pendiente"
-    )
+   
 
     categoria = models.ForeignKey(
         CategoriaGasto,
@@ -122,6 +113,31 @@ class CuentaPorPagar(models.Model):
 
         return f"{self.proveedor} - ${self.saldo}"
     
+    @property
+    def total_pagado(self):
+        return self.pagos.aggregate(
+            total=Sum("monto")
+        )["total"] or 0
+
+    @property
+    def saldo(self):
+        return self.monto_total - self.total_pagado
+
+
+    @property
+    def estatus(self):
+        if self.saldo <= 0:
+            return "pagado"
+        elif self.total_pagado > 0:
+            return "parcial"
+        elif self.fecha_vencimiento < datetime.date.today():
+            return "vencido"
+        else:
+            return "pendiente"  
+    
+
+
+
 
 #Abonos de cuentas por pagar
 class PagoCuentaPorPagar(models.Model):
@@ -161,22 +177,18 @@ class PagoCuentaPorPagar(models.Model):
         super().save(*args, **kwargs)
 
         if nuevo:
-
             cuenta = self.cuenta
 
-            cuenta.saldo -= self.monto
-
             if cuenta.saldo <= Decimal("0"):
-
-                cuenta.saldo = Decimal("0")
-
                 cuenta.estatus = "pagado"
-
-            elif cuenta.saldo < cuenta.monto_total:
-
+            elif cuenta.total_pagado > Decimal("0"):
                 cuenta.estatus = "parcial"
+            else:
+                cuenta.estatus = "pendiente"
 
-            cuenta.save()
+            cuenta.save(update_fields=["estatus"])
+
+           
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

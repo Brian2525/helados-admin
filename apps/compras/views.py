@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, reverse 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -7,6 +7,7 @@ from django.views.generic import (
     CreateView,
     UpdateView,
     DeleteView,
+    DetailView
 )
 
 from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar
@@ -109,11 +110,12 @@ class CuentaPorPagarCreateView(LoginRequiredMixin,CreateView):
         "compras:cuenta_list"
     )
 
-    def form_valid(self, form):
+    
 
-        form.instance.saldo = form.instance.monto_total
 
-        return super().form_valid(form)
+
+
+
 
 
 class RegistrarPagoCuentaView(
@@ -154,25 +156,41 @@ class CuentaPorPagarDeleteView(LoginRequiredMixin,DeleteView):
     )
 
 
-class RegistrarPagoCuentaView(LoginRequiredMixin,CreateView):
+class CuentaPorPagarDetailView(LoginRequiredMixin, DetailView):
+    model = CuentaPorPagar
+    template_name = "compras/cuenta_detail.html"
+    context_object_name = "cuenta"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["pagos"] = (
+            PagoCuentaPorPagar.objects
+            .filter(cuenta=self.object)
+            .order_by("-fecha")
+        )
+
+        return context
+    
+
+class RegistrarPagoCuentaView(LoginRequiredMixin, CreateView):
     model = PagoCuentaPorPagar
-
     form_class = PagoCuentaForm
-
     template_name = "compras/pago_form.html"
 
     def dispatch(self, request, *args, **kwargs):
-
         self.cuenta = get_object_or_404(
             CuentaPorPagar,
             pk=self.kwargs["pk"]
         )
-
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-
         form.instance.cuenta = self.cuenta
-
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(
+            "compras:cuenta_detail",
+            kwargs={"pk": self.cuenta.pk}
+        )

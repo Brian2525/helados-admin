@@ -44,6 +44,25 @@ def sidebar_menu(request):
             
             },
 
+
+            {
+                "titulo": "Cuentas por pagar",
+                "icono": "🏪",
+                "submenu": [
+                    
+                    {
+                        "titulo": "Crear",
+                        "url": reverse("compras:cuenta_create"),
+                    },
+
+                    {
+                        "titulo": "listado",
+                        "url": reverse("compras:cuenta_list"),
+                    },
+                ]
+            
+            },
+
             {
                 "titulo": "Sucursales",
                 "icono": "🏪",

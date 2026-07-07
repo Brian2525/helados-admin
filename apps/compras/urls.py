@@ -9,6 +9,7 @@ from .views import (
     CuentaPorPagarCreateView,
     CuentaPorPagarDeleteView,
     RegistrarPagoCuentaView,
+    CuentaPorPagarDetailView,
 )
 
 app_name = "compras"
@@ -51,7 +52,11 @@ urlpatterns = [
         name="cuenta_create",
     ),
 
-   
+    path(
+    "cuentas/<int:pk>/",
+    CuentaPorPagarDetailView.as_view(),
+    name="cuenta_detail",
+    ),
 
 
     path(
