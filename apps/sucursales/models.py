@@ -5,17 +5,27 @@ from django.contrib.auth.models import User
 
 
 
+
 class Sucursal(models.Model):
+
+    propietario = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    related_name="sucursales_propias",
+    blank=True,
+)
+
+
+
     nombre = models.CharField(
         max_length=100,
-        unique=True,
         help_text="Ejemplo: SUR16, SUR20, SUR24"
 
     )
 
     usuarios= models.ManyToManyField(
         User,
-        related_name="sucursales",
+        related_name="sucursales_asignadas",
         blank=True,
         )
 
@@ -62,6 +72,13 @@ class Sucursal(models.Model):
         ordering = ["nombre"]
         verbose_name = "Sucursal"
         verbose_name_plural = "Sucursales"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["propietario", "nombre"],
+                name="unique_sucursal_por_propietario"
+            )
+        ]
 
     def __str__(self):
         return self.nombre

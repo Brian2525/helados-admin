@@ -1,6 +1,7 @@
 from calendar import monthrange
 from datetime import date
 from decimal import Decimal
+from django.db.models import Q
 
 from django.db.models import Sum
 from django.views.generic import TemplateView
@@ -73,9 +74,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             )
         )
 
-        sucursal_id = self.request.GET.get(
-            "sucursal"
-        )
+        sucursal_id = self.request.GET.get("sucursal")
+
+        if self.request.user.is_superuser:
+            sucursales = Sucursal.objects.all()
+        else:
+            sucursales = Sucursal.objects.filter(
+                Q(propietario=self.request.user) |
+                Q(usuarios=self.request.user)
+            ).distinct()
 
         ultimo_dia = monthrange(
             anio,
@@ -99,22 +106,29 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             fecha_fin__gte=inicio_mes
         )
 
+        if not self.request.user.is_superuser:
+            ventas = ventas.filter(
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
+
         gastos = Gasto.objects.filter(
-            fecha__range=[
-                inicio_mes,
-                fin_mes
-            ]
+            fecha__range=[inicio_mes, fin_mes]
         )
 
-        if sucursal_id:
-
-            ventas = ventas.filter(
-                sucursal_id=sucursal_id
-            )
-
+        if not self.request.user.is_superuser:
             gastos = gastos.filter(
-                sucursal_id=sucursal_id
-            )
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
+        
+
+        if sucursal_id:
+            sucursal = sucursales.filter(id=sucursal_id).first()
+
+            if sucursal:
+                ventas = ventas.filter(sucursal=sucursal)
+                gastos = gastos.filter(sucursal=sucursal)
 
         totales_ventas = ventas.aggregate(
             efectivo=Sum("efectivo"),
@@ -165,9 +179,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["mes_seleccionado"] = mes
         context["anio_seleccionado"] = anio
 
-        context["sucursales"] = (
-            Sucursal.objects.all()
-        )
+        context["sucursales"] = sucursales
 
         context["sucursal_seleccionada"] = (
             int(sucursal_id)

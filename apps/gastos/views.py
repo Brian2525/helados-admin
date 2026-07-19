@@ -1,4 +1,5 @@
 from django.urls import reverse_lazy
+from django.db.models import Q
 from django.views.generic import (
     ListView,
     CreateView,
@@ -52,8 +53,9 @@ class GastoListView(LoginRequiredMixin, ListView):
 
         if not self.request.user.is_superuser:
             queryset = queryset.filter(
-                sucursal__usuarios=self.request.user
-            )
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
 
         # Filtros
         sucursal = self.request.GET.get("sucursal")
@@ -73,7 +75,6 @@ class GastoListView(LoginRequiredMixin, ListView):
         if fecha_fin:
             queryset = queryset.filter(fecha__lte=fecha_fin)
 
-        # Orden histórico (más reciente primero)
         return queryset.order_by("-fecha", "-id")
 
     def get_context_data(self, **kwargs):
@@ -84,8 +85,9 @@ class GastoListView(LoginRequiredMixin, ListView):
             context["sucursales"] = Sucursal.objects.all()
         else:
             context["sucursales"] = Sucursal.objects.filter(
-                usuarios=self.request.user
-            )
+                Q(propietario=self.request.user) |
+                Q(usuarios=self.request.user)
+            ).distinct()
 
         context["categorias"] = CategoriaGasto.objects.all()
 
@@ -94,16 +96,6 @@ class GastoListView(LoginRequiredMixin, ListView):
 
 class GastoCreateView(LoginRequiredMixin, CreateView):
     model = Gasto
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
     form_class = GastoForm
     template_name = "gastos/form.html"
     success_url = reverse_lazy("gastos:list")
@@ -111,24 +103,10 @@ class GastoCreateView(LoginRequiredMixin, CreateView):
 
 class GastoUpdateView(LoginRequiredMixin, UpdateView):
     model = Gasto
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
-   
     form_class = GastoForm
     template_name = "gastos/form.html"
     success_url = reverse_lazy("gastos:list")
 
-
-class GastoDeleteView(LoginRequiredMixin, DeleteView):
-    model = Gasto
     def get_queryset(self):
 
         queryset = super().get_queryset()
@@ -137,9 +115,26 @@ class GastoDeleteView(LoginRequiredMixin, DeleteView):
             return queryset
 
         return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
+            Q(sucursal__propietario=self.request.user) |
+            Q(sucursal__usuarios=self.request.user)
+        ).distinct()
+
+
+class GastoDeleteView(LoginRequiredMixin, DeleteView):
+    model = Gasto
     template_name = "gastos/delete.html"
     success_url = reverse_lazy("gastos:list")
+
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return queryset
+
+        return queryset.filter(
+            Q(sucursal__propietario=self.request.user) |
+            Q(sucursal__usuarios=self.request.user)
+        ).distinct()
 
 
