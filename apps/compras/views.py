@@ -13,6 +13,7 @@ from django.views.generic import (
 from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar
 from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm
 from django.db.models import Q
+from django.utils import timezone
 
 
 class ProveedorListView(LoginRequiredMixin, ListView):
@@ -59,15 +60,11 @@ class ProveedorDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("compras:proveedor_list")
 
 
-
-class CuentaPorPagarListView(LoginRequiredMixin,ListView):
+class CuentaPorPagarListView(LoginRequiredMixin, ListView):
 
     model = CuentaPorPagar
-
     template_name = "compras/cuenta_list.html"
-
     context_object_name = "cuentas"
-
     paginate_by = 20
 
     def get_queryset(self):
@@ -75,27 +72,41 @@ class CuentaPorPagarListView(LoginRequiredMixin,ListView):
         queryset = super().get_queryset()
 
         if not self.request.user.is_superuser:
-
             queryset = queryset.filter(
                 sucursal__usuarios=self.request.user
             )
 
         q = self.request.GET.get("q")
+       
+       
+       
+        estado = self.request.GET.get("estado", "abiertas")
 
-        if q:
+        cuentas = list(queryset)
 
-            queryset = queryset.filter(
+        if estado == "pagadas":
+            cuentas = [c for c in cuentas if c.estatus == "pagado"]
 
-            Q(proveedor__nombre__icontains=q) |
-            Q(descripcion__icontains=q)
+        elif estado == "pendientes":
+            cuentas = [c for c in cuentas if c.estatus == "pendiente"]
 
-    )
+        elif estado == "parciales":
+            cuentas = [c for c in cuentas if c.estatus == "parcial"]
 
-        return queryset.select_related(
-            "proveedor",
-            "categoria",
-            "sucursal"
-        )
+        elif estado == "vencidas":
+            cuentas = [c for c in cuentas if c.estatus == "vencido"]
+
+        else:
+            cuentas = [
+                c for c in cuentas
+                if c.estatus in ("pendiente", "parcial", "vencido")
+            ]
+
+        return cuentas
+    
+
+
+
 
 
 class CuentaPorPagarCreateView(LoginRequiredMixin,CreateView):
@@ -112,6 +123,17 @@ class CuentaPorPagarCreateView(LoginRequiredMixin,CreateView):
 
     
 
+class CuentaPorPagarUpdateView(LoginRequiredMixin, UpdateView):
+
+    model = CuentaPorPagar
+
+    form_class = CuentaPorPagarForm
+
+    template_name = "compras/cuenta_form.html"
+
+    success_url = reverse_lazy(
+        "compras:cuenta_list"
+    )
 
 
 

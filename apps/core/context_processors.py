@@ -17,32 +17,32 @@ def sidebar_menu(request):
             },
 
             {
-                "titulo": "Pagos pendientes",
+                "titulo": "Compromisos de pago",
                 "icono": "🏪",
-                "url": reverse("servicios:pendientes"),
+                "url": reverse("servicios:list"),
             },
 
             {
                 "titulo": "Ventas",
                 "icono": "🏪",
-                "url": reverse("resumen_list"),
-            },
-            {
-                "titulo": "Proveedores",
-                "icono": "🏪",
                 "submenu": [
                     {
-                        "titulo": "Crear",
-                        "url": reverse("compras:proveedor_create"),
+                        "titulo": "Ventas",
+                        "url": reverse("resumen_list"),
                     },
 
                     {
-                        "titulo": "listado",
-                        "url": reverse("compras:proveedor_list"),
+                        "titulo": "Crear sucursal",
+                        "url": reverse("sucursales:create"),
+                    },
+
+                    {
+                        "titulo": "Sucursales",
+                        "url": reverse("sucursales:list"),
                     },
                 ]
-            
             },
+
 
 
             {
@@ -59,25 +59,15 @@ def sidebar_menu(request):
                         "titulo": "listado",
                         "url": reverse("compras:cuenta_list"),
                     },
+                    {
+                        "titulo": "Proveedores", 
+                        "url": reverse("compras:proveedor_list"),
+                    }
                 ]
             
             },
 
-            {
-                "titulo": "Sucursales",
-                "icono": "🏪",
-                "submenu": [
-                    {
-                        "titulo": "Crear",
-                        "url": reverse("sucursales:create"),
-                    },
-
-                    {
-                        "titulo": "listado",
-                        "url": reverse("sucursales:list"),
-                    },
-                ]
-            },
+            
 
             {
                 "titulo": "Inventario",
@@ -111,6 +101,11 @@ def sidebar_menu(request):
                         "url": reverse("gastos:categoria_list"),
                     },
 
+                    {
+                        "titulo": "Servicios recurrentes",
+                        "url": reverse("servicios:list"),
+                    }
+
                 ]
                 
             },
@@ -139,22 +134,7 @@ def sidebar_menu(request):
                 ]
             },
 
-            {
-                "titulo": "Servicios",
-                "icono": "📅",
-                "submenu": [
-                    {
-                        "titulo": "Crear",
-                        "url": reverse("servicios:create"),
-                    },
-
-                    {
-                        "titulo": "listado",
-                        "url": reverse("servicios:list"),
-                    },
-
-                ]
-            },
+        
 
         ]
     }

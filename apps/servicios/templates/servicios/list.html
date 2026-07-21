@@ -1,7 +1,7 @@
 {% extends 'core/base_dashboard.html' %}
 
 {% block title %}
-Servicios recurrentes
+Compromisos de pago
 {% endblock %}
 
 {% block content %}
@@ -13,21 +13,59 @@ Servicios recurrentes
         <div>
 
             <h1 class="text-3xl font-bold text-gray-900">
-                Servicios recurrentes
+                Compromisos de pago
             </h1>
 
             <p class="mt-1 text-gray-500">
-                Administra los servicios que generan gastos periódicos.
+                Servicios recurrentes y cuentas por pagar.
             </p>
 
         </div>
 
-        <a
-            href="{% url 'servicios:create' %}"
-            class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition"
-        >
-            + Nuevo servicio
-        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border mb-6">
+
+        <form method="get" class="p-5 flex flex-wrap gap-4 items-end">
+
+            <div>
+
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo
+                </label>
+
+                <select
+                    name="tipo"
+                    class="rounded-lg border-gray-300">
+
+                    <option value="todos"
+                        {% if tipo == "todos" %}selected{% endif %}>
+                        Todos
+                    </option>
+
+                    <option value="servicios"
+                        {% if tipo == "servicios" %}selected{% endif %}>
+                        Servicios recurrentes
+                    </option>
+
+                    <option value="cuentas"
+                        {% if tipo == "cuentas" %}selected{% endif %}>
+                        Cuentas por pagar
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+
+                Filtrar
+
+            </button>
+
+        </form>
 
     </div>
 
@@ -38,130 +76,255 @@ Servicios recurrentes
             <thead class="bg-gray-50">
 
                 <tr>
+                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
+                            Prioridad
+                    </th>
 
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
+                        Tipo
+                    </th>
+
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
                         Sucursal
                     </th>
 
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
-                        Servicio
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
+                        Concepto
                     </th>
 
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
                         Categoría
                     </th>
 
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
                         Proveedor
                     </th>
 
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
+                        Vence
+                    </th>
+
+                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase">
                         Monto
                     </th>
 
-                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
-                        Día de pago
-                    </th>
-
-                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">
+                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
                         Estado
                     </th>
 
-                    
+                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
+                        Acciones
+                    </th>
 
                 </tr>
 
             </thead>
 
-            <tbody class="divide-y divide-gray-100 bg-white">
+            <tbody class="divide-y divide-gray-100">
 
-                {% for servicio in servicios %}
+            {% for compromiso in compromisos %}
 
                 <tr class="hover:bg-gray-50">
 
-                    <td class="px-6 py-4">
-                        {{ servicio.sucursal }}
-                    </td>
-
-                    <td class="px-6 py-4 font-medium">
-                        {{ servicio.nombre }}
-                    </td>
-
-                    <td class="px-6 py-4">
-                        {{ servicio.categoria }}
-                    </td>
-
-                    <td class="px-6 py-4">
-                        {{ servicio.proveedor|default:"—" }}
-                    </td>
-
-                    <td class="px-6 py-4 text-right font-semibold">
-                        ${{ servicio.monto_estimado }}
-                    </td>
-
-                    <td class="px-6 py-4 text-center">
-                        {{ servicio.dia_pago }}
-                    </td>
-
                     <td class="px-6 py-4 text-center">
 
-                        {% if servicio.activo %}
+                        {% if compromiso.estado == "vencido" %}
 
-                            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
-                                Activo
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                                🔴 Alta
+                            </span>
+
+                        {% elif compromiso.estado == "proximo" %}
+
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                                🟠 Media
                             </span>
 
                         {% else %}
 
-                            <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
-                                Inactivo
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                                🟢 Baja
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+              
+                    
+                    <td class="px-6 py-4">
+
+                        {% if compromiso.tipo == "Servicio" %}
+
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+
+                                Servicio
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">
+
+                                Cuenta
+
                             </span>
 
                         {% endif %}
 
                     </td>
 
-                    
                     <td class="px-6 py-4">
 
-                        <div class="flex justify-center gap-2">
+                        {{ compromiso.sucursal }}
 
-                            <a
-                                href="{% url 'servicios:update' servicio.pk %}"
-                                class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm"
-                            >
-                                Editar
-                            </a>
+                    </td>
 
-                            <a
-                                href="{% url 'servicios:delete' servicio.pk %}"
-                                class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
-                            >
-                                Eliminar
-                            </a>
+                    <td class="px-6 py-4 font-medium">
 
-                            
+                        {{ compromiso.concepto }}
+
+                    </td>
+
+                    <td class="px-6 py-4">
+
+                        {{ compromiso.categoria }}
+
+                    </td>
+
+                    <td class="px-6 py-4">
+
+                        {{ compromiso.proveedor|default:"—" }}
+
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+
+                        {{ compromiso.fecha }}
+
+                    </td>
+
+                    <td class="px-6 py-4 text-right font-semibold">
+
+                        ${{ compromiso.monto }}
+
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+
+                        {% if compromiso.estado == "vencido" %}
+
+                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">
+
+                                Vencido
+
+                            </span>
+
+                        {% elif compromiso.estado == "proximo" %}
+
+                            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs">
+
+                                Próximo
+
+                            </span>
+
+                        {% elif compromiso.estado == "parcial" %}
+
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
+
+                                Parcial
+
+                            </span>
+
+                        {% elif compromiso.estado == "pendiente" %}
+
+                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
+
+                                Pendiente
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
+
+                                Pagado
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="px-6 py-4">
+
+                        <div class="flex justify-center gap-2 flex-wrap">
+
+                            {% if compromiso.tipo == "Servicio" %}
+
+                                <a
+                                    href="{% url 'servicios:update' compromiso.objeto.pk %}"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+                                    Ver
+                                </a>
+
+                                <a
+                                    href="{% url 'servicios:update' compromiso.objeto.pk %}"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+                                    Editar
+                                </a>
+
+                                <a
+                                    href="{% url 'servicios:registrar_pago' compromiso.objeto.pk %}"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                                    Registrar pago
+                                </a>
+
+                            {% else %}
+
+                                <a
+                                    href="{% url 'compras:cuenta_detail' compromiso.objeto.pk %}"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm">
+                                    Ver
+                                </a>
+
+                                <a
+                                    href="{% url 'compras:cuenta_edit' compromiso.objeto.pk %}"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+                                    Editar
+                                </a>
+
+                                <a
+                                    href="{% url 'compras:cuenta_pagar' compromiso.objeto.pk %}"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                                    Pagar
+                                </a>
+
+                            {% endif %}
 
                         </div>
 
                     </td>
 
+                
                 </tr>
 
-                {% empty %}
+
+                
+
+            {% empty %}
 
                 <tr>
 
-                    <td
-                        colspan="8"
-                        class="px-6 py-10 text-center text-gray-500"
-                    >
-                        No existen servicios registrados.
+                    <td colspan="8"
+                        class="text-center py-10 text-gray-500">
+
+                        No existen compromisos pendientes.
+
                     </td>
 
                 </tr>
 
-                {% endfor %}
+            {% endfor %}
 
             </tbody>
 
@@ -170,11 +333,5 @@ Servicios recurrentes
     </div>
 
 </div>
-
-
-
-
-
-
 
 {% endblock %}

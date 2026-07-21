@@ -35,16 +35,54 @@
 
         <div class="p-5 border-b">
 
-            <form method="get">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                <input
-                    type="text"
-                    name="q"
-                    value="{{ request.GET.q }}"
-                    placeholder="Buscar proveedor o descripción..."
-                    class="w-full rounded-lg border-gray-300">
+    <input
+        type="text"
+        name="q"
+        value="{{ q }}"
+        placeholder="Buscar proveedor o descripción..."
+        class="rounded-lg border-gray-300">
 
-            </form>
+    <select
+        name="estado"
+        class="rounded-lg border-gray-300">
+
+        <option value="abiertas"
+            {% if estado == "abiertas" %}selected{% endif %}>
+            Pendientes y vencidas
+        </option>
+
+        <option value="pendientes"
+            {% if estado == "pendientes" %}selected{% endif %}>
+            Pendientes
+        </option>
+
+        <option value="parciales"
+            {% if estado == "parciales" %}selected{% endif %}>
+            Parciales
+        </option>
+
+        <option value="vencidas"
+            {% if estado == "vencidas" %}selected{% endif %}>
+            Vencidas
+        </option>
+
+        <option value="pagadas"
+            {% if estado == "pagadas" %}selected{% endif %}>
+            Pagadas
+        </option>
+
+    </select>
+
+    <button
+        class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
+
+        Filtrar
+
+    </button>
+
+</form>
 
         </div>
 
@@ -156,6 +194,13 @@
                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
 
                                     Ver
+
+                                </a>
+
+                                <a href="{% url 'compras:cuenta_edit' cuenta.pk %}"
+                                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">
+
+                                    Editar
 
                                 </a>
 

@@ -7,6 +7,7 @@ from .views import (
     ProveedorDeleteView,
     CuentaPorPagarListView,
     CuentaPorPagarCreateView,
+    CuentaPorPagarUpdateView,
     CuentaPorPagarDeleteView,
     RegistrarPagoCuentaView,
     CuentaPorPagarDetailView,
@@ -63,6 +64,12 @@ urlpatterns = [
         "cuentas/<int:pk>/eliminar/",
         CuentaPorPagarDeleteView.as_view(),
         name="cuenta_delete",
+    ),
+
+    path(
+        "cuentas/<int:pk>/edit/",
+        CuentaPorPagarUpdateView.as_view(),
+        name="cuenta_edit",
     ),
 
     path(

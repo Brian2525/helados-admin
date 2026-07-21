@@ -33,10 +33,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         servicios_por_vencer = []
         servicios_vencidos = []
+        if self.request.user.is_superuser:
+            servicios = ServicioRecurrente.objects.filter(
+                activo=True
+            )
+        else:
+            servicios = ServicioRecurrente.objects.filter(
+                activo=True
+            ).filter(
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
 
-        for servicio in ServicioRecurrente.objects.filter(
-            activo=True
-        ):
+        for servicio in servicios:
 
             pagado = PagoServicio.objects.filter(
                 servicio=servicio,
