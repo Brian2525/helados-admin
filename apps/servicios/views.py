@@ -265,7 +265,7 @@ class RegistrarPagoServicioView(LoginRequiredMixin, CreateView):
     template_name = "servicios/pago_form.html"
 
     success_url = reverse_lazy(
-        "servicios:pendientes"
+        "servicios:list"
     )
 
     def get_initial(self):
