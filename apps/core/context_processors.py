@@ -115,10 +115,7 @@ def sidebar_menu(request):
                 "icono": "👥",
                 "submenu": [
 
-                    {
-                        "titulo": "Nóminas pendientes",
-                        "url": reverse("nomina:pendientes"),
-                    },
+                    
 
                     {
                         "titulo": "Historial",

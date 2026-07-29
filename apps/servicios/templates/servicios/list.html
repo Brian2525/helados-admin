@@ -53,6 +53,11 @@ Compromisos de pago
                         Cuentas por pagar
                     </option>
 
+                    <option value="nomina"
+                        {% if tipo == "nomina" %}selected{% endif %}>
+                        Nómina
+                    </option>
+
                 </select>
 
             </div>
@@ -160,6 +165,13 @@ Compromisos de pago
                                 Servicio
 
                             </span>
+                        {% elif compromiso.tipo == "Nomina" %}
+
+                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+
+                                Nómina
+
+                            </span>
 
                         {% else %}
 
@@ -205,7 +217,7 @@ Compromisos de pago
 
                     <td class="px-6 py-4 text-right font-semibold">
 
-                        ${{ compromiso.monto }}
+                        ${{ compromiso.monto |floatformat:2 }}
 
                     </td>
 
@@ -275,6 +287,15 @@ Compromisos de pago
 
                                 <a
                                     href="{% url 'servicios:registrar_pago' compromiso.objeto.pk %}"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                                    Registrar pago
+                                </a>
+
+
+                             {% elif compromiso.tipo == "Nomina" %}
+
+                                <a
+                                    href="{% url 'nomina:pagar' compromiso.objeto.pk %}"
                                     class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
                                     Registrar pago
                                 </a>

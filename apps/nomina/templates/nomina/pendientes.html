@@ -12,12 +12,6 @@ Nóminas pendientes
 
 </h1>
 
-<a
-href="{% url 'nomina:pagar_todo' %}"
-class="bg-green-600 text-white px-5 py-2 rounded-lg"
->
-
-Pagar todo
 
 </a>
 
@@ -89,7 +83,7 @@ Sueldo
 
 <td>
 
-${{ empleado.sueldo }}
+${{ empleado.salario_periodo|floatformat:2 }}
 
 </td>
 

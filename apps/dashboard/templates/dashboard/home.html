@@ -28,10 +28,7 @@ Dashboard
                         Mes
                     </label>
 
-                    <select
-                        name="mes"
-                        class="w-full rounded-lg border-gray-300"
-                    >
+                    <select name="mes"class="w-full rounded-lg border-gray-300">
 
                         <option value="1" {% if mes_seleccionado == 1 %}selected{% endif %}>Enero</option>
                         <option value="2" {% if mes_seleccionado == 2 %}selected{% endif %}>Febrero</option>
@@ -135,7 +132,7 @@ Dashboard
                 </p>
 
                 <h2 class="text-3xl font-bold mt-2">
-                    ${{ total_gastos }}
+                    ${{ total_gastos |floatformat:2 }}
                 </h2>
 
             </div>
@@ -147,7 +144,7 @@ Dashboard
                 </p>
 
                 <h2 class="text-3xl font-bold mt-2">
-                    ${{ utilidad }}
+                    ${{ utilidad |floatformat:2 }}
                 </h2>
 
             </div>
@@ -159,7 +156,7 @@ Dashboard
                 </p>
 
                 <h2 class="text-3xl font-bold mt-2">
-                    ${{ ventas_efectivo }}
+                    ${{ ventas_efectivo |floatformat:2 }}
                 </h2>
 
             </div>

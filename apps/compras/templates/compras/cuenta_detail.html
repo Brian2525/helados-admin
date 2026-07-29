@@ -25,11 +25,22 @@
                 ← Regresar a la lista
             </a>
 
+             <button
+                type="button"
+                id="btnProgramarPagos"
+                class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
+
+                Programar pagos
+
+            </button>
+
             <a href="{% url 'compras:cuenta_pagar' cuenta.id %}"
                class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
 
                 Registrar pago
             </a>
+
+            
 
         </div>
 
@@ -164,6 +175,164 @@
     </div>
 
 
+<!-- Programación de pagos -->
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+
+    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+
+        <h2 class="text-lg font-semibold">
+
+            Programación de pagos
+
+        </h2>
+
+        {% if cuenta.programacion.exists %}
+
+            <span class="text-sm text-gray-500">
+
+                {{ cuenta.programacion.count }} mensualidades
+
+            </span>
+
+        {% endif %}
+
+    </div>
+
+    <div class="overflow-x-auto">
+
+        <table class="min-w-full divide-y divide-gray-200">
+
+            <thead class="bg-gray-50">
+
+                <tr>
+
+                    <th class="px-6 py-3 text-left">
+                        Pago
+                    </th>
+
+                    <th class="px-6 py-3 text-left">
+                        Fecha de vencimiento
+                    </th>
+
+                    <th class="px-6 py-3 text-right">
+                        Monto
+                    </th>
+
+                    <th class="px-6 py-3 text-center">
+                        Estado
+                    </th>
+
+                    <th class="px-6 py-3 text-center">
+                        Acción
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody class="divide-y divide-gray-100">
+
+            {% for programacion in cuenta.programacion.all %}
+
+                <tr>
+
+                    <td class="px-6 py-4 font-medium">
+
+                        Pago {{ programacion.numero }}
+
+                    </td>
+
+                    <td class="px-6 py-4">
+
+                        {{ programacion.fecha_vencimiento }}
+
+                    </td>
+
+                    <td class="px-6 py-4 text-right font-semibold">
+
+                        ${{ programacion.monto }}
+
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+
+                        {% if programacion.pago %}
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+
+                                Pagado
+
+                            </span>
+
+                        {% elif programacion.fecha_vencimiento < today %}
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs">
+
+                                Vencido
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="inline-flex px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs">
+
+                                Pendiente
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+
+                        {% if not programacion.pago %}
+
+                            <a
+                                href="{% url 'compras:cuenta_pagar' cuenta.pk %}?programacion={{ programacion.pk }}"
+                                class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">
+
+                                Pagar
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="text-gray-400">
+
+                                —
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+            {% empty %}
+
+                <tr>
+
+                    <td colspan="5" class="text-center py-8 text-gray-500">
+
+                        Esta cuenta aún no tiene una programación de pagos.
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
     <!-- Historial de pagos -->
 
     <div class="bg-white rounded-xl shadow overflow-hidden">
@@ -261,5 +430,108 @@
     </div>
 
 </div>
+
+
+
+<!-- Modal -->
+
+<div
+    id="modalProgramacion"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+
+        <div class="border-b px-6 py-4 flex justify-between items-center">
+
+            <h2 class="text-xl font-semibold">
+
+                Programar pagos
+
+            </h2>
+
+            <button
+                id="cerrarModal"
+                class="text-gray-500 hover:text-gray-700 text-2xl">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <form method="post"
+      action="{% url 'compras:programar_pagos' cuenta.pk %}">
+    {% csrf_token %}
+
+    {{ programacion_form.as_p }}
+
+    <div class="mt-6 flex justify-end gap-2">
+
+        <button
+            type="button"
+            onclick="cerrarModalProgramacion()"
+            class="px-4 py-2 rounded border">
+
+            Cancelar
+
+        </button>
+
+        <button
+            type="submit"
+            class="px-4 py-2 rounded bg-indigo-600 text-white">
+
+            Generar programación
+
+        </button>
+
+    </div>
+
+    </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const modal = document.getElementById("modalProgramacion");
+
+    document
+    .getElementById("btnProgramarPagos")
+    .addEventListener("click", function(){
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+    });
+
+    function cerrarModal(){
+
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+
+    }
+
+    document
+    .getElementById("cerrarModal")
+    .addEventListener("click", cerrarModal);
+
+    document
+    .getElementById("cancelarModal")
+    .addEventListener("click", cerrarModal);
+
+    modal.addEventListener("click", function(e){
+
+        if(e.target === modal){
+
+            cerrarModal();
+
+        }
+
+    });
+
+</script>
+
 
 {% endblock %}

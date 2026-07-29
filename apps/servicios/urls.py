@@ -39,10 +39,6 @@ urlpatterns = [
     
     path("pendientes/", ServiciosPendientesView.as_view(), name="pendientes"),
 
-    path(
-    "pagar/<int:pk>/",
-    RegistrarPagoServicioView.as_view(),
-    name="registrar_pago"
-),
+    path("pagar/<int:pk>/",RegistrarPagoServicioView.as_view(),name="registrar_pago"),
 
 ]

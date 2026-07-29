@@ -216,3 +216,39 @@ class PagoCuentaPorPagar(models.Model):
             total=Sum("monto")
 
         )["total"] or 0
+
+
+
+
+
+
+class ProgramacionPago(models.Model):
+
+    cuenta = models.ForeignKey(
+        CuentaPorPagar,
+        related_name="programacion",
+        on_delete=models.CASCADE
+    )
+
+    numero = models.PositiveSmallIntegerField()
+
+    fecha_vencimiento = models.DateField()
+
+    monto = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    pago = models.OneToOneField(
+        PagoCuentaPorPagar,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["numero"]

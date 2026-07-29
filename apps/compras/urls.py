@@ -11,6 +11,7 @@ from .views import (
     CuentaPorPagarDeleteView,
     RegistrarPagoCuentaView,
     CuentaPorPagarDetailView,
+    ProgramarPagosView,
 )
 
 app_name = "compras"
@@ -66,17 +67,12 @@ urlpatterns = [
         name="cuenta_delete",
     ),
 
-    path(
-        "cuentas/<int:pk>/edit/",
-        CuentaPorPagarUpdateView.as_view(),
-        name="cuenta_edit",
-    ),
+    path("cuentas/<int:pk>/edit/",CuentaPorPagarUpdateView.as_view(),name="cuenta_edit",),
 
-    path(
-    "cuentas/<int:pk>/pagar/",
-    RegistrarPagoCuentaView.as_view(),
-    name="cuenta_pagar",
-),
+    path("cuentas/<int:pk>/pagar/",RegistrarPagoCuentaView.as_view(),name="cuenta_pagar",),
+
+    path("cuentas/<int:pk>/programar/",ProgramarPagosView.as_view(),name="programar_pagos"),
+
 
 
 

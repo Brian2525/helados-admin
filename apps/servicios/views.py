@@ -1,4 +1,10 @@
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from datetime import timedelta
+
+from decimal import Decimal
+
 from datetime import date
 
 from django.views.generic import (
@@ -10,6 +16,7 @@ from django.views.generic import (
 )
 
 from .models import ServicioRecurrente, PagoServicio
+from apps.nomina.models import PagoNomina, Empleado
 from apps.compras.models import CuentaPorPagar
 
 from .forms import ServicioRecurrenteForm, PagoServicioForm
@@ -123,6 +130,87 @@ class ServicioRecurrenteListView(LoginRequiredMixin, TemplateView):
                     "objeto": cuenta,
                     "dias_restantes": (cuenta.fecha_vencimiento - hoy).days,
                 })
+        # ============================
+        # NÓMINA
+        # ============================
+
+        empleados = Empleado.objects.filter(
+            activo=True
+        ).select_related(
+            "sucursal"
+        )
+
+        if not self.request.user.is_superuser:
+            empleados = empleados.filter(
+                sucursal__usuarios=self.request.user
+            )
+
+        if tipo in ["todos", "nomina"]:
+
+            for empleado in empleados:
+
+                if empleado.tipo_nomina == "SEMANA":
+
+                    if hoy.weekday() <= 4:
+                        fecha_pago = hoy + timedelta(
+                            days=(4 - hoy.weekday())
+                        )
+                    else:
+                        fecha_pago = hoy + timedelta(days=7)
+
+                else:
+
+                    if hoy.weekday() <= 6:
+                        fecha_pago = hoy + timedelta(
+                            days=(6 - hoy.weekday())
+                        )
+                    else:
+                        fecha_pago = hoy + timedelta(days=7)
+
+                ultimo_pago = empleado.pagos.order_by(
+                    "-fecha_pago"
+                ).first()
+
+                if ultimo_pago:
+
+                    if (fecha_pago - ultimo_pago.fecha_pago).days < 7:
+                        continue
+
+                dias = (fecha_pago - hoy).days
+
+                if dias < 0:
+                    estado = "vencido"
+                elif dias <= 5:
+                    estado = "proximo"
+                else:
+                    estado = "pendiente"
+
+                compromisos.append({
+
+                    "tipo": "Nomina",
+
+                    "sucursal": empleado.sucursal,
+
+                    "concepto": empleado.nombre,
+
+                    "categoria": "Nómina",
+
+                    "proveedor": "Empleado",
+
+                    "monto": empleado.salario_periodo,
+
+                    "fecha": fecha_pago,
+
+                    "estado": estado,
+
+                    "objeto": empleado,
+
+                    "dias_restantes": dias,
+
+                })
+
+
+
 
         # ============================
         # ORDENAR POR FECHA
@@ -247,6 +335,9 @@ class ServiciosPendientesView(LoginRequiredMixin, TemplateView):
 
 class RegistrarPagoServicioView(LoginRequiredMixin, CreateView):
 
+
+
+
     model = PagoServicio
 
     def get_queryset(self):
@@ -281,3 +372,6 @@ class RegistrarPagoServicioView(LoginRequiredMixin, CreateView):
         initial["fecha_pago"] = date.today()
 
         return initial
+    
+
+

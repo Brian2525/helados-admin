@@ -151,7 +151,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         ventas_tarjeta = (
             totales_ventas["tarjeta"]
-            or Decimal("0.00")
+            or Decimal("0.0")
         )
 
         total_ventas = (
@@ -163,7 +163,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             gastos.aggregate(
                 total=Sum("monto")
             )["total"]
-            or Decimal("0.00")
+            or Decimal("0")
         )
 
         utilidad = (

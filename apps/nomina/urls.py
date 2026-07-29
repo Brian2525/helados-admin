@@ -7,8 +7,7 @@ from .views import (
     EmpleadoDeleteView,
     NominaPendienteListView,
     PagoNominaListView,
-    registrar_todos,
-    registrar_pago,
+    PagoNominaCreateView
 )
 
 app_name = "nomina"
@@ -52,14 +51,10 @@ urlpatterns = [
     ),
 
     path(
-        "pagar/<int:empleado_id>/",
-        registrar_pago,
-        name="pagar"
-    ),
+    "pagar/<int:empleado_id>/",
+    PagoNominaCreateView.as_view(),
+    name="pagar"
+),
 
-    path(
-        "pagar-todo/",
-        registrar_todos,
-        name="pagar_todo"
-    ),
+   
 ]

@@ -66,6 +66,14 @@ class ProveedorForm(TailwindModelForm):
 
 class CuentaPorPagarForm(TailwindModelForm):
 
+    meses = forms.IntegerField(
+        required=False,
+        initial=1,
+        min_value=1,
+        label="Número de mensualidades",
+        help_text="1 = pago único"
+    )
+
     class Meta:
 
         model = CuentaPorPagar
@@ -85,25 +93,40 @@ class CuentaPorPagarForm(TailwindModelForm):
 
             "fecha": forms.DateInput(
                 attrs={
-                    "type": "date"
+                    "type": "date",
                 }
             ),
 
             "fecha_vencimiento": forms.DateInput(
                 attrs={
-                    "type": "date"
+                    "type": "date",
+                }
+            ),
+
+            "descripcion": forms.TextInput(
+                attrs={
+                    "placeholder": "Ej. Compra de refrigerador, Amazon, Equipo..."
+                }
+            ),
+
+            "monto_total": forms.NumberInput(
+                attrs={
+                    "step": "0.01",
+                    "min": "0"
                 }
             ),
 
             "observaciones": forms.Textarea(
                 attrs={
-                    "rows": 3
+                    "rows": 3,
+                    "placeholder": "Notas opcionales..."
                 }
             ),
 
         }
 
 class PagoCuentaForm(TailwindModelForm):
+
 
     class Meta:
         model = PagoCuentaPorPagar
@@ -128,3 +151,13 @@ class PagoCuentaForm(TailwindModelForm):
                 }
             ),
         }
+
+
+class ProgramacionPagoForm(forms.Form):
+
+    meses = forms.IntegerField(
+        min_value=2,
+        max_value=60,
+        initial=3,
+        label="Número de mensualidades"
+    )
