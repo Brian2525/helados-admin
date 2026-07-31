@@ -1,3 +1,7 @@
+
+deploy.sh
+deploy.sh.save
+
 # Python
 __pycache__/
 *.py[cod]
@@ -14,7 +18,7 @@ media/
 
 # Static collected
 staticfiles/
-
+static/
 # Environment variables
 .env
 

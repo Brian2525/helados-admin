@@ -13,6 +13,7 @@ class Sucursal(models.Model):
     on_delete=models.CASCADE,
     related_name="sucursales_propias",
     blank=True,
+    null=True,
 )
 
 
