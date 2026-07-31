@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('compras', '0005_programacionpago'),
-        ('sucursales', '0005_alter_sucursal_nombre_and_more'),
+        ('sucursales', '0003_sucursal_propietario_alter_sucursal_nombre_and_more'),
     ]
 
     operations = [
