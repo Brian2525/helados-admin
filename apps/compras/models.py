@@ -6,9 +6,16 @@ from apps.sucursales.models import Sucursal
 from decimal import Decimal
 from django.db.models import Sum
 from apps.gastos.models import Gasto, CategoriaGasto
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Proveedor(models.Model):
+
+    propietario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="proveedores",
+    )
 
     nombre = models.CharField(max_length=200)
 

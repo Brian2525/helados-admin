@@ -21,9 +21,10 @@ from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar, ProgramacionP
 from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm, ProgramacionPagoForm
 from django.db.models import Q
 from django.utils import timezone
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,PropietarioQuerysetMixin
 
 
-class ProveedorListView(LoginRequiredMixin, ListView):
+class ProveedorListView(PropietarioQuerysetMixin,LoginRequiredMixin, ListView):
 
     model = Proveedor
 
@@ -36,6 +37,9 @@ class ProveedorListView(LoginRequiredMixin, ListView):
     ordering = ["nombre"]
 
 
+
+
+
 class ProveedorCreateView(LoginRequiredMixin, CreateView):
 
     model = Proveedor
@@ -45,6 +49,10 @@ class ProveedorCreateView(LoginRequiredMixin, CreateView):
     form_class = ProveedorForm
 
     success_url = reverse_lazy("compras:proveedor_list")
+
+    def form_valid(self, form):
+        form.instance.propietario = self.request.user
+        return super().form_valid(form)
 
 
 class ProveedorUpdateView(LoginRequiredMixin, UpdateView):
@@ -58,7 +66,7 @@ class ProveedorUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("compras:proveedor_list")
 
 
-class ProveedorDeleteView(LoginRequiredMixin, DeleteView):
+class ProveedorDeleteView( LoginRequiredMixin, DeleteView):
 
     model = Proveedor
 
@@ -67,7 +75,7 @@ class ProveedorDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("compras:proveedor_list")
 
 
-class CuentaPorPagarListView(LoginRequiredMixin, ListView):
+class CuentaPorPagarListView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, ListView):
 
     model = CuentaPorPagar
     template_name = "compras/cuenta_list.html"
@@ -78,10 +86,6 @@ class CuentaPorPagarListView(LoginRequiredMixin, ListView):
 
         queryset = super().get_queryset()
 
-        if not self.request.user.is_superuser:
-            queryset = queryset.filter(
-                sucursal__usuarios=self.request.user
-            )
 
         q = self.request.GET.get("q")
        
@@ -116,7 +120,7 @@ class CuentaPorPagarListView(LoginRequiredMixin, ListView):
 
 
 
-class CuentaPorPagarCreateView(LoginRequiredMixin, CreateView):
+class CuentaPorPagarCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = CuentaPorPagar
     form_class = CuentaPorPagarForm
@@ -168,7 +172,7 @@ class CuentaPorPagarCreateView(LoginRequiredMixin, CreateView):
         )
     
 
-class CuentaPorPagarUpdateView(LoginRequiredMixin, UpdateView):
+class CuentaPorPagarUpdateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
 
     model = CuentaPorPagar
 
@@ -185,7 +189,7 @@ class CuentaPorPagarUpdateView(LoginRequiredMixin, UpdateView):
 
 
 
-class RegistrarPagoCuentaView(LoginRequiredMixin,CreateView):
+class RegistrarPagoCuentaView( SucursalQuerysetMixin, SucursalFormMixin,LoginRequiredMixin,CreateView):
 
     model = PagoCuentaPorPagar
 
@@ -209,7 +213,7 @@ class RegistrarPagoCuentaView(LoginRequiredMixin,CreateView):
         return super().form_valid(form)
 
 
-class CuentaPorPagarDeleteView(LoginRequiredMixin,DeleteView):
+class CuentaPorPagarDeleteView(SucursalQuerysetMixin, LoginRequiredMixin,DeleteView):
 
     model = CuentaPorPagar
 
@@ -225,7 +229,7 @@ class CuentaPorPagarDeleteView(LoginRequiredMixin,DeleteView):
 
 
 
-class CuentaPorPagarDetailView(LoginRequiredMixin, DetailView):
+class CuentaPorPagarDetailView(SucursalQuerysetMixin,LoginRequiredMixin, DetailView):
 
     model = CuentaPorPagar
 
@@ -251,7 +255,7 @@ class CuentaPorPagarDetailView(LoginRequiredMixin, DetailView):
 
 
 
-class RegistrarPagoCuentaView(LoginRequiredMixin, CreateView):
+class RegistrarPagoCuentaView(SucursalQuerysetMixin,LoginRequiredMixin, CreateView):
     model = PagoCuentaPorPagar
     form_class = PagoCuentaForm
     template_name = "compras/pago_form.html"
@@ -274,7 +278,7 @@ class RegistrarPagoCuentaView(LoginRequiredMixin, CreateView):
         )
     
 
-class ProgramarPagosView(LoginRequiredMixin, View):
+class ProgramarPagosView(SucursalQuerysetMixin,LoginRequiredMixin, View):
 
     def post(self, request, pk):
 

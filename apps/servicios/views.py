@@ -21,9 +21,10 @@ from apps.compras.models import CuentaPorPagar
 
 from .forms import ServicioRecurrenteForm, PagoServicioForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin
 
 
-class ServicioRecurrenteListView(LoginRequiredMixin, TemplateView):
+class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, TemplateView):
 
     template_name = "servicios/list.html"
 
@@ -42,17 +43,14 @@ class ServicioRecurrenteListView(LoginRequiredMixin, TemplateView):
         # SERVICIOS RECURRENTES
         # ============================
 
-        servicios = ServicioRecurrente.objects.filter(
+        servicios = self.filtrar_por_sucursal_usuario(
+        ServicioRecurrente.objects.filter(
             activo=True
         ).select_related(
             "sucursal",
             "categoria"
         )
-
-        if not self.request.user.is_superuser:
-            servicios = servicios.filter(
-                sucursal__usuarios=self.request.user
-            )
+    )
 
         if tipo in ["todos", "servicios"]:
 
@@ -100,16 +98,14 @@ class ServicioRecurrenteListView(LoginRequiredMixin, TemplateView):
         # CUENTAS POR PAGAR
         # ============================
 
-        cuentas = CuentaPorPagar.objects.select_related(
+        cuentas = self.filtrar_por_sucursal_usuario(
+        CuentaPorPagar.objects.select_related(
             "proveedor",
             "categoria",
             "sucursal"
         )
+    )
 
-        if not self.request.user.is_superuser:
-            cuentas = cuentas.filter(
-                sucursal__usuarios=self.request.user
-            )
 
         if tipo in ["todos", "cuentas"]:
 
@@ -134,16 +130,15 @@ class ServicioRecurrenteListView(LoginRequiredMixin, TemplateView):
         # NÓMINA
         # ============================
 
-        empleados = Empleado.objects.filter(
+        empleados = self.filtrar_por_sucursal_usuario(
+        Empleado.objects.filter(
             activo=True
         ).select_related(
             "sucursal"
         )
+    )
 
-        if not self.request.user.is_superuser:
-            empleados = empleados.filter(
-                sucursal__usuarios=self.request.user
-            )
+
 
         if tipo in ["todos", "nomina"]:
 
@@ -226,19 +221,10 @@ class ServicioRecurrenteListView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ServicioRecurrenteCreateView(LoginRequiredMixin, CreateView):
+class ServicioRecurrenteCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = ServicioRecurrente
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
+    
 
     form_class = ServicioRecurrenteForm
 
@@ -249,19 +235,10 @@ class ServicioRecurrenteCreateView(LoginRequiredMixin, CreateView):
     )
 
 
-class ServicioRecurrenteUpdateView(LoginRequiredMixin, UpdateView):
+class ServicioRecurrenteUpdateView(SucursalFormMixin, SucursalQuerysetMixin,LoginRequiredMixin, UpdateView):
 
     model = ServicioRecurrente
-    def get_queryset(self):
 
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
 
     form_class = ServicioRecurrenteForm
 
@@ -272,19 +249,10 @@ class ServicioRecurrenteUpdateView(LoginRequiredMixin, UpdateView):
     )
 
 
-class ServicioRecurrenteDeleteView(LoginRequiredMixin, DeleteView):
+class ServicioRecurrenteDeleteView(SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
 
     model = ServicioRecurrente
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
+    
 
     template_name = "servicios/delete.html"
 
@@ -292,7 +260,7 @@ class ServicioRecurrenteDeleteView(LoginRequiredMixin, DeleteView):
         "servicios:list"
     )
 
-class ServiciosPendientesView(LoginRequiredMixin, TemplateView):
+class ServiciosPendientesView(SucursalQuerysetMixin, LoginRequiredMixin, TemplateView):
 
     template_name = "servicios/pendientes.html"
 
@@ -333,24 +301,14 @@ class ServiciosPendientesView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class RegistrarPagoServicioView(LoginRequiredMixin, CreateView):
+class RegistrarPagoServicioView(SucursalQuerysetMixin, SucursalFormMixin,LoginRequiredMixin, CreateView):
 
 
 
 
     model = PagoServicio
 
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
-
+   
     form_class = PagoServicioForm
 
     template_name = "servicios/pago_form.html"

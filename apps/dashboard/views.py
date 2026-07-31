@@ -11,11 +11,11 @@ from apps.ventas.models import ResumenSemanal
 from apps.sucursales.models import Sucursal
 from apps.servicios.models import ServicioRecurrente, PagoServicio
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.core.mixins import SucursalPermissionMixin
 
 
 
-
-class DashboardView(LoginRequiredMixin, TemplateView):
+class DashboardView(SucursalPermissionMixin, LoginRequiredMixin, TemplateView):
 
     template_name = "dashboard/home.html"
 
@@ -85,13 +85,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         sucursal_id = self.request.GET.get("sucursal")
 
-        if self.request.user.is_superuser:
-            sucursales = Sucursal.objects.all()
-        else:
-            sucursales = Sucursal.objects.filter(
-                Q(propietario=self.request.user) |
-                Q(usuarios=self.request.user)
-            ).distinct()
+        sucursales = self.get_sucursales_usuario()
 
         ultimo_dia = monthrange(
             anio,

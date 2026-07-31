@@ -9,29 +9,30 @@ from django.views.generic import (
 from .models import ResumenSemanal
 from .forms import ResumenSemanalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin
 
 
-class ResumenSemanalListView(LoginRequiredMixin,ListView):
+class ResumenSemanalListView(SucursalQuerysetMixin, LoginRequiredMixin,ListView ):
     model = ResumenSemanal
     template_name = "ventas/list.html"
     context_object_name = "resumenes"
 
 
-class ResumenSemanalCreateView(LoginRequiredMixin, CreateView):
+class ResumenSemanalCreateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
     model = ResumenSemanal
     form_class = ResumenSemanalForm
     template_name = "ventas/create.html"
     success_url = reverse_lazy("resumen_list")
 
 
-class ResumenSemanalUpdateView(LoginRequiredMixin, UpdateView):
+class ResumenSemanalUpdateView(SucursalQuerysetMixin,  SucursalFormMixin, LoginRequiredMixin, UpdateView):
     model = ResumenSemanal
     form_class = ResumenSemanalForm
     template_name = "ventas/update.html"
     success_url = reverse_lazy("resumen_list")
 
 
-class ResumenSemanalDeleteView(LoginRequiredMixin, DeleteView):
+class ResumenSemanalDeleteView(SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
     model = ResumenSemanal
     template_name = "ventas/delete.html"
     success_url = reverse_lazy("resumen_list")

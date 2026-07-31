@@ -12,23 +12,14 @@ from .forms import SucursalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin, SucursalPermissionMixin
 
 @method_decorator(login_required, name="dispatch")
-class SucursalListView(ListView):
+class SucursalListView(SucursalPermissionMixin, LoginRequiredMixin, ListView):
     model = Sucursal
     template_name = "sucursales/list.html"
     context_object_name = "sucursales"
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            Q(propietario=self.request.user) |
-            Q(usuarios=self.request.user)
-        ).distinct()
 
 
 class SucursalCreateView(LoginRequiredMixin, CreateView):
@@ -37,46 +28,36 @@ class SucursalCreateView(LoginRequiredMixin, CreateView):
     template_name = "sucursales/form.html"
     success_url = reverse_lazy("sucursales:list")
 
+
     def form_valid(self, form):
-        # El usuario que crea la sucursal será el propietario
         form.instance.propietario = self.request.user
 
-        response = super().form_valid(form)
+        if Sucursal.objects.filter(
+            propietario=self.request.user,
+            nombre=form.instance.nombre,
+        ).exists():
+            form.add_error(
+                "nombre",
+                "Ya tienes una sucursal con ese nombre."
+            )
+            return self.form_invalid(form)
 
-        # El propietario también queda asignado a la sucursal
-        self.object.usuarios.add(self.request.user)
+        return super().form_valid(form)
+        
+    
 
-        return response
 
 
-class SucursalUpdateView(LoginRequiredMixin, UpdateView):
+class SucursalUpdateView( SucursalFormMixin, LoginRequiredMixin, UpdateView):
     model = Sucursal
     form_class = SucursalForm
     template_name = "sucursales/form.html"
     success_url = reverse_lazy("sucursales:list")
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            propietario=self.request.user
-        )
 
 
-class SucursalDeleteView(LoginRequiredMixin, DeleteView):
+class SucursalDeleteView( LoginRequiredMixin, DeleteView):
     model = Sucursal
     template_name = "sucursales/delete.html"
     success_url = reverse_lazy("sucursales:list")
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            propietario=self.request.user
-        )

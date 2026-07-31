@@ -29,3 +29,7 @@ Thumbs.db
 settings.py
 
 helados/settings.py
+
+deploy.sh
+.sh
+

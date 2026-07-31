@@ -20,9 +20,10 @@ from django.views.generic import (
 from .models import Empleado, PagoNomina
 from .forms import EmpleadoForm, PagoNominaForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin
 
 
-class EmpleadoListView(LoginRequiredMixin, ListView):
+class EmpleadoListView(SucursalQuerysetMixin,LoginRequiredMixin, ListView):
 
     model = Empleado
 
@@ -31,7 +32,7 @@ class EmpleadoListView(LoginRequiredMixin, ListView):
     context_object_name = "empleados"
 
 
-class EmpleadoCreateView(LoginRequiredMixin, CreateView):
+class EmpleadoCreateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = Empleado
 
@@ -44,7 +45,7 @@ class EmpleadoCreateView(LoginRequiredMixin, CreateView):
     )
 
 
-class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
+class EmpleadoUpdateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
 
     model = Empleado
 
@@ -57,19 +58,10 @@ class EmpleadoUpdateView(LoginRequiredMixin, UpdateView):
     )
 
 
-class EmpleadoDeleteView(LoginRequiredMixin, DeleteView):
+class EmpleadoDeleteView( LoginRequiredMixin, DeleteView):
 
     model = Empleado
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        if self.request.user.is_superuser:
-            return queryset
-
-        return queryset.filter(
-            sucursal__usuarios=self.request.user
-        )
+   
 
     template_name = "nomina/empleado_delete.html"
 
@@ -78,7 +70,7 @@ class EmpleadoDeleteView(LoginRequiredMixin, DeleteView):
     )
 
 
-class NominaPendienteListView(LoginRequiredMixin, ListView):
+class NominaPendienteListView(SucursalQuerysetMixin, LoginRequiredMixin, ListView):
 
     template_name = "nomina/pendientes.html"
     context_object_name = "empleados"
@@ -122,7 +114,9 @@ class NominaPendienteListView(LoginRequiredMixin, ListView):
     
 
 
-class PagoNominaListView(LoginRequiredMixin, ListView):
+class PagoNominaListView( LoginRequiredMixin,SucursalPermissionMixin, ListView):
+
+    sucursal_lookup = "empleado__sucursal"
 
     model = PagoNomina
 
@@ -131,6 +125,17 @@ class PagoNominaListView(LoginRequiredMixin, ListView):
     context_object_name = "pagos"
 
     paginate_by = 20
+
+
+    def get_queryset(self):
+        queryset = PagoNomina.objects.select_related(
+            "empleado",
+            "empleado__sucursal",
+        )
+
+        return self.filtrar_por_sucursal_usuario(queryset)
+
+
 
 
 @login_required
@@ -162,7 +167,7 @@ def registrar_pago(request, empleado_id):
 
 
 
-class PagoNominaCreateView(LoginRequiredMixin, CreateView):
+class PagoNominaCreateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = PagoNomina
 

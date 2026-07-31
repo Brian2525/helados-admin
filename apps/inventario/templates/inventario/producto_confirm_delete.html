@@ -1,0 +1,47 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-lg mx-auto">
+
+    <div class="bg-white rounded-xl shadow p-8">
+
+        <h1 class="text-2xl font-bold mb-6">
+            Eliminar producto
+        </h1>
+
+        <p class="mb-8">
+
+            ¿Seguro que deseas eliminar
+            <strong>{{ object.nombre }}</strong>?
+
+        </p>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="flex justify-end gap-3">
+
+                <a
+                    href="{% url 'inventario:producto_list' %}"
+                    class="border px-4 py-2 rounded-lg"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    class="bg-red-600 text-white px-5 py-2 rounded-lg"
+                >
+                    Eliminar
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
