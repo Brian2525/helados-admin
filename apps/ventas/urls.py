@@ -9,6 +9,7 @@ from .views import (
     VentaDiariaCreateView,
     VentaDiariaUpdateView,
     VentaDiariaDeleteView,
+    VentaDiariaCompletadaView,
 )
 
 app_name = "ventas"
@@ -60,6 +61,13 @@ urlpatterns = [
         VentaDiariaCreateView.as_view(),
         name="venta_diaria_create",
     ),
+
+    #Venta diaria completada
+
+    path("ventas-diarias/completada/", VentaDiariaCompletadaView.as_view(), name="venta_diaria_completada"),
+
+
+
 
     path(
         "ventas-diarias/<int:pk>/editar/",

@@ -81,7 +81,7 @@ class GastoCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalForm
     form_class = GastoForm
     template_name = "gastos/form.html"
     success_url = reverse_lazy("gastos:list")
-    module_permission = "finanzas"
+    module_permission = "ventas"
 
 class GastoUpdateView(SucursalQuerysetMixin, LoginRequiredMixin, UpdateView):
     model = Gasto

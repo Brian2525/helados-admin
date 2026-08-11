@@ -3,8 +3,9 @@ from django.views.generic import (
     ListView,
     CreateView,
     UpdateView,
-    DeleteView
-)
+    DeleteView,
+    TemplateView,
+    )
 
 from .models import ResumenSemanal, VentaDiaria
 from .forms import ResumenSemanalForm, VentaDiariaForm
@@ -44,6 +45,12 @@ class ResumenSemanalDeleteView(ModulePermissionMixin,SucursalQuerysetMixin, Logi
 
 
 
+
+
+
+
+
+
 class VentaDiariaListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, ListView):
 
     model = VentaDiaria
@@ -54,23 +61,66 @@ class VentaDiariaListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequi
 
 
 
-class VentaDiariaCreateView(ModulePermissionMixin,SucursalQuerysetMixin,SucursalFormMixin, LoginRequiredMixin, CreateView):
-
+class VentaDiariaCreateView(
+    ModulePermissionMixin,
+    SucursalQuerysetMixin,
+    SucursalFormMixin,
+    LoginRequiredMixin,
+    CreateView
+):
 
     model = VentaDiaria
     module_permission = "ventas"
     form_class = VentaDiariaForm
     template_name = "ventas/ventas_diarias/venta_diaria_form.html"
+
     success_url = reverse_lazy(
-        "ventas:venta_diaria_list"
+        "ventas:venta_diaria_completada"
     )
 
     def form_valid(self, form):
 
-        # Asigna el usuario que registró la venta
+        print("FORMULARIO VÁLIDO")
+
         form.instance.usuario = self.request.user
 
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        print("VENTA GUARDADA:", self.object.pk)
+
+        return response
+
+    def form_invalid(self, form):
+
+        print("FORMULARIO INVÁLIDO")
+        print(form.errors)
+
+        return super().form_invalid(form)
+
+
+
+class VentaDiariaCompletadaView(
+    LoginRequiredMixin,
+    TemplateView
+):
+
+    template_name = "ventas/ventas_diarias/venta_diaria_completada.html"
+
+    def get_context_data(self, **kwargs):
+
+        print("ENTRÉ A VENTA DIARIA COMPLETADA")
+
+        context = super().get_context_data(**kwargs)
+
+        context["nombre_usuario"] = (
+            self.request.user.get_full_name()
+            or self.request.user.username
+        )
+
+        return context
+
+
+
 
 
 class VentaDiariaUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,SucursalFormMixin, LoginRequiredMixin, UpdateView):

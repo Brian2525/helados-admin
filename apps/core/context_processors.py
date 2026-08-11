@@ -34,8 +34,19 @@ def sidebar_menu(request):
         menu.append({
             "titulo": "Compromisos de pago",
             "icono": "💳",
-            "url": reverse("servicios:list"),
+            "url": reverse("servicios:list")
         })
+
+        if request.user.is_superuser or perfil.finanzas:
+        
+                menu.append({
+                    "titulo": "Cuentas por pagar",
+                    "icono": "💳",
+                    "url": reverse("compras:cuentas_por_pagar_list"),
+        
+                })
+
+
 
     # ============================
     # Ventas
@@ -51,6 +62,10 @@ def sidebar_menu(request):
             "submenu": [
                 {
                     "titulo": "Registrar venta",
+                    "url": reverse("ventas:venta_diaria_create"),
+                },
+                {
+                    "titulo": "Registrar inventario",
                     "url": reverse("ventas:venta_diaria_create"),
                 },
 
