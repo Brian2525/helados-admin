@@ -21,10 +21,10 @@ from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar, ProgramacionP
 from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm, ProgramacionPagoForm
 from django.db.models import Q
 from django.utils import timezone
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,PropietarioQuerysetMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,PropietarioQuerysetMixin, ModulePermissionMixin
 
 
-class ProveedorListView(PropietarioQuerysetMixin,LoginRequiredMixin, ListView):
+class ProveedorListView(ModulePermissionMixin, PropietarioQuerysetMixin,LoginRequiredMixin, ListView):
 
     model = Proveedor
 
@@ -35,49 +35,47 @@ class ProveedorListView(PropietarioQuerysetMixin,LoginRequiredMixin, ListView):
     paginate_by = 20
 
     ordering = ["nombre"]
+    module_permission = "finanzas"      
 
 
 
 
 
-class ProveedorCreateView(LoginRequiredMixin, CreateView):
+class ProveedorCreateView(ModulePermissionMixin, LoginRequiredMixin, CreateView):
 
     model = Proveedor
-
     template_name = "compras/proveedor_form.html"
-
     form_class = ProveedorForm
-
     success_url = reverse_lazy("compras:proveedor_list")
+    module_permission = "finanzas"
 
     def form_valid(self, form):
         form.instance.propietario = self.request.user
         return super().form_valid(form)
 
 
-class ProveedorUpdateView(LoginRequiredMixin, UpdateView):
+class ProveedorUpdateView(ModulePermissionMixin, LoginRequiredMixin, UpdateView):
 
     model = Proveedor
-
     template_name = "compras/proveedor_form.html"
-    
     form_class = ProveedorForm
-
+    module_permission = "finanzas"
     success_url = reverse_lazy("compras:proveedor_list")
 
 
 class ProveedorDeleteView( LoginRequiredMixin, DeleteView):
 
     model = Proveedor
-
+    module_permission = "finanzas"
     template_name = "compras/proveedor_confirm_delete.html"
 
     success_url = reverse_lazy("compras:proveedor_list")
 
 
-class CuentaPorPagarListView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, ListView):
+class CuentaPorPagarListView(ModulePermissionMixin,SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, ListView):
 
     model = CuentaPorPagar
+    module_permission = "finanzas"
     template_name = "compras/cuenta_list.html"
     context_object_name = "cuentas"
     paginate_by = 20
@@ -120,11 +118,12 @@ class CuentaPorPagarListView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequ
 
 
 
-class CuentaPorPagarCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
+class CuentaPorPagarCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = CuentaPorPagar
     form_class = CuentaPorPagarForm
     template_name = "compras/cuenta_form.html"
+    module_permission = "finanzas"
 
     def form_valid(self, form):
 
@@ -172,12 +171,11 @@ class CuentaPorPagarCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginR
         )
     
 
-class CuentaPorPagarUpdateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
+class CuentaPorPagarUpdateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
 
     model = CuentaPorPagar
-
+    module_permission = "finanzas"
     form_class = CuentaPorPagarForm
-
     template_name = "compras/cuenta_form.html"
 
     success_url = reverse_lazy(
@@ -189,9 +187,11 @@ class CuentaPorPagarUpdateView( SucursalQuerysetMixin, SucursalFormMixin, LoginR
 
 
 
-class RegistrarPagoCuentaView( SucursalQuerysetMixin, SucursalFormMixin,LoginRequiredMixin,CreateView):
+class RegistrarPagoCuentaView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin,LoginRequiredMixin,CreateView):
 
     model = PagoCuentaPorPagar
+    module_permission = "finanzas"
+
 
     form_class = PagoCuentaForm
 
@@ -213,9 +213,11 @@ class RegistrarPagoCuentaView( SucursalQuerysetMixin, SucursalFormMixin,LoginReq
         return super().form_valid(form)
 
 
-class CuentaPorPagarDeleteView(SucursalQuerysetMixin, LoginRequiredMixin,DeleteView):
+class CuentaPorPagarDeleteView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
 
     model = CuentaPorPagar
+    module_permission = "finanzas"
+
 
     template_name = "compras/cuenta_confirm_delete.html"
 
@@ -229,9 +231,11 @@ class CuentaPorPagarDeleteView(SucursalQuerysetMixin, LoginRequiredMixin,DeleteV
 
 
 
-class CuentaPorPagarDetailView(SucursalQuerysetMixin,LoginRequiredMixin, DetailView):
+class CuentaPorPagarDetailView(ModulePermissionMixin, SucursalQuerysetMixin,LoginRequiredMixin, DetailView):
 
     model = CuentaPorPagar
+    module_permission = "finanzas"
+
 
     template_name = "compras/cuenta_detail.html"
 
@@ -255,8 +259,10 @@ class CuentaPorPagarDetailView(SucursalQuerysetMixin,LoginRequiredMixin, DetailV
 
 
 
-class RegistrarPagoCuentaView(SucursalQuerysetMixin,LoginRequiredMixin, CreateView):
+class RegistrarPagoCuentaView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, CreateView):
     model = PagoCuentaPorPagar
+    module_permission = "finanzas"
+
     form_class = PagoCuentaForm
     template_name = "compras/pago_form.html"
 
@@ -278,7 +284,7 @@ class RegistrarPagoCuentaView(SucursalQuerysetMixin,LoginRequiredMixin, CreateVi
         )
     
 
-class ProgramarPagosView(SucursalQuerysetMixin,LoginRequiredMixin, View):
+class ProgramarPagosView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, View):
 
     def post(self, request, pk):
 

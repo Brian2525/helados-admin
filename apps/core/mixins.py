@@ -1,6 +1,8 @@
 from django.db.models import Q
 from apps.sucursales.models import Sucursal
 from apps.compras.models import Proveedor
+from django.core.exceptions import PermissionDenied
+
 
 
 class SucursalPermissionMixin:
@@ -76,4 +78,33 @@ class PropietarioQuerysetMixin:
 
         return qs.filter(
             propietario=self.request.user
+        )
+
+
+
+
+class ModulePermissionMixin:
+
+    module_permission = None
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if request.user.is_superuser:
+            return super().dispatch(
+                request,
+                *args,
+                **kwargs
+            )
+
+        if not getattr(
+            request.user.perfil,
+            self.module_permission,
+            False
+        ):
+            raise PermissionDenied
+
+        return super().dispatch(
+            request,
+            *args,
+            **kwargs
         )

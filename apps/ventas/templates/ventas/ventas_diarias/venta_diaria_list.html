@@ -1,0 +1,139 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex items-center justify-between mb-6">
+
+        <div>
+
+            <h1 class="text-3xl font-bold text-gray-800">
+                Ventas Diarias
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                Registro de ventas por sucursal.
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'ventas:venta_diaria_create' %}"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+        >
+            Nueva venta
+        </a>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+
+        <table class="min-w-full">
+
+            <thead class="bg-gray-100">
+
+                <tr>
+
+                    <th class="px-4 py-3 text-left">
+                        Fecha
+                    </th>
+
+                    <th class="px-4 py-3 text-left">
+                        Sucursal
+                    </th>
+
+                    <th class="px-4 py-3 text-right">
+                        Efectivo
+                    </th>
+
+                    <th class="px-4 py-3 text-right">
+                        Tarjeta
+                    </th>
+
+                    <th class="px-4 py-3 text-right">
+                        Total
+                    </th>
+
+                    <th class="px-4 py-3 text-center">
+                        Acciones
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for venta in ventas %}
+
+                <tr class="border-t hover:bg-gray-50">
+
+                    <td class="px-4 py-3">
+                        {{ venta.fecha }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ venta.sucursal }}
+                    </td>
+
+                    <td class="px-4 py-3 text-right">
+                        ${{ venta.efectivo }}
+                    </td>
+
+                    <td class="px-4 py-3 text-right">
+                        ${{ venta.tarjeta }}
+                    </td>
+
+                    <td class="px-4 py-3 text-right font-semibold">
+                        ${{ venta.total }}
+                    </td>
+
+                    <td class="px-4 py-3">
+
+                        <div class="flex justify-center gap-2">
+
+                            <a
+                                href="{% url 'ventas:venta_diaria_update' venta.pk %}"
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                            >
+                                Editar
+                            </a>
+
+                            <a
+                                href="{% url 'ventas:venta_diaria_delete' venta.pk %}"
+                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                            >
+                                Eliminar
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center py-10 text-gray-500">
+
+                        No existen ventas registradas.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+```

@@ -1,5 +1,8 @@
 from django import forms
-from .models import ResumenSemanal
+from .models import ResumenSemanal, VentaDiaria
+from django.utils import timezone
+
+
 from apps.core.forms import TailwindModelForm
 
 
@@ -64,3 +67,34 @@ class ResumenSemanalForm(TailwindModelForm):
 
 
         return cleaned_data
+
+
+
+
+class VentaDiariaForm(TailwindModelForm):
+
+    class Meta:
+        model = VentaDiaria
+        fields = [
+            "sucursal",
+            "fecha",
+            "efectivo",
+            "tarjeta",
+            "observaciones",
+        ]
+
+        widgets = {
+            "fecha": forms.DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        # Solo para registros nuevos
+        if not self.instance.pk:
+            self.fields["fecha"].initial = timezone.now().date()

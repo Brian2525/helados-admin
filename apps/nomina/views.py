@@ -20,32 +20,20 @@ from django.views.generic import (
 from .models import Empleado, PagoNomina
 from .forms import EmpleadoForm, PagoNominaForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,ModulePermissionMixin
 
 
-class EmpleadoListView(SucursalQuerysetMixin,LoginRequiredMixin, ListView):
+class EmpleadoListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, ListView):
 
     model = Empleado
 
     template_name = "nomina/empleado_list.html"
 
     context_object_name = "empleados"
+    module_permission = "administracion"
 
 
-class EmpleadoCreateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
-
-    model = Empleado
-
-    form_class = EmpleadoForm
-
-    template_name = "nomina/empleado_form.html"
-
-    success_url = reverse_lazy(
-        "nomina:empleado_list"
-    )
-
-
-class EmpleadoUpdateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
+class EmpleadoCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = Empleado
 
@@ -58,13 +46,22 @@ class EmpleadoUpdateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequired
     )
 
 
-class EmpleadoDeleteView( LoginRequiredMixin, DeleteView):
+class EmpleadoUpdateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
 
     model = Empleado
-   
+    form_class = EmpleadoForm
+    template_name = "nomina/empleado_form.html"
+    module_permission = "administracion"
+    success_url = reverse_lazy(
+        "nomina:empleado_list"
+    )
 
+
+class EmpleadoDeleteView(ModulePermissionMixin, LoginRequiredMixin, DeleteView):
+
+    model = Empleado
+    module_permission = "administracion"
     template_name = "nomina/empleado_delete.html"
-
     success_url = reverse_lazy(
         "nomina:empleado_list"
     )
@@ -74,6 +71,7 @@ class NominaPendienteListView(SucursalQuerysetMixin, LoginRequiredMixin, ListVie
 
     template_name = "nomina/pendientes.html"
     context_object_name = "empleados"
+    module_permission = "administracion"
 
     def get_queryset(self):
 
@@ -114,16 +112,13 @@ class NominaPendienteListView(SucursalQuerysetMixin, LoginRequiredMixin, ListVie
     
 
 
-class PagoNominaListView( LoginRequiredMixin,SucursalPermissionMixin, ListView):
+class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermissionMixin, ListView):
 
     sucursal_lookup = "empleado__sucursal"
-
+    module_permission = "administracion"
     model = PagoNomina
-
     template_name = "nomina/historial.html"
-
     context_object_name = "pagos"
-
     paginate_by = 20
 
 
@@ -142,9 +137,8 @@ class PagoNominaListView( LoginRequiredMixin,SucursalPermissionMixin, ListView):
 def registrar_pago(request, empleado_id):
 
     empleado = Empleado.objects.get(id=empleado_id)
-
+    module_permission = "administracion"
     hoy = timezone.now().date()
-
     PagoNomina.objects.create(
 
         empleado=empleado,
@@ -167,13 +161,12 @@ def registrar_pago(request, empleado_id):
 
 
 
-class PagoNominaCreateView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
+class PagoNominaCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = PagoNomina
-
     form_class = PagoNominaForm
-
     template_name = "nomina/pago_form.html"
+    module_permission = "administracion"
 
     def dispatch(self, request, *args, **kwargs):
 

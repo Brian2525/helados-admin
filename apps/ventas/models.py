@@ -1,6 +1,8 @@
 
 
 from django.db import models
+from django.contrib.auth.models import User
+
 
 from apps.sucursales.models import Sucursal
 from apps.gastos.models import Gasto
@@ -81,3 +83,71 @@ class ResumenSemanal(models.Model):
             f"{self.sucursal} "
             f"{self.fecha_inicio} - {self.fecha_fin}"
         )
+
+
+
+class VentaDiaria(models.Model):
+
+    sucursal = models.ForeignKey(
+        Sucursal,
+        on_delete=models.PROTECT,
+        related_name="ventas_diarias"
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="ventas_registradas"
+    )
+
+    fecha = models.DateField()
+
+    efectivo = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    tarjeta = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
+
+    observaciones = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+
+        ordering = ["-fecha"]
+
+        constraints = [
+
+            models.UniqueConstraint(
+                fields=[
+                    "sucursal",
+                    "fecha"
+                ],
+                name="unique_venta_diaria"
+            )
+
+        ]
+
+    @property
+    def total(self):
+
+        return self.efectivo + self.tarjeta
+
+    def __str__(self):
+
+        return f"{self.sucursal} - {self.fecha}"

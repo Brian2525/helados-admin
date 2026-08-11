@@ -5,7 +5,10 @@ from apps.gastos.models import Gasto, CategoriaGasto
 
 
 
+
 class Empleado(models.Model):
+    
+
     TIPO_NOMINA = [
         ("SEMANA", "Lunes a Viernes"),
         ("FIN_SEMANA", "Sábado y Domingo"),
@@ -24,6 +27,9 @@ class Empleado(models.Model):
     puesto = models.CharField(
         max_length=100
     )
+
+
+  
 
 
     fecha_ingreso = models.DateField()

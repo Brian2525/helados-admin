@@ -12,12 +12,10 @@ class ProductoForm(TailwindModelForm):
 
         fields = [
             "nombre",
-            "sucursal",
             "descripcion",
             "proveedor",
             "precio_compra",
-            "existencia",
-            "stock_minimo",
+            "contenido_pzas",
             "activo",
         ]
 

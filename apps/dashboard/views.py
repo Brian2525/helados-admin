@@ -11,13 +11,14 @@ from apps.ventas.models import ResumenSemanal
 from apps.sucursales.models import Sucursal
 from apps.servicios.models import ServicioRecurrente, PagoServicio
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.core.mixins import SucursalPermissionMixin
+from apps.core.mixins import SucursalPermissionMixin, ModulePermissionMixin
 
 
 
-class DashboardView(SucursalPermissionMixin, LoginRequiredMixin, TemplateView):
+class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequiredMixin, TemplateView):
 
     template_name = "dashboard/home.html"
+    module_permission = "administracion"
 
     def dispatch(self, request, *args, **kwargs):
         print("Usuario:", request.user)

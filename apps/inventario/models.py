@@ -1,19 +1,12 @@
 from django.db import models
 
 
-from apps.sucursales.models import Sucursal
 
 
 class Producto(models.Model):
 
     nombre = models.CharField(
         max_length=200
-    )
-
-    sucursal = models.ForeignKey(
-        Sucursal,
-        on_delete=models.CASCADE,
-        related_name="productos"
     )
 
     descripcion = models.TextField(
@@ -34,14 +27,12 @@ class Producto(models.Model):
         default=0
     )
 
-    existencia = models.PositiveIntegerField(
+    contenido_pzas = models.PositiveIntegerField(
         default=0,
-        help_text="Existencia en cajas o bolsas."
+        help_text="Pzas que contiene la caja"
     )
 
-    stock_minimo = models.PositiveIntegerField(
-        default=0
-    )
+    
 
     activo = models.BooleanField(
         default=True
@@ -55,27 +46,6 @@ class Producto(models.Model):
         auto_now=True
     )
 
-
-    @property
-    def valor_existencia(self):
-        return self.existencia * self.precio_compra
-
-    @property
-    def necesita_reabastecer(self):
-        return self.existencia <= self.stock_minimo
-
-    #def comprado_mes(self):
-
-    #   hoy = timezone.now().date()
-
-    #   return (
-    #        self.detalles_compra.filter(
-    #            compra__fecha__year=hoy.year,
-    #            compra__fecha__month=hoy.month,
-    #        ).aggregate(
-    #            total=Sum("cantidad")
-    #        )["total"] or 0
-    #    )
 
     class Meta:
         ordering = ["nombre"]

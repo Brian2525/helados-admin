@@ -5,8 +5,13 @@ from .views import (
     ResumenSemanalCreateView,
     ResumenSemanalUpdateView,
     ResumenSemanalDeleteView,
+    VentaDiariaListView,
+    VentaDiariaCreateView,
+    VentaDiariaUpdateView,
+    VentaDiariaDeleteView,
 )
 
+app_name = "ventas"
 
 
 urlpatterns = [
@@ -34,5 +39,34 @@ urlpatterns = [
         ResumenSemanalDeleteView.as_view(),
         name="resumen_delete"
     ),
+
+    #Ventas diarios que regitran los ingresos de cada sucursal
+
+
+    
+    path(
+        "ventas-diarias/",
+        VentaDiariaListView.as_view(),
+        name="venta_diaria_list",
+    ),
+
+    path(
+        "ventas-diarias/nueva/",
+        VentaDiariaCreateView.as_view(),
+        name="venta_diaria_create",
+    ),
+
+    path(
+        "ventas-diarias/<int:pk>/editar/",
+        VentaDiariaUpdateView.as_view(),
+        name="venta_diaria_update",
+    ),
+
+    path(
+        "ventas-diarias/<int:pk>/eliminar/",
+        VentaDiariaDeleteView.as_view(),
+        name="venta_diaria_delete",
+    ),
+
 
 ]

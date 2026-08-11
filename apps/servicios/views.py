@@ -21,7 +21,7 @@ from apps.compras.models import CuentaPorPagar
 
 from .forms import ServicioRecurrenteForm, PagoServicioForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,ModulePermissionMixin
 
 
 class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, TemplateView):
@@ -221,10 +221,10 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
         return context
 
 
-class ServicioRecurrenteCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
+class ServicioRecurrenteCreateView( ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = ServicioRecurrente
-    
+    module_permission = "finanzas"
 
     form_class = ServicioRecurrenteForm
 
@@ -235,10 +235,10 @@ class ServicioRecurrenteCreateView( SucursalQuerysetMixin, SucursalFormMixin, Lo
     )
 
 
-class ServicioRecurrenteUpdateView(SucursalFormMixin, SucursalQuerysetMixin,LoginRequiredMixin, UpdateView):
+class ServicioRecurrenteUpdateView(ModulePermissionMixin, SucursalFormMixin, SucursalQuerysetMixin,LoginRequiredMixin, UpdateView):
 
     model = ServicioRecurrente
-
+    module_permission = "finanzas"
 
     form_class = ServicioRecurrenteForm
 
@@ -249,10 +249,10 @@ class ServicioRecurrenteUpdateView(SucursalFormMixin, SucursalQuerysetMixin,Logi
     )
 
 
-class ServicioRecurrenteDeleteView(SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
+class ServicioRecurrenteDeleteView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
 
     model = ServicioRecurrente
-    
+    module_permission = "finanzas"
 
     template_name = "servicios/delete.html"
 
@@ -260,10 +260,10 @@ class ServicioRecurrenteDeleteView(SucursalQuerysetMixin, LoginRequiredMixin, De
         "servicios:list"
     )
 
-class ServiciosPendientesView(SucursalQuerysetMixin, LoginRequiredMixin, TemplateView):
+class ServiciosPendientesView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, TemplateView):
 
     template_name = "servicios/pendientes.html"
-
+    module_permission = "finanzas"
     def get_context_data(self, **kwargs):
 
         context = super().get_context_data(**kwargs)
@@ -301,18 +301,12 @@ class ServiciosPendientesView(SucursalQuerysetMixin, LoginRequiredMixin, Templat
         return context
 
 
-class RegistrarPagoServicioView(SucursalQuerysetMixin, SucursalFormMixin,LoginRequiredMixin, CreateView):
-
-
-
+class RegistrarPagoServicioView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin,LoginRequiredMixin, CreateView):
 
     model = PagoServicio
-
-   
     form_class = PagoServicioForm
-
+    module_permission = "finanzas"
     template_name = "servicios/pago_form.html"
-
     success_url = reverse_lazy(
         "servicios:list"
     )

@@ -11,41 +11,47 @@ from .models import CategoriaGasto, Gasto
 from .forms import CategoriaGastoForm, GastoForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.sucursales.models import Sucursal
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePermissionMixin
 
-class CategoriaGastoListView(SucursalQuerysetMixin, LoginRequiredMixin, ListView):
+class CategoriaGastoListView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, ListView):
     model = CategoriaGasto
     template_name = "gastos/categorias/list.html"
     context_object_name = "categorias"
+    module_permission = "finanzas"
 
 
-class CategoriaGastoCreateView(SucursalQuerysetMixin ,  SucursalFormMixin, LoginRequiredMixin, CreateView):
+class CategoriaGastoCreateView(ModulePermissionMixin, SucursalQuerysetMixin ,  SucursalFormMixin, LoginRequiredMixin, CreateView):
     model = CategoriaGasto
     form_class = CategoriaGastoForm
     template_name = "gastos/categorias/form.html"
     success_url = reverse_lazy("gastos:categoria_list")
+    module_permission = "finanzas"
 
 
-class CategoriaGastoUpdateView(SucursalFormMixin, LoginRequiredMixin, UpdateView,SucursalQuerysetMixin):
+
+
+class CategoriaGastoUpdateView(ModulePermissionMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView,SucursalQuerysetMixin):
     model = CategoriaGasto
     form_class = CategoriaGastoForm
     template_name = "gastos/categorias/form.html"
     success_url = reverse_lazy("gastos:categoria_list")
+    module_permission = "finanzas"
 
-
-class CategoriaGastoDeleteView(SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
+class CategoriaGastoDeleteView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
     model = CategoriaGasto
     template_name = "gastos/categorias/delete.html"
     success_url = reverse_lazy("gastos:categoria_list")
+    module_permission = "finanzas"
 
 
 
 
-class GastoListView(SucursalQuerysetMixin, LoginRequiredMixin, ListView):
+class GastoListView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, ListView):
     model = Gasto
     template_name = "gastos/list.html"
     context_object_name = "gastos"
     paginate_by = 20
+    module_permission = "finanzas"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -70,25 +76,26 @@ class GastoListView(SucursalQuerysetMixin, LoginRequiredMixin, ListView):
         return queryset.order_by("-fecha", "-id")
 
 
-class GastoCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
+class GastoCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
     model = Gasto
     form_class = GastoForm
     template_name = "gastos/form.html"
     success_url = reverse_lazy("gastos:list")
-
+    module_permission = "finanzas"
 
 class GastoUpdateView(SucursalQuerysetMixin, LoginRequiredMixin, UpdateView):
     model = Gasto
     form_class = GastoForm
     template_name = "gastos/form.html"
     success_url = reverse_lazy("gastos:list")
+    module_permission = "finanzas"
 
 
-
-class GastoDeleteView(SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, DeleteView):
+class GastoDeleteView(ModulePermissionMixin,SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, DeleteView):
     model = Gasto
     template_name = "gastos/delete.html"
     success_url = reverse_lazy("gastos:list")
+    module_permission = "finanzas"
 
   
 

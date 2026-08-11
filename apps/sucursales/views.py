@@ -12,21 +12,23 @@ from .forms import SucursalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin, SucursalPermissionMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin, SucursalPermissionMixin,ModulePermissionMixin
 
 @method_decorator(login_required, name="dispatch")
-class SucursalListView(SucursalPermissionMixin, LoginRequiredMixin, ListView):
+class SucursalListView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequiredMixin, ListView):
     model = Sucursal
     template_name = "sucursales/list.html"
     context_object_name = "sucursales"
+    module_permission = "administracion"
 
 
 
-class SucursalCreateView(LoginRequiredMixin, CreateView):
+class SucursalCreateView(ModulePermissionMixin,LoginRequiredMixin, CreateView):
     model = Sucursal
     form_class = SucursalForm
     template_name = "sucursales/form.html"
     success_url = reverse_lazy("sucursales:list")
+    module_permission = "administracion"
 
 
     def form_valid(self, form):
@@ -48,16 +50,18 @@ class SucursalCreateView(LoginRequiredMixin, CreateView):
 
 
 
-class SucursalUpdateView( SucursalFormMixin, LoginRequiredMixin, UpdateView):
+class SucursalUpdateView(ModulePermissionMixin, SucursalFormMixin, LoginRequiredMixin, UpdateView):
     model = Sucursal
     form_class = SucursalForm
     template_name = "sucursales/form.html"
     success_url = reverse_lazy("sucursales:list")
+    module_permission = "administracion"
 
 
 
-class SucursalDeleteView( LoginRequiredMixin, DeleteView):
+class SucursalDeleteView(ModulePermissionMixin, LoginRequiredMixin, DeleteView):
     model = Sucursal
     template_name = "sucursales/delete.html"
     success_url = reverse_lazy("sucursales:list")
+    module_permission = "administracion"
 
