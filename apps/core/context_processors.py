@@ -45,19 +45,45 @@ def sidebar_menu(request):
 
         menu.append({
 
-            "titulo": "Ventas",
+            "titulo": "Resumen del día",
             "icono": "🏪",
 
             "submenu": [
-
                 {
-                    "titulo": "Ventas diarias",
-                    "url": reverse("ventas:venta_diaria_list"),
+                    "titulo": "Registrar venta",
+                    "url": reverse("ventas:venta_diaria_create"),
                 },
+
+
 
             ]
 
         })
+
+
+    if request.user.is_superuser or perfil.administracion:
+    
+            menu.append({
+    
+                "titulo": "Ventas",
+                "icono": "🏪",
+    
+                "submenu": [
+                    {
+                        "titulo": "Registrar venta",
+                        "url": reverse("ventas:venta_diaria_create"),
+                    },
+    
+                    {
+                        "titulo": "Ventas diarias",
+                        "url": reverse("ventas:venta_diaria_list"),
+                    },
+    
+    
+    
+                ]
+    
+            })
 
     # ============================
     # Inventario

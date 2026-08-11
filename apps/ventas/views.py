@@ -15,14 +15,14 @@ from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePerm
 
 class ResumenSemanalListView(ModulePermissionMixin,SucursalQuerysetMixin, LoginRequiredMixin,ListView ):
     model = ResumenSemanal
-    module_permission = "ventas"
+    module_permission = "administracion"
     template_name = "ventas/list.html"
     context_object_name = "ventas:resumenes"
 
 
 class ResumenSemanalCreateView(ModulePermissionMixin,SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
     model = ResumenSemanal
-    module_permission = "ventas"
+    module_permission = "administracion"
     form_class = ResumenSemanalForm
     template_name = "ventas/create.html"
     success_url = reverse_lazy("ventas:resumen_list")
@@ -30,7 +30,7 @@ class ResumenSemanalCreateView(ModulePermissionMixin,SucursalQuerysetMixin, Sucu
 
 class ResumenSemanalUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,  SucursalFormMixin, LoginRequiredMixin, UpdateView):
     model = ResumenSemanal
-    module_permission = "ventas"
+    module_permission = "administracion"
     form_class = ResumenSemanalForm
     template_name = "ventas/update.html"
     success_url = reverse_lazy("ventas:resumen_list")
@@ -38,7 +38,7 @@ class ResumenSemanalUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,  Suc
 
 class ResumenSemanalDeleteView(ModulePermissionMixin,SucursalQuerysetMixin, LoginRequiredMixin, DeleteView):
     model = ResumenSemanal
-    module_permission = "ventas"
+    module_permission = "administracion"
     template_name = "ventas/delete.html"
     success_url = reverse_lazy("ventas:resumen_list")
 
@@ -47,7 +47,7 @@ class ResumenSemanalDeleteView(ModulePermissionMixin,SucursalQuerysetMixin, Logi
 class VentaDiariaListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, ListView):
 
     model = VentaDiaria
-    module_permission = "ventas"
+    module_permission = "administracion"
     template_name = "ventas/ventas_diarias/venta_diaria_list.html"
     context_object_name = "ventas"
     paginate_by = 30
@@ -76,7 +76,7 @@ class VentaDiariaCreateView(ModulePermissionMixin,SucursalQuerysetMixin,Sucursal
 class VentaDiariaUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,SucursalFormMixin, LoginRequiredMixin, UpdateView):
 
     model = VentaDiaria
-    module_permission = "ventas"
+    module_permission = "administracion"
     form_class = VentaDiariaForm
     template_name = "ventas/ventas_diarias/venta_diaria_form.html"
     success_url = reverse_lazy(
@@ -89,7 +89,7 @@ class VentaDiariaUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,Sucursal
 class VentaDiariaDeleteView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, DeleteView):
 
     model = VentaDiaria
-    module_permission = "ventas"
+    module_permission = "administracion"
     template_name = "ventas/venta_diaria/venta_diaria_confirm_delete.html"
     success_url = reverse_lazy(
         "ventas:venta_diaria_list"

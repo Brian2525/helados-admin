@@ -40,6 +40,11 @@ urlpatterns = [
         name="resumen_delete"
     ),
 
+
+
+
+
+
     #Ventas diarios que regitran los ingresos de cada sucursal
 
 
