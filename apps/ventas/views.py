@@ -61,12 +61,7 @@ class VentaDiariaListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequi
 
 
 
-class VentaDiariaCreateView(
-    ModulePermissionMixin,
-    SucursalQuerysetMixin,
-    SucursalFormMixin,
-    LoginRequiredMixin,
-    CreateView
+class VentaDiariaCreateView(ModulePermissionMixin,SucursalQuerysetMixin,SucursalFormMixin,LoginRequiredMixin,CreateView
 ):
 
     model = VentaDiaria

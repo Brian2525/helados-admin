@@ -37,12 +37,13 @@ def sidebar_menu(request):
             "url": reverse("servicios:list")
         })
 
-        if request.user.is_superuser or perfil.finanzas:
+
+    if request.user.is_superuser or perfil.finanzas:
         
                 menu.append({
                     "titulo": "Cuentas por pagar",
                     "icono": "💳",
-                    "url": reverse("compras:cuentas_por_pagar_list"),
+                    "url": reverse("compras:cuenta_list"),
         
                 })
 
