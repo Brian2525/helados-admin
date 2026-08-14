@@ -140,7 +140,7 @@ class VentaDiariaDeleteView(ModulePermissionMixin,SucursalQuerysetMixin,LoginReq
 
     model = VentaDiaria
     module_permission = "administracion"
-    template_name = "ventas/venta_diaria/venta_diaria_confirm_delete.html"
+    template_name = "ventas/ventas_diarias/venta_diaria_confirm_delete.html"
     success_url = reverse_lazy(
         "ventas:venta_diaria_list"
     )
