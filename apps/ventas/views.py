@@ -74,23 +74,12 @@ class VentaDiariaCreateView(ModulePermissionMixin,SucursalQuerysetMixin,Sucursal
     )
 
     def form_valid(self, form):
-
-        print("FORMULARIO VÁLIDO")
-
         form.instance.usuario = self.request.user
 
-        response = super().form_valid(form)
+        return super().form_valid(form)
+    
 
-        print("VENTA GUARDADA:", self.object.pk)
 
-        return response
-
-    def form_invalid(self, form):
-
-        print("FORMULARIO INVÁLIDO")
-        print(form.errors)
-
-        return super().form_invalid(form)
 
 
 
