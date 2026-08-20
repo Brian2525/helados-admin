@@ -1,54 +1,68 @@
-from datetime import date, timedelta
+from datetime import timedelta, date    
 
-from .models import Empleado, PagoNomina
+from django.utils import timezone 
+
+from .models import Empleado, Nomina 
 
 
-def obtener_nominas_pendientes():
+def generar_nominas(tipo_nomina):
 
-    hoy = date.today()
+    hoy = timezone.localdate()
+    weekday = hoy.weekday()
 
-    empleados = []
+    empleados = Empleado.objects.filter(
+        activo=True,
+        tipo_nomina=tipo_nomina,
+    )
 
-    # Viernes
-    if hoy.weekday() == 4:
+    nominas_creadas = []
 
-        inicio = hoy - timedelta(days=4)
-        fin = hoy
+    for empleado in empleados:
 
-        queryset = Empleado.objects.filter(
-            activo=True,
-            tipo_nomina="SEMANA"
-        )
+        # ==========================================
+        # LUNES - VIERNES
+        # ==========================================
 
-    # Domingo
-    elif hoy.weekday() == 6:
+        if tipo_nomina == "SEMANA":
 
-        inicio = hoy - timedelta(days=1)
-        fin = hoy
+            fecha_inicio = hoy - timedelta(
+                days=weekday
+            )
 
-        queryset = Empleado.objects.filter(
-            activo=True,
-            tipo_nomina="FIN_SEMANA"
-        )
+            fecha_fin = fecha_inicio + timedelta(
+                days=4
+            )
 
-    else:
-        return []
+        # ==========================================
+        # SÁBADO - DOMINGO
+        # ==========================================
 
-    for empleado in queryset:
+        elif tipo_nomina == "FIN_SEMANA":
 
-        ya_pagado = PagoNomina.objects.filter(
+            fecha_inicio = hoy
+            fecha_fin = hoy + timedelta(days=1)
+
+        else:
+            raise ValueError(
+                f"Tipo de nómina no válido: {tipo_nomina}"
+            )
+
+        # ==========================================
+        # CREAR NOMINA
+        # ==========================================
+
+        nomina, creada = Nomina.objects.get_or_create(
             empleado=empleado,
-            fecha_inicio=inicio,
-            fecha_fin=fin
-        ).exists()
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            defaults={
+                "fecha_vencimiento": fecha_fin,
+                "monto": empleado.salario_periodo,
+                "estado": "pendiente",
+            }
+        )
 
-        if not ya_pagado:
+        if creada:
+            nominas_creadas.append(nomina)
 
-            empleados.append({
-                "empleado": empleado,
-                "inicio": inicio,
-                "fin": fin,
-                "monto": empleado.salario_periodo
-            })
-
-    return empleados
+    return nominas_creadas

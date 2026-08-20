@@ -1,13 +1,13 @@
 from calendar import monthrange
-from datetime import date
 from decimal import Decimal
 from django.db.models import Q
+from datetime import timedelta, date
 
 from django.db.models import Sum
 from django.views.generic import TemplateView
 
 from apps.gastos.models import Gasto
-from apps.ventas.models import ResumenSemanal
+from apps.ventas.models import ResumenSemanal, VentaDiaria
 from apps.sucursales.models import Sucursal
 from apps.servicios.models import ServicioRecurrente, PagoServicio
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -31,6 +31,11 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
         context = super().get_context_data(**kwargs)
 
         hoy = date.today()
+
+        inicio_semana = hoy - timedelta(days=hoy.weekday())
+        fin_semana = inicio_semana + timedelta(days=6)
+
+
 
         servicios_por_vencer = []
         servicios_vencidos = []
@@ -88,6 +93,90 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
 
         sucursales = self.get_sucursales_usuario()
 
+        ventas_hoy = VentaDiaria.objects.filter(fecha=hoy)
+
+
+
+        if not self.request.user.is_superuser:
+            ventas_hoy = ventas_hoy.filter(
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
+
+        if sucursal_id:
+            sucursal = sucursales.filter(id=sucursal_id).first()
+
+            if sucursal:
+                ventas_hoy = ventas_hoy.filter(
+                    sucursal=sucursal
+                )
+
+        totales_hoy = ventas_hoy.aggregate(
+            efectivo=Sum("efectivo"),
+            tarjeta=Sum("tarjeta")
+        )
+
+        ventas_hoy_efectivo = (
+            totales_hoy["efectivo"]
+            or Decimal("0.00")
+        )
+
+        ventas_hoy_tarjeta = (
+            totales_hoy["tarjeta"]
+            or Decimal("0.00")
+        )
+
+        total_ventas_hoy = (
+            ventas_hoy_efectivo +
+            ventas_hoy_tarjeta
+        )
+
+        ventas_semana = ResumenSemanal.objects.filter(
+            fecha_inicio=inicio_semana,
+            fecha_fin=fin_semana
+        )
+
+        if not self.request.user.is_superuser:
+            ventas_semana = ventas_semana.filter(
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
+
+        if sucursal_id:
+            sucursal = sucursales.filter(id=sucursal_id).first()
+
+            if sucursal:
+                ventas_semana = ventas_semana.filter(
+                    sucursal=sucursal
+                )
+
+        totales_semana = ventas_semana.aggregate(
+            efectivo=Sum("efectivo"),
+            tarjeta=Sum("tarjeta")
+        )
+
+        ventas_semana_efectivo = (
+            totales_semana["efectivo"]
+            or Decimal("0.00")
+        )
+
+        ventas_semana_tarjeta = (
+            totales_semana["tarjeta"]
+            or Decimal("0.00")
+        )
+
+        total_ventas_semana = (
+            ventas_semana_efectivo +
+            ventas_semana_tarjeta
+        )
+
+
+
+
+
+
+
+
         ultimo_dia = monthrange(
             anio,
             mes
@@ -104,11 +193,18 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
             mes,
             ultimo_dia
         )
-
-        ventas = ResumenSemanal.objects.filter(
-            fecha_inicio__lte=fin_mes,
-            fecha_fin__gte=inicio_mes
+        #Mensual 
+        ventas = VentaDiaria.objects.filter(
+            fecha__range=[inicio_mes, fin_mes]
         )
+
+        if not self.request.user.is_superuser:
+            ventas = ventas.filter(
+                Q(sucursal__propietario=self.request.user) |
+                Q(sucursal__usuarios=self.request.user)
+            ).distinct()
+
+
 
         if not self.request.user.is_superuser:
             ventas = ventas.filter(
@@ -169,6 +265,24 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
         margen = (
             utilidad / total_ventas * 100
         ) if total_ventas else Decimal("0.00")
+
+
+
+        context["ventas_hoy_efectivo"] = ventas_hoy_efectivo
+        context["ventas_hoy_tarjeta"] = ventas_hoy_tarjeta
+        context["total_ventas_hoy"] = total_ventas_hoy
+
+        context["ventas_semana_efectivo"] = ventas_semana_efectivo
+        context["ventas_semana_tarjeta"] = ventas_semana_tarjeta
+        context["total_ventas_semana"] = total_ventas_semana
+
+        context["inicio_semana"] = inicio_semana
+        context["fin_semana"] = fin_semana
+
+
+
+
+
 
         context["ventas_efectivo"] = ventas_efectivo
         context["ventas_tarjeta"] = ventas_tarjeta

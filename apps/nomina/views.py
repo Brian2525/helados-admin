@@ -67,8 +67,9 @@ class EmpleadoDeleteView(ModulePermissionMixin, LoginRequiredMixin, DeleteView):
     )
 
 
-class NominaPendienteListView(SucursalQuerysetMixin, LoginRequiredMixin, ListView):
 
+
+class NominaPendienteListView(SucursalQuerysetMixin,LoginRequiredMixin,ListView):
     template_name = "nomina/pendientes.html"
     context_object_name = "empleados"
     module_permission = "administracion"
@@ -87,30 +88,110 @@ class NominaPendienteListView(SucursalQuerysetMixin, LoginRequiredMixin, ListVie
 
         for empleado in empleados:
 
-            ultimo = empleado.pagos.order_by("-fecha_pago").first()
+            # =====================================
+            # NÓMINA SEMANAL
+            # LUNES -> VIERNES
+            # =====================================
 
             if empleado.tipo_nomina == "SEMANA":
 
-                if weekday != 4:
+                lunes_actual = hoy - timedelta(days=weekday)
+                viernes_actual = lunes_actual + timedelta(days=4)
+
+                # ---------------------------------
+                # Buscar si existe un pago de esta
+                # semana
+                # ---------------------------------
+
+                pago_actual = PagoNomina.objects.filter(
+                    empleado=empleado,
+                    fecha_inicio=lunes_actual,
+                    fecha_fin=viernes_actual,
+                ).first()
+
+                if pago_actual:
                     continue
+
+                fecha_inicio = lunes_actual
+                fecha_fin = viernes_actual
+                fecha_pago = viernes_actual
+
+            # =====================================
+            # NÓMINA FIN DE SEMANA
+            # SÁBADO -> DOMINGO
+            # =====================================
 
             else:
 
-                if weekday != 6:
+                if weekday == 5:
+                    # Sábado
+
+                    fecha_inicio = hoy
+                    fecha_fin = hoy + timedelta(days=1)
+
+                elif weekday == 6:
+                    # Domingo
+
+                    fecha_inicio = hoy - timedelta(days=1)
+                    fecha_fin = hoy
+
+                else:
+                    # Lunes -> viernes
+                    # Buscar el próximo sábado
+
+                    dias_hasta_sabado = 5 - weekday
+
+                    fecha_inicio = hoy + timedelta(
+                        days=dias_hasta_sabado
+                    )
+
+                    fecha_fin = fecha_inicio + timedelta(days=1)
+
+                fecha_pago = fecha_fin
+
+                # ---------------------------------
+                # Buscar si existe un pago de este
+                # periodo
+                # ---------------------------------
+
+                pago_actual = PagoNomina.objects.filter(
+                    empleado=empleado,
+                    fecha_inicio=fecha_inicio,
+                    fecha_fin=fecha_fin,
+                ).first()
+
+                if pago_actual:
                     continue
 
-            if ultimo:
+            # =====================================
+            # DETERMINAR ESTADO
+            # =====================================
 
-                dias = (hoy - ultimo.fecha_pago).days
+            dias = (fecha_pago - hoy).days
 
-                if dias < 7:
-                    continue
+            if dias < 0:
+                estado = "vencido"
+
+            elif dias == 0:
+                estado = "pendiente"
+
+            elif dias <= 3:
+                estado = "proximo"
+
+            else:
+                continue
+
+            # Guardamos información adicional
+            # para utilizarla en el template
+
+            empleado.estado_nomina = estado
+            empleado.fecha_inicio_nomina = fecha_inicio
+            empleado.fecha_fin_nomina = fecha_fin
+            empleado.fecha_pago_nomina = fecha_pago
 
             pendientes.append(empleado)
 
         return pendientes
-    
-
 
 class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermissionMixin, ListView):
 
@@ -136,25 +217,83 @@ class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermi
 @login_required
 def registrar_pago(request, empleado_id):
 
-    empleado = Empleado.objects.get(id=empleado_id)
-    module_permission = "administracion"
+    empleado = get_object_or_404(
+        Empleado,
+        id=empleado_id
+    )
+
     hoy = timezone.now().date()
-    PagoNomina.objects.create(
+    weekday = hoy.weekday()
 
+    # =====================================
+    # NÓMINA SEMANAL
+    # LUNES -> VIERNES
+    # =====================================
+
+    if empleado.tipo_nomina == "SEMANA":
+
+        lunes = hoy - timedelta(days=weekday)
+        viernes = lunes + timedelta(days=4)
+
+        fecha_inicio = lunes
+        fecha_fin = viernes
+
+    # =====================================
+    # NÓMINA FIN DE SEMANA
+    # SÁBADO -> DOMINGO
+    # =====================================
+
+    else:
+
+        if weekday == 5:
+            # Sábado
+
+            fecha_inicio = hoy
+            fecha_fin = hoy + timedelta(days=1)
+
+        elif weekday == 6:
+            # Domingo
+
+            fecha_inicio = hoy - timedelta(days=1)
+            fecha_fin = hoy
+
+        else:
+            # Lunes -> viernes
+
+            dias_hasta_sabado = 5 - weekday
+
+            fecha_inicio = hoy + timedelta(
+                days=dias_hasta_sabado
+            )
+
+            fecha_fin = fecha_inicio + timedelta(days=1)
+
+    # =====================================
+    # EVITAR DUPLICADOS
+    # =====================================
+
+    pago_existente = PagoNomina.objects.filter(
         empleado=empleado,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+    ).exists()
 
+    if pago_existente:
+        return redirect("nomina:pendientes")
+
+    # =====================================
+    # REGISTRAR PAGO
+    # =====================================
+
+    PagoNomina.objects.create(
+        empleado=empleado,
         fecha_pago=hoy,
-
-        fecha_inicio=hoy - timedelta(days=6),
-
-        fecha_fin=hoy,
-
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
         monto=empleado.salario_periodo,
-
     )
 
     return redirect("nomina:pendientes")
-
 
 
 

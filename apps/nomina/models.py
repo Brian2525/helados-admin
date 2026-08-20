@@ -66,20 +66,74 @@ class Empleado(models.Model):
     
 
 
-
-class PagoNomina(models.Model):
+class Nomina(models.Model):
 
     empleado = models.ForeignKey(
         Empleado,
-        on_delete=models.CASCADE,
-        related_name="pagos"
+        on_delete=models.PROTECT,
+        related_name="nominas"
     )
-
-    fecha_pago = models.DateField()
 
     fecha_inicio = models.DateField()
 
     fecha_fin = models.DateField()
+
+    fecha_vencimiento = models.DateField()
+
+    monto = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    ESTADOS = [
+        ("pendiente", "Pendiente"),
+        ("pagada", "Pagada"),
+        ("vencida", "Vencida"),
+    ]
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        default="pendiente"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["fecha_vencimiento"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "empleado",
+                    "fecha_inicio",
+                    "fecha_fin"
+                ],
+                name="nomina_unica_por_periodo"
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.empleado.nombre} "
+            f"{self.fecha_inicio} - {self.fecha_fin}"
+        )
+
+
+
+
+class PagoNomina(models.Model):
+
+    nomina = models.OneToOneField(
+        Nomina,
+        on_delete=models.PROTECT,
+        related_name="pago",
+        null=True, 
+    )
+
+    fecha_pago = models.DateField()
 
     monto = models.DecimalField(
         max_digits=12,
@@ -95,29 +149,12 @@ class PagoNomina(models.Model):
         auto_now_add=True
     )
 
-    class Meta:
-        ordering = ["-fecha_pago"]
-
     def __str__(self):
-        return (
-            f"{self.empleado.nombre} "
-            f"{self.fecha_pago}"
-        )
+        if self.nomina:
+            return (
+                f"Pago {self.nomina.empleado.nombre} "
+                f"{self.fecha_pago}"
+            )
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        return f"Pago histórico {self.fecha_pago}"
 
-        categoria = CategoriaGasto.objects.get(nombre="Nómina")
-
-        Gasto.objects.update_or_create(
-            pago_nomina=self,
-            defaults={
-                "sucursal": self.empleado.sucursal,
-                "categoria": categoria,
-                "fecha": self.fecha_pago,
-                "monto": self.monto,
-                "descripcion": f"Nómina {self.empleado.nombre}",
-            }
-        )
-
-        

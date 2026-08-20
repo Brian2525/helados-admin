@@ -12,6 +12,7 @@ from .forms import ResumenSemanalForm, VentaDiariaForm
 from apps.sucursales.models import Sucursal
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePermissionMixin
+from .services import construir_resumen_semanal
 
 
 class ResumenSemanalListView(ModulePermissionMixin,SucursalQuerysetMixin, LoginRequiredMixin,ListView ):
@@ -74,19 +75,22 @@ class VentaDiariaCreateView(ModulePermissionMixin,SucursalQuerysetMixin,Sucursal
     )
 
     def form_valid(self, form):
+
         form.instance.usuario = self.request.user
 
-        return super().form_valid(form)
-    
+        response = super().form_valid(form)
+
+        construir_resumen_semanal(
+            self.object.sucursal,
+            self.object.fecha
+        )
+
+        return response
+        
 
 
 
-
-
-class VentaDiariaCompletadaView(
-    LoginRequiredMixin,
-    TemplateView
-):
+class VentaDiariaCompletadaView(LoginRequiredMixin,TemplateView):
 
     template_name = "ventas/ventas_diarias/venta_diaria_completada.html"
 
@@ -117,6 +121,27 @@ class VentaDiariaUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,Sucursal
         "ventas:venta_diaria_list"
     )
 
+    def form_valid(self, form):
+
+        venta_anterior = self.get_object()
+
+        sucursal_anterior = venta_anterior.sucursal
+        fecha_anterior = venta_anterior.fecha
+
+        response = super().form_valid(form)
+
+        construir_resumen_semanal(
+            sucursal_anterior,
+            fecha_anterior
+        )
+
+        construir_resumen_semanal(
+            self.object.sucursal,
+            self.object.fecha
+        )
+
+        return response
+
 
 
 
@@ -128,4 +153,22 @@ class VentaDiariaDeleteView(ModulePermissionMixin,SucursalQuerysetMixin,LoginReq
     success_url = reverse_lazy(
         "ventas:venta_diaria_list"
     )
+
+
+
+    def delete(self, request, *args, **kwargs):
+
+        venta = self.get_object()
+
+        sucursal = venta.sucursal
+        fecha = venta.fecha
+
+        response = super().delete(request, *args, **kwargs)
+
+        construir_resumen_semanal(
+            sucursal,
+            fecha
+        )
+
+        return response
 

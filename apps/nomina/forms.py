@@ -34,8 +34,6 @@ class PagoNominaForm(forms.ModelForm):
 
         fields = [
             "fecha_pago",
-            "fecha_inicio",
-            "fecha_fin",
             "monto",
             "observaciones",
         ]
