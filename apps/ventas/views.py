@@ -61,6 +61,52 @@ class VentaDiariaListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequi
     paginate_by = 30
 
 
+    def get_queryset(self):
+        queryset = (
+            VentaDiaria.objects
+            .filter(sucursal__in=self.get_sucursales_usuario())
+            .select_related("sucursal")
+            .order_by("-fecha", "-id")
+        )
+
+        sucursal = self.request.GET.get("sucursal")
+        fecha_inicio = self.request.GET.get("fecha_inicio")
+        fecha_fin = self.request.GET.get("fecha_fin")
+
+        if sucursal:
+            queryset = queryset.filter(sucursal_id=sucursal)
+
+        if fecha_inicio:
+            queryset = queryset.filter(fecha__gte=fecha_inicio)
+
+        if fecha_fin:
+            queryset = queryset.filter(fecha__lte=fecha_fin)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["sucursales"] = self.get_sucursales_usuario()
+
+        # Mantener valores seleccionados
+        context["filtros"] = {
+            "sucursal": self.request.GET.get("sucursal", ""),
+            "fecha_inicio": self.request.GET.get("fecha_inicio", ""),
+            "fecha_fin": self.request.GET.get("fecha_fin", ""),
+        }
+
+        return context
+
+
+
+
+
+
+
+
+
+
 
 class VentaDiariaCreateView(ModulePermissionMixin,SucursalQuerysetMixin,SucursalFormMixin,LoginRequiredMixin,CreateView
 ):
