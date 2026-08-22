@@ -33,7 +33,7 @@ class EmpleadoListView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequired
     module_permission = "administracion"
 
 
-class EmpleadoCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
+class EmpleadoCreateView( SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):
 
     model = Empleado
 
@@ -193,9 +193,13 @@ class NominaPendienteListView(SucursalQuerysetMixin,LoginRequiredMixin,ListView)
 
         return pendientes
 
+
+
+
+    
+
 class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermissionMixin, ListView):
 
-    sucursal_lookup = "empleado__sucursal"
     module_permission = "administracion"
     model = Nomina
     template_name = "nomina/historial.html"
@@ -203,13 +207,6 @@ class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermi
     paginate_by = 20
 
 
-    def get_queryset(self):
-        queryset = PagoNomina.objects.select_related(
-            "empleado",
-            "empleado__sucursal",
-        )
-
-        return self.filtrar_por_sucursal_usuario(queryset)
 
 
 
