@@ -48,19 +48,19 @@ Monto
 
 <tbody>
 
-{% for pago in pagos %}
+{% for pago in empleados %}
 
 <tr class="border-t">
 
 <td class="p-4">
 
-{{ pago.fecha_pago }}
+{{ pago.fecha_vencimiento|date:"d/m/Y" }}
 
 </td>
 
 <td>
 
-{{ pago.empleado.nombre }}
+{{ pago.nomina.nombre }}
 
 </td>
 

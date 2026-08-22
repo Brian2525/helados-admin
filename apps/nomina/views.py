@@ -17,7 +17,7 @@ from django.views.generic import (
     DeleteView
 )
 
-from .models import Empleado, PagoNomina
+from .models import Empleado, PagoNomina, Nomina
 from .forms import EmpleadoForm, PagoNominaForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,ModulePermissionMixin
@@ -197,7 +197,7 @@ class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermi
 
     sucursal_lookup = "empleado__sucursal"
     module_permission = "administracion"
-    model = PagoNomina
+    model = Nomina
     template_name = "nomina/historial.html"
     context_object_name = "pagos"
     paginate_by = 20

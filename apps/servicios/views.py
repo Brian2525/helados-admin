@@ -147,31 +147,29 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
                 if empleado.tipo_nomina == "SEMANA":
 
                     if hoy.weekday() <= 4:
-                        fecha_pago = hoy + timedelta(
+                        fecha_vencimiento = hoy + timedelta(
                             days=(4 - hoy.weekday())
                         )
                     else:
-                        fecha_pago = hoy + timedelta(days=7)
+                        fecha_vencimiento = hoy + timedelta(days=7)
 
                 else:
 
                     if hoy.weekday() <= 6:
-                        fecha_pago = hoy + timedelta(
+                        fecha_vencimiento = hoy + timedelta(
                             days=(6 - hoy.weekday())
                         )
                     else:
-                        fecha_pago = hoy + timedelta(days=7)
+                        fecha_vencimiento = hoy + timedelta(days=7)
 
-                ultimo_pago = empleado.pagos.order_by(
-                    "-fecha_pago"
-                ).first()
+                ultimo_pago = empleado.nominas.all().first()
 
                 if ultimo_pago:
 
-                    if (fecha_pago - ultimo_pago.fecha_pago).days < 7:
+                    if (fecha_vencimiento - ultimo_pago.fecha_vencimiento).days < 7:
                         continue
 
-                dias = (fecha_pago - hoy).days
+                dias = (fecha_vencimiento - hoy).days
 
                 if dias < 0:
                     estado = "vencido"
@@ -194,7 +192,7 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
 
                     "monto": empleado.salario_periodo,
 
-                    "fecha": fecha_pago,
+                    "fecha": fecha_vencimiento,
 
                     "estado": estado,
 
