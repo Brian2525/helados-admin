@@ -313,11 +313,10 @@ Compromisos de pago
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
                                     Editar
                                 </a>
-
-                                <a
-                                    href="{% url 'compras:cuenta_pagar' compromiso.objeto.id %}"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
-                                    Pagar
+                                <a 
+                                    href="{% url 'compras:cuenta_delete' compromiso.objeto.id %}"
+                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                                    Eliminar
                                 </a>
 
 
