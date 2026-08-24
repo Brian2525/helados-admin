@@ -33,6 +33,7 @@ class ServicioRecurrente(models.Model):
     )
 
     dia_pago = models.PositiveSmallIntegerField()
+    
 
     activo = models.BooleanField(
         default=True

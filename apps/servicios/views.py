@@ -16,7 +16,7 @@ from django.views.generic import (
 )
 
 from .models import ServicioRecurrente, PagoServicio
-from apps.nomina.models import PagoNomina, Empleado
+from apps.nomina.models import PagoNomina, Empleado, Nomina
 from apps.compras.models import CuentaPorPagar
 
 from .forms import ServicioRecurrenteForm, PagoServicioForm
@@ -142,34 +142,17 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
 
         if tipo in ["todos", "nomina"]:
 
-            for empleado in empleados:
+            nominas = Nomina.objects.filter(
+                empleado__activo=True,
+                estado__in=["pendiente", "vencida"],
+            ).select_related(
+                "empleado",
+                "empleado__sucursal",
+            )
 
-                if empleado.tipo_nomina == "SEMANA":
+            for nomina in nominas:
 
-                    if hoy.weekday() <= 4:
-                        fecha_vencimiento = hoy + timedelta(
-                            days=(4 - hoy.weekday())
-                        )
-                    else:
-                        fecha_vencimiento = hoy + timedelta(days=7)
-
-                else:
-
-                    if hoy.weekday() <= 6:
-                        fecha_vencimiento = hoy + timedelta(
-                            days=(6 - hoy.weekday())
-                        )
-                    else:
-                        fecha_vencimiento = hoy + timedelta(days=7)
-
-                ultimo_pago = empleado.nominas.all().first()
-
-                if ultimo_pago:
-
-                    if (fecha_vencimiento - ultimo_pago.fecha_vencimiento).days < 7:
-                        continue
-
-                dias = (fecha_vencimiento - hoy).days
+                dias = (nomina.fecha_vencimiento - hoy).days
 
                 if dias < 0:
                     estado = "vencido"
@@ -179,44 +162,33 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
                     estado = "pendiente"
 
                 compromisos.append({
-
                     "tipo": "Nomina",
-
-                    "sucursal": empleado.sucursal,
-
-                    "concepto": empleado.nombre,
-
+                    "sucursal": nomina.empleado.sucursal,
+                    "concepto": nomina.empleado.nombre,
                     "categoria": "Nómina",
-
                     "proveedor": "Empleado",
-
-                    "monto": empleado.salario_periodo,
-
-                    "fecha": fecha_vencimiento,
-
+                    "monto": nomina.monto,
+                    "fecha": nomina.fecha_vencimiento,
                     "estado": estado,
-
-                    "objeto": empleado,
-
+                    "objeto": nomina,
                     "dias_restantes": dias,
-
                 })
 
 
 
 
-        # ============================
-        # ORDENAR POR FECHA
-        # ============================
+            # ============================
+            # ORDENAR POR FECHA
+            # ============================
 
-        compromisos.sort(
-            key=lambda x: x["fecha"]
-        )
+            compromisos.sort(
+                key=lambda x: x["fecha"]
+            )
 
-        context["compromisos"] = compromisos
-        context["tipo"] = tipo
+            context["compromisos"] = compromisos
+            context["tipo"] = tipo
 
-        return context
+            return context
 
 
 class ServicioRecurrenteCreateView( ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):

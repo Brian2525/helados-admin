@@ -295,27 +295,27 @@ Compromisos de pago
                              {% elif compromiso.tipo == "Nomina" %}
 
                                 <a
-                                    href="{% url 'nomina:pagar' compromiso.objeto.pk %}"
+                                    href="{% url 'nomina:pagar' compromiso.objeto.id %}"
                                     class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
                                     Registrar pago
-                                </a>
+                                </a>    
 
                             {% else %}
 
                                 <a
-                                    href="{% url 'compras:cuenta_detail' compromiso.objeto.pk %}"
+                                    href="{% url 'compras:cuenta_detail' compromiso.objeto.id   %}"
                                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm">
                                     Ver
                                 </a>
 
                                 <a
-                                    href="{% url 'compras:cuenta_edit' compromiso.objeto.pk %}"
+                                    href="{% url 'compras:cuenta_edit' compromiso.objeto.id %}"
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
                                     Editar
                                 </a>
 
                                 <a
-                                    href="{% url 'compras:cuenta_pagar' compromiso.objeto.pk %}"
+                                    href="{% url 'compras:cuenta_pagar' compromiso.objeto.id %}"
                                     class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
                                     Pagar
                                 </a>

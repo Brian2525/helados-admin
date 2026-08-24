@@ -49,9 +49,10 @@ urlpatterns = [
         PagoNominaListView.as_view(),
         name="historial"
     ),
+    
 
     path(
-    "pagar/<int:empleado_id>/",
+    "pagar/<int:nomina_id>/",
     PagoNominaCreateView.as_view(),
     name="pagar"
 ),
