@@ -42,11 +42,7 @@ urlpatterns = [
         name="proveedor_delete",
     ),
 
-    path(
-    "cuentas/",
-    CuentaPorPagarListView.as_view(),
-    name="cuenta_list",
-    ),
+    path("cuentas/",CuentaPorPagarListView.as_view(),name="cuenta_list",),
 
     path(
         "cuentas/nueva/",
@@ -69,9 +65,13 @@ urlpatterns = [
 
     path("cuentas/<int:pk>/edit/",CuentaPorPagarUpdateView.as_view(),name="cuenta_edit",),
 
-    path("cuentas/<int:pk>/pagar/",RegistrarPagoCuentaView.as_view(),name="cuenta_pagar",),
+    path("cuentas/pagar/<int:pk>/<int:programacion_id>/",RegistrarPagoCuentaView.as_view(),name="registrar_pago_cuenta",),
+
+    path("cuentas/pagar/<int:pk>/",RegistrarPagoCuentaView.as_view(),name="cuenta_pagar",),
 
     path("cuentas/<int:pk>/programar/",ProgramarPagosView.as_view(),name="programar_pagos"),
+
+
 
 
 

@@ -13,12 +13,14 @@ from django.views.generic import (
 from django.views import View
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+from django.db import transaction
 
 
 
 
 from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar, ProgramacionPago
 from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm, ProgramacionPagoForm
+from apps.gastos.models import Gasto
 from django.db.models import Q
 from django.utils import timezone
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,PropietarioQuerysetMixin, ModulePermissionMixin
@@ -231,23 +233,29 @@ class CuentaPorPagarDeleteView(ModulePermissionMixin, SucursalQuerysetMixin, Log
 
 
 
-class CuentaPorPagarDetailView(ModulePermissionMixin, SucursalQuerysetMixin,LoginRequiredMixin, DetailView):
+class CuentaPorPagarDetailView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin,DetailView):
 
     model = CuentaPorPagar
     module_permission = "finanzas"
 
-
     template_name = "compras/cuenta_detail.html"
-
     context_object_name = "cuenta"
 
     def get_context_data(self, **kwargs):
 
         context = super().get_context_data(**kwargs)
-        
+
         context["today"] = date.today()
 
-        context["pagos"] = self.object.pagos.all()
+        context["pagos"] = (
+            self.object.pagos
+            .select_related("programacion")
+            .all()
+        )
+
+        context["programaciones"] = (
+            self.object.programaciones.all()
+        )
 
         context["programacion_form"] = ProgramacionPagoForm()
 
@@ -255,36 +263,109 @@ class CuentaPorPagarDetailView(ModulePermissionMixin, SucursalQuerysetMixin,Logi
     
 
 
-
-
-
-
-class RegistrarPagoCuentaView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, CreateView):
+class RegistrarPagoCuentaView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin,CreateView):
     model = PagoCuentaPorPagar
     module_permission = "finanzas"
-
     form_class = PagoCuentaForm
     template_name = "compras/pago_form.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.cuenta = get_object_or_404(
-            CuentaPorPagar,
-            pk=self.kwargs["pk"]
+            CuentaPorPagar.objects.select_related(
+                "proveedor",
+                "sucursal",
+                "categoria",
+            ),
+            pk=kwargs["pk"],
         )
-        return super().dispatch(request, *args, **kwargs)
 
+        self.programacion = None
+
+        if kwargs.get("programacion_id"):
+            self.programacion = get_object_or_404(
+                ProgramacionPago,
+                pk=kwargs["programacion_id"],
+                cuenta=self.cuenta,
+                estado="pendiente",
+            )
+
+        return super().dispatch(
+            request,
+            *args,
+            **kwargs
+        )
+
+    def get_initial(self):
+        return {
+            "fecha": timezone.localdate(),
+            "monto": (
+                self.programacion.monto
+                if self.programacion
+                else self.cuenta.saldo
+            ),
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["cuenta"] = self.cuenta
+        context["programacion"] = self.programacion
+
+        return context
+
+    @transaction.atomic
     def form_valid(self, form):
-        form.instance.cuenta = self.cuenta
-        return super().form_valid(form)
+        pago = form.save(commit=False)
 
-    def get_success_url(self):
-        return reverse(
-            "compras:cuenta_detail",
-            kwargs={"pk": self.cuenta.pk}
+        pago.cuenta = self.cuenta
+
+        if self.programacion:
+            # Pago de una mensualidad
+            pago.programacion = self.programacion
+            pago.monto = self.programacion.monto
+
+        else:
+            # Pago en una sola exhibición
+            pago.programacion = None
+            pago.monto = self.cuenta.saldo
+
+        pago.save()
+
+        # Si se está pagando una programación,
+        # marcarla como pagada.
+        if self.programacion:
+            self.programacion.estado = "pagado"
+            self.programacion.save(
+                update_fields=["estado"]
+            )
+
+        # Registrar gasto
+        Gasto.objects.create(
+            sucursal=self.cuenta.sucursal,
+            categoria=self.cuenta.categoria,
+            fecha=pago.fecha,
+            monto=pago.monto,
+            descripcion=(
+                f"Pago a {self.cuenta.proveedor.nombre}"
+            ),
         )
+
+        return redirect(
+            "compras:cuenta_detail",
+            pk=self.cuenta.pk
+        )
+
+
     
 
+
+
+
+
+
 class ProgramarPagosView(ModulePermissionMixin,SucursalQuerysetMixin,LoginRequiredMixin, View):
+    module_permission = "finanzas"
+
 
     def post(self, request, pk):
 

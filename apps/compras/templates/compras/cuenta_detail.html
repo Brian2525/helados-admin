@@ -25,20 +25,43 @@
                 ← Regresar a la lista
             </a>
 
-             <button
+            {% if cuenta.estatus == "pagado"  %}
+
+            <span class="px-4 py-2 rounded-lg bg-green-100 text-green-700 font-semibold">
+                    Pagado
+            </span>
+            {% elif cuenta.programaciones.exists %}
+
+            <span class="px-4 py-2 rounded-lg bg-green-100 text-green-700 font-semibold">
+                    Revisa fechas de pago
+            </span>
+
+
+            {%else%}
+
+            <div class="flex gap-2">
+
+            <a
+                href="{% url 'compras:cuenta_pagar' cuenta.pk %}"
+                class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">
+                Pagar en una sola exhibición
+            </a>
+
+            <button
                 type="button"
                 id="btnProgramarPagos"
-                class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
-
+                class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+            >
                 Programar pagos
-
             </button>
 
-            <a href="{% url 'compras:cuenta_pagar' cuenta.id %}"
-               class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
+            </div>
+                
 
-                Registrar pago
-            </a>
+
+            {% endif %}
+
+            
 
             
 
@@ -233,7 +256,7 @@
 
             <tbody class="divide-y divide-gray-100">
 
-            {% for programacion in cuenta.programacion.all %}
+            {% for programacion in programaciones %}
 
                 <tr>
 
@@ -257,57 +280,28 @@
 
                     <td class="px-6 py-4 text-center">
 
-                        {% if programacion.pago %}
+                        {% if programacion.estado != "pagado" %}
 
-                            <span class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs">
+                           <a
+                            href="{% url 'compras:registrar_pago_cuenta' cuenta.pk programacion.id %}"
+                            class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm"
+                        >
+                            Pagar
+                        </a>
+
+                        {% else %}
+
+                            <span class="text-green-600 font-semibold">
 
                                 Pagado
 
                             </span>
 
-                        {% elif programacion.fecha_vencimiento < today %}
-
-                            <span class="inline-flex px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs">
-
-                                Vencido
-
-                            </span>
-
-                        {% else %}
-
-                            <span class="inline-flex px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs">
-
-                                Pendiente
-
-                            </span>
-
                         {% endif %}
 
                     </td>
 
-                    <td class="px-6 py-4 text-center">
-
-                        {% if not programacion.pago %}
-
-                            <a
-                                href="{% url 'compras:cuenta_pagar' cuenta.pk %}?programacion={{ programacion.pk }}"
-                                class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm">
-
-                                Pagar
-
-                            </a>
-
-                        {% else %}
-
-                            <span class="text-gray-400">
-
-                                —
-
-                            </span>
-
-                        {% endif %}
-
-                    </td>
+                    
 
                 </tr>
 

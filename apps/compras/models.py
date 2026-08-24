@@ -60,16 +60,13 @@ class Proveedor(models.Model):
 
         return queryset.order_by("nombre")
     
-
 class CuentaPorPagar(models.Model):
 
     ESTATUS = [
-
         ("pendiente", "Pendiente"),
         ("parcial", "Pago parcial"),
         ("pagado", "Pagado"),
         ("vencido", "Vencido"),
-
     ]
 
     sucursal = models.ForeignKey(
@@ -97,8 +94,6 @@ class CuentaPorPagar(models.Model):
         decimal_places=2
     )
 
-   
-
     categoria = models.ForeignKey(
         CategoriaGasto,
         on_delete=models.PROTECT
@@ -113,118 +108,39 @@ class CuentaPorPagar(models.Model):
     )
 
     class Meta:
-
         ordering = ["fecha_vencimiento"]
 
     def __str__(self):
-
         return f"{self.proveedor} - ${self.saldo}"
-    
+
     @property
     def total_pagado(self):
         return self.pagos.aggregate(
             total=Sum("monto")
-        )["total"] or 0
+        )["total"] or Decimal("0.00")
 
     @property
     def saldo(self):
         return self.monto_total - self.total_pagado
 
-
     @property
     def estatus(self):
-        if self.saldo <= 0:
+        if self.saldo <= Decimal("0.00"):
             return "pagado"
-        elif self.total_pagado > 0:
+
+        programaciones = self.programaciones.all()
+
+        if not programaciones.exists():
+            return "pendiente"
+
+        if programaciones.filter(estado="pagado").exists():
             return "parcial"
-        elif self.fecha_vencimiento < datetime.date.today():
+
+        if self.fecha_vencimiento < timezone.localdate():
             return "vencido"
-        else:
-            return "pendiente"  
+
+        return "pendiente"
     
-
-
-
-
-#Abonos de cuentas por pagar
-class PagoCuentaPorPagar(models.Model):
-
-    cuenta = models.ForeignKey(
-        CuentaPorPagar,
-        related_name="pagos",
-        on_delete=models.CASCADE
-    )
-
-    fecha = models.DateField(
-        default=datetime.date.today
-    )
-
-    monto = models.DecimalField(
-        max_digits=12,
-        decimal_places=2
-    )
-
-    observaciones = models.TextField(
-        blank=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    
-    )
-
-    class Meta:
-
-        ordering = ["-fecha"]
-
-    def save(self, *args, **kwargs):
-
-        nuevo = self.pk is None
-
-        super().save(*args, **kwargs)
-
-        if nuevo:
-            cuenta = self.cuenta
-
-            if cuenta.saldo <= Decimal("0"):
-                cuenta.estatus = "pagado"
-            elif cuenta.total_pagado > Decimal("0"):
-                cuenta.estatus = "parcial"
-            else:
-                cuenta.estatus = "pendiente"
-
-            cuenta.save(update_fields=["estatus"])
-
-           
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        categoria = self.cuenta.categoria
-
-        Gasto.objects.create(
-
-            sucursal=self.cuenta.sucursal,
-
-            categoria=categoria,
-
-            fecha=self.fecha,
-
-            monto=self.monto,
-
-            descripcion=f"Pago a {self.cuenta.proveedor.nombre}",
-
-        )
-    @property
-    def total_pagado(self):
-
-        return self.pagos.aggregate(
-
-            total=Sum("monto")
-
-        )["total"] or 0
-
-
 
 
 
@@ -233,11 +149,11 @@ class ProgramacionPago(models.Model):
 
     cuenta = models.ForeignKey(
         CuentaPorPagar,
-        related_name="programacion",
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="programaciones"
     )
 
-    numero = models.PositiveSmallIntegerField()
+    numero = models.PositiveIntegerField()
 
     fecha_vencimiento = models.DateField()
 
@@ -246,11 +162,53 @@ class ProgramacionPago(models.Model):
         decimal_places=2
     )
 
-    pago = models.OneToOneField(
-        PagoCuentaPorPagar,
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ("pendiente", "Pendiente"),
+            ("pagado", "Pagado"),
+        ],
+        default="pendiente"
+    )
+
+ 
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["numero"]
+
+
+
+#Abonos de cuentas por pagar
+
+class PagoCuentaPorPagar(models.Model):
+
+    cuenta = models.ForeignKey(
+        CuentaPorPagar,
+        on_delete=models.PROTECT,
+        related_name="pagos"
+    )
+
+    programacion = models.ForeignKey(
+        ProgramacionPago,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        on_delete=models.SET_NULL
+        related_name="pagos",
+    )
+
+    fecha = models.DateField()
+
+    monto = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    observaciones = models.TextField(
+        blank=True,
+        null=True
     )
 
     created_at = models.DateTimeField(
@@ -258,4 +216,4 @@ class ProgramacionPago(models.Model):
     )
 
     class Meta:
-        ordering = ["numero"]
+        ordering = ["-fecha"]
