@@ -74,7 +74,13 @@ class ProveedorDeleteView( LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("compras:proveedor_list")
 
 
-class CuentaPorPagarListView(ModulePermissionMixin,SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, ListView):
+class CuentaPorPagarListView(
+    ModulePermissionMixin,
+    SucursalQuerysetMixin,
+    SucursalFormMixin,
+    LoginRequiredMixin,
+    ListView
+):
 
     model = CuentaPorPagar
     module_permission = "finanzas"
@@ -86,34 +92,72 @@ class CuentaPorPagarListView(ModulePermissionMixin,SucursalQuerysetMixin, Sucurs
 
         queryset = super().get_queryset()
 
-
-        q = self.request.GET.get("q")
-       
-       
-       
+        q = self.request.GET.get("q", "").strip()
         estado = self.request.GET.get("estado", "abiertas")
 
         cuentas = list(queryset)
 
+        # Búsqueda
+        if q:
+            q = q.lower()
+
+            cuentas = [
+                c for c in cuentas
+                if q in c.proveedor.nombre.lower()
+                or q in (c.descripcion or "").lower()
+            ]
+
+        # Filtro por estado
         if estado == "pagadas":
-            cuentas = [c for c in cuentas if c.estatus == "pagado"]
+
+            cuentas = [
+                c for c in cuentas
+                if c.estatus == "pagado"
+            ]
 
         elif estado == "pendientes":
-            cuentas = [c for c in cuentas if c.estatus == "pendiente"]
+
+            cuentas = [
+                c for c in cuentas
+                if c.estatus == "pendiente"
+            ]
 
         elif estado == "parciales":
-            cuentas = [c for c in cuentas if c.estatus == "parcial"]
+
+            cuentas = [
+                c for c in cuentas
+                if c.estatus == "parcial"
+            ]
 
         elif estado == "vencidas":
-            cuentas = [c for c in cuentas if c.estatus == "vencido"]
+
+            cuentas = [
+                c for c in cuentas
+                if c.estatus == "vencido"
+            ]
 
         else:
+
             cuentas = [
                 c for c in cuentas
                 if c.estatus in ("pendiente", "parcial", "vencido")
             ]
 
         return cuentas
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        params = self.request.GET.copy()
+
+        # Quitamos page para poder agregar el número
+        # de página nosotros mismos.
+        params.pop("page", None)
+
+        context["pagination_params"] = params.urlencode()
+
+        return context
     
 
 
