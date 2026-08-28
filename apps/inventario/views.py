@@ -328,7 +328,8 @@ class InventarioDiarioView(SucursalPermissionMixin,LoginRequiredMixin,View):
             VarianteProducto.objects
             .filter(
                 activo=True,
-                producto__activo=True
+                producto__activo=True,
+                producto__registrar_venta_diaria=True
             )
             .select_related("producto")
         )
@@ -390,7 +391,10 @@ class InventarioDiarioView(SucursalPermissionMixin,LoginRequiredMixin,View):
                 InventarioDiario.objects
                 .filter(
                     sucursal=sucursal,
-                    fecha=fecha
+                    fecha=fecha,
+                    variante__activo=True,
+                    variante__producto__activo=True,
+                    variante__producto__registrar_venta_diaria=True
                 )
                 .select_related(
                     "variante",
@@ -461,9 +465,12 @@ class InventarioDiarioView(SucursalPermissionMixin,LoginRequiredMixin,View):
         inventarios = (
             InventarioDiario.objects
             .filter(
-                sucursal=sucursal,
-                fecha=fecha
-            )
+                                sucursal=sucursal,
+                                fecha=fecha,
+                                variante__activo=True,
+                                variante__producto__activo=True,
+                                variante__producto__registrar_venta_diaria=True
+                            )
             .select_related(
                 "variante",
                 "variante__producto"

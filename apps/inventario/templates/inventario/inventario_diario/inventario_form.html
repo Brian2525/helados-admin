@@ -27,14 +27,6 @@ Inventario diario
 
         </div>
 
-        <a
-            href="{% url 'inventario:inventario_list' %}"
-            class="bg-gray-600 hover:bg-gray-700
-                   text-white px-4 py-2 rounded-lg"
-        >
-            Ver histórico
-        </a>
-
     </div>
 
 
@@ -147,11 +139,7 @@ Inventario diario
 
                         <tr>
 
-                            <th
-                                class="px-6 py-3 text-left"
-                            >
-                                Producto
-                            </th>
+                        
 
                             <th
                                 class="px-6 py-3 text-left"
@@ -182,18 +170,11 @@ Inventario diario
 
                             <tr>
 
-                                <td class="px-6 py-4">
-
-                                    <span class="font-medium">
-                                        {{ form.instance.variante.producto.nombre }}
-                                    </span>
-
-                                </td>
 
 
                                 <td class="px-6 py-4">
 
-                                    {{ form.instance.variante.nombre }}
+                                    {{ form.instance.variante.producto.nombre }} - {{ form.instance.variante.nombre }}
 
                                 </td>
 
