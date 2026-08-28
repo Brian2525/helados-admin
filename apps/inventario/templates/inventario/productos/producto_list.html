@@ -19,6 +19,7 @@
 
     </div>
 
+
     <div class="bg-white rounded-xl shadow overflow-hidden">
 
         <table class="min-w-full">
@@ -27,29 +28,28 @@
 
                 <tr>
 
-                    <th class="p-4 text-left">Producto</th>
+                    <th class="p-4 text-center">
+                        Producto
+                    </th>
 
-                    <th>Proveedor</th>
+                    <th>
+                        Descripción
+                    </th>
 
-                    <th>Sucursal</th>
-
-                    <th>Existencia</th>
-
-                    <th>Stock mínimo</th>
-
-                    <th>Valor inventario</th>
-
-                    <th></th>
+                    <th>
+                        Acciones
+                    </th>
 
                 </tr>
 
             </thead>
 
+
             <tbody>
 
                 {% for producto in productos %}
 
-                <tr class="border-t">
+                <tr class="border-t text-center">
 
                     <td class="p-4">
 
@@ -57,48 +57,45 @@
                             {{ producto.nombre }}
                         </div>
 
-                        {% if producto.necesita_reabastecer %}
-                        <span class="text-xs text-red-600">
-                            Reabastecer
-                        </span>
-                        {% endif %}
-
                     </td>
 
-                    <td>
-                        {{ producto.proveedor|default:"-" }}
-                    </td>
-
-                    <td>
-                        {{ producto.sucursal }}
-                    </td>
-
-                    <td>
-                        {{ producto.existencia }}
-                    </td>
-
-                    <td>
-                        {{ producto.stock_minimo }}
-                    </td>
-
-                    <td>
-                        ${{ producto.valor_existencia }}
-                    </td>
 
                     <td>
 
-                        <div class="flex gap-2 justify-end">
+                        {{ producto.descripcion }}
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="flex gap-2 justify-center">
+
+                            <!-- Variantes -->
+
+                            <a
+                                href="{% url 'inventario:variante_list' producto.pk %}"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                            >
+                                Variantes
+                            </a>
+
+
+                            <!-- Editar producto -->
 
                             <a
                                 href="{% url 'inventario:producto_update' producto.pk %}"
-                                class="bg-yellow-500 text-white px-3 py-1 rounded"
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                             >
                                 Editar
                             </a>
 
+
+                            <!-- Eliminar producto -->
+
                             <a
                                 href="{% url 'inventario:producto_delete' producto.pk %}"
-                                class="bg-red-600 text-white px-3 py-1 rounded"
+                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                             >
                                 Eliminar
                             </a>
@@ -114,12 +111,10 @@
                 <tr>
 
                     <td
-                        colspan="7"
+                        colspan="3"
                         class="text-center py-8"
                     >
-
                         No existen productos registrados.
-
                     </td>
 
                 </tr>

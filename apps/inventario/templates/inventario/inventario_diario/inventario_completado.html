@@ -1,0 +1,128 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Inventario registrado
+{% endblock %}
+
+{% block page_title %}
+Inventario registrado
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+
+    <div class="bg-white rounded-xl shadow border p-8 text-center">
+
+        <!-- Icono -->
+
+        <div
+            class="mx-auto mb-6 flex items-center justify-center
+                   w-16 h-16 rounded-full bg-green-100"
+        >
+
+            <svg
+                class="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                />
+
+            </svg>
+
+        </div>
+
+
+        <!-- Mensaje -->
+
+        <h1 class="text-2xl font-bold text-gray-900 mb-3">
+
+            Inventario registrado correctamente
+
+        </h1>
+
+
+        <p class="text-gray-600 mb-6">
+
+            Se ha registrado el inventario del día
+
+            <span class="font-semibold text-gray-900">
+                {{ fecha|date:"d/m/Y" }}
+            </span>
+
+            para la sucursal
+
+            <span class="font-semibold text-gray-900">
+                {{ sucursal.nombre }}
+            </span>.
+
+        </p>
+
+
+        <!-- Información -->
+
+        <div
+            class="bg-gray-50 rounded-lg border
+                   p-4 mb-6 text-left"
+        >
+
+            <div class="flex justify-between py-2">
+
+                <span class="text-gray-500">
+                    Sucursal
+                </span>
+
+                <span class="font-medium">
+                    {{ sucursal.nombre }}
+                </span>
+
+            </div>
+
+
+            <div
+                class="flex justify-between py-2
+                       border-t border-gray-200"
+            >
+
+                <span class="text-gray-500">
+                    Fecha
+                </span>
+
+                <span class="font-medium">
+                    {{ fecha|date:"d/m/Y" }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Acción -->
+
+        <div>
+
+            <a
+                href="{% url 'inventario:inventario_diario' %}"
+                class="inline-block bg-blue-600
+                       hover:bg-blue-700
+                       text-white font-medium
+                       px-5 py-3 rounded-lg
+                       transition"
+            >
+                Registrar un nuevo inventario
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

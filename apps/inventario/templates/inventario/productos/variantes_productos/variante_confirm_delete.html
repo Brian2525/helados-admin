@@ -1,0 +1,75 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+    Eliminar variante
+{% endblock %}
+
+{% block page_title %}
+    Eliminar variante
+{% endblock %}
+
+{% block content %}
+
+<div class="p-6">
+
+    <div class="max-w-lg mx-auto">
+
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+
+            <h1 class="text-xl font-semibold text-gray-800 mb-3">
+                ¿Eliminar variante?
+            </h1>
+
+            <p class="text-gray-600 mb-6">
+
+                Estás a punto de eliminar la variante
+
+                <strong>
+                    {{ variante.nombre }}
+                </strong>
+
+                del producto
+
+                <strong>
+                    {{ producto.nombre }}
+                </strong>.
+
+            </p>
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-3">
+
+                    <a
+                        href="{% url 'inventario:variante_list' producto.id %}"
+                        class="px-4 py-2 rounded-lg
+                               border border-gray-300
+                               text-gray-700
+                               hover:bg-gray-50"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 rounded-lg
+                               bg-red-600 text-white
+                               hover:bg-red-700"
+                    >
+                        Sí, eliminar
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

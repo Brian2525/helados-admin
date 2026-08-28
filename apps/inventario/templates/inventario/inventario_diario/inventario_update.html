@@ -1,0 +1,209 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Editar inventario
+{% endblock %}
+
+{% block page_title %}
+Editar inventario
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex justify-between items-center mb-6">
+
+        <div>
+
+            <h1 class="text-3xl font-bold">
+                Editar inventario
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                Corrección administrativa del inventario diario.
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'inventario:inventario_detail' sucursal.id fecha %}"
+            class="bg-gray-600 hover:bg-gray-700
+                   text-white px-4 py-2 rounded-lg"
+        >
+            Regresar
+        </a>
+
+    </div>
+
+
+    <!-- Información -->
+
+    <div
+        class="bg-white rounded-xl shadow border
+               p-6 mb-6"
+    >
+
+        <div class="flex justify-between items-center">
+
+            <div>
+
+                <p class="text-sm text-gray-500">
+                    Sucursal
+                </p>
+
+                <p class="text-lg font-semibold">
+                    {{ sucursal.nombre }}
+                </p>
+
+            </div>
+
+            <div class="text-right">
+
+                <p class="text-sm text-gray-500">
+                    Fecha
+                </p>
+
+                <p class="text-lg font-semibold">
+                    
+                {{ fecha|date:"d/m/Y" }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Formulario -->
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ formset.management_form }}
+
+
+        <div
+            class="bg-white rounded-xl shadow border
+                   overflow-hidden"
+        >
+
+            <table class="min-w-full">
+
+                <thead class="bg-gray-50">
+
+                    <tr>
+
+                        <th class="px-6 py-3 text-left">
+                            Producto
+                        </th>
+
+                        <th class="px-6 py-3 text-left">
+                            Variante
+                        </th>
+
+                        <th class="px-6 py-3 text-center">
+                            Inventario inicial
+                        </th>
+
+                        <th class="px-6 py-3 text-center">
+                            Inventario final
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody class="divide-y">
+
+                    {% for form in formset %}
+
+                        <tr>
+
+                            <td class="px-6 py-4">
+
+                                {{ form.instance.variante.producto.nombre }}
+
+                            </td>
+
+
+                            <td class="px-6 py-4">
+
+                                {{ form.instance.variante.nombre }}
+
+                            </td>
+
+
+                            <td class="px-6 py-4">
+
+                                <div class="flex justify-center">
+
+                                    {{ form.inventario_inicial }}
+
+                                </div>
+
+                            </td>
+
+
+                            <td class="px-6 py-4">
+
+                                <div class="flex justify-center">
+
+                                    {{ form.cantidad }}
+
+                                </div>
+
+                                {{ form.id }}
+
+                                {% if form.cantidad.errors %}
+
+                                    <p
+                                        class="text-sm text-red-600 mt-1"
+                                    >
+                                        {{ form.cantidad.errors|striptags }}
+                                    </p>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="flex justify-end gap-3 mt-6">
+
+            <a
+                href="{% url 'inventario:inventario_detail' sucursal.id fecha %}"
+                class="bg-gray-500 hover:bg-gray-600
+                       text-white px-5 py-2 rounded-lg"
+            >
+                Cancelar
+            </a>
+
+            <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700
+                       text-white px-5 py-2 rounded-lg"
+            >
+                Guardar cambios
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

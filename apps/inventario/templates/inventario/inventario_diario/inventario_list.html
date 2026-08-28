@@ -1,0 +1,262 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Histórico de inventario
+{% endblock %}
+
+{% block page_title %}
+Histórico de inventario
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex justify-between items-center mb-6">
+
+        <div>
+
+            <h1 class="text-3xl font-bold">
+                Histórico de inventario
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                Consulta los cierres diarios de inventario.
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'inventario:inventario_diario' %}"
+            class="bg-blue-600 hover:bg-blue-700
+                   text-white px-4 py-2 rounded-lg"
+        >
+            Capturar inventario
+        </a>
+
+    </div>
+
+
+    <!-- Filtros -->
+
+    <form
+        method="get"
+        class="bg-white rounded-xl shadow border
+               p-5 mb-6"
+    >
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <div>
+
+                <label
+                    class="block text-sm font-medium
+                           text-gray-700 mb-2"
+                >
+                    Sucursal
+                </label>
+
+                <select
+                    name="sucursal"
+                    class="w-full rounded-lg border
+                           border-gray-300 px-3 py-2"
+                >
+
+                    <option value="">
+                        Todas las sucursales
+                    </option>
+
+                    {% for sucursal in view.get_sucursales_usuario %}
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label
+                    class="block text-sm font-medium
+                           text-gray-700 mb-2"
+                >
+                    Fecha
+                </label>
+
+                <input
+                    type="date"
+                    name="fecha"
+                    value="{{ request.GET.fecha }}"
+                    class="w-full rounded-lg border
+                           border-gray-300 px-3 py-2"
+                >
+
+            </div>
+
+
+            <div class="flex items-end">
+
+                <button
+                    type="submit"
+                    class="bg-gray-700 hover:bg-gray-800
+                           text-white px-4 py-2 rounded-lg"
+                >
+                    Filtrar
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    <!-- Tabla -->
+
+    <div
+        class="bg-white rounded-xl shadow border
+               overflow-hidden"
+    >
+
+        <table class="min-w-full">
+
+            <thead class="bg-gray-50">
+
+                <tr>
+
+                    <th class="px-6 py-3 text-left">
+                        Sucursal
+                    </th>
+
+                    <th class="px-6 py-3 text-center">
+                        Fecha
+                    </th>
+
+                    <th class="px-6 py-3 text-center">
+                        Variantes
+                    </th>
+
+                    <th class="px-6 py-3 text-center">
+                        Acción
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody class="divide-y">
+
+                {% for inventario in inventarios %}
+
+                    <tr>
+
+                        <td class="px-6 py-4">
+
+                            {{ inventario.sucursal__nombre }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            {{ inventario.fecha|date:"d/m/Y" }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            {{ inventario.total_variantes }}
+
+                        </td>
+
+                        <td class="px-6 py-4 text-center">
+
+                            <a
+                                href="{% url 'inventario:inventario_detail' inventario.sucursal inventario.fecha|date:'Y-m-d' %}"
+                                class="bg-blue-600 hover:bg-blue-700
+                                       text-white px-3 py-1
+                                       rounded"
+                            >
+                                Ver
+                            </a>
+
+                            <a
+                                href="{% url 'inventario:inventario_update' inventario.sucursal inventario.fecha|date:'Y-m-d' %}"
+                                class="bg-yellow-500 hover:bg-yellow-600
+                                    text-white px-4 py-2 rounded-lg"
+                            >
+                                Editar inventario
+                            </a>
+
+
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="4"
+                            class="text-center py-8
+                                   text-gray-500"
+                        >
+                            No existen inventarios registrados.
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    {% if is_paginated %}
+
+        <div class="flex justify-center gap-2 mt-6">
+
+            {% if page_obj.has_previous %}
+
+                <a
+                    href="?page={{ page_obj.previous_page_number }}"
+                    class="px-3 py-2 border rounded"
+                >
+                    Anterior
+                </a>
+
+            {% endif %}
+
+
+            <span class="px-3 py-2">
+
+                Página {{ page_obj.number }}
+                de {{ page_obj.paginator.num_pages }}
+
+            </span>
+
+
+            {% if page_obj.has_next %}
+
+                <a
+                    href="?page={{ page_obj.next_page_number }}"
+                    class="px-3 py-2 border rounded"
+                >
+                    Siguiente
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

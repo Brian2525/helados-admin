@@ -1,0 +1,263 @@
+
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Inventario diario
+{% endblock %}
+
+{% block page_title %}
+Inventario diario
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <div class="flex justify-between items-center mb-6">
+
+        <div>
+
+            <h1 class="text-3xl font-bold">
+                Inventario diario
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                Registra el inventario final de la sucursal.
+            </p>
+
+        </div>
+
+        <a
+            href="{% url 'inventario:inventario_list' %}"
+            class="bg-gray-600 hover:bg-gray-700
+                   text-white px-4 py-2 rounded-lg"
+        >
+            Ver histórico
+        </a>
+
+    </div>
+
+
+    <!-- Seleccionar sucursal -->
+
+    <form method="get" class="mb-6">
+
+        <div class="bg-white rounded-xl shadow border p-6">
+
+            <label
+                for="{{ sucursal_form.sucursal.id_for_label }}"
+                class="block text-sm font-medium
+                       text-gray-700 mb-2"
+            >
+                Sucursal
+            </label>
+
+            <div class="flex gap-3">
+
+                {{ sucursal_form.sucursal }}
+
+                <button
+                    type="submit"
+                    class="bg-blue-600 hover:bg-blue-700
+                           text-white px-4 py-2 rounded-lg"
+                >
+                    Ver inventario
+                </button>
+
+            </div>
+
+            {% if sucursal_form.sucursal.errors %}
+
+                <p class="mt-2 text-sm text-red-600">
+                    {{ sucursal_form.sucursal.errors|striptags }}
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </form>
+
+
+    {% if formset %}
+
+        <!-- Información -->
+
+        <div
+            class="bg-white rounded-xl shadow border
+                   p-6 mb-6"
+        >
+
+            <div class="flex justify-between items-center">
+
+                <div>
+
+                    <p class="text-sm text-gray-500">
+                        Sucursal
+                    </p>
+
+                    <p class="text-lg font-semibold">
+                        {{ sucursal.nombre }}
+                    </p>
+
+                </div>
+
+                <div class="text-right">
+
+                    <p class="text-sm text-gray-500">
+                        Fecha
+                    </p>
+
+                    <p class="text-lg font-semibold">
+                        {{ fecha|date:"d/m/Y" }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Inventario -->
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <!-- Volvemos a enviar la sucursal -->
+
+            <input
+                type="hidden"
+                name="sucursal"
+                value="{{ sucursal.id }}"
+            >
+
+            {{ formset.management_form }}
+
+
+            <div
+                class="bg-white rounded-xl shadow border
+                       overflow-hidden"
+            >
+
+                <table class="min-w-full">
+
+                    <thead class="bg-gray-50">
+
+                        <tr>
+
+                            <th
+                                class="px-6 py-3 text-left"
+                            >
+                                Producto
+                            </th>
+
+                            <th
+                                class="px-6 py-3 text-left"
+                            >
+                                Variante
+                            </th>
+
+                            <th
+                                class="px-6 py-3 text-center"
+                            >
+                                Inventario inicial
+                            </th>
+
+                            <th
+                                class="px-6 py-3 text-center"
+                            >
+                                Inventario final
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody class="divide-y">
+
+                        {% for form in formset %}
+
+                            <tr>
+
+                                <td class="px-6 py-4">
+
+                                    <span class="font-medium">
+                                        {{ form.instance.variante.producto.nombre }}
+                                    </span>
+
+                                </td>
+
+
+                                <td class="px-6 py-4">
+
+                                    {{ form.instance.variante.nombre }}
+
+                                </td>
+
+
+                                <td class="px-6 py-4">
+
+                                    <div class="flex justify-center">
+
+                                        {{ form.inventario_inicial }}
+
+                                    </div>
+
+                                </td>
+
+
+                                <td class="px-6 py-4">
+
+                                    <div class="flex justify-center">
+
+                                        {{ form.cantidad }}
+
+                                    </div>
+
+                                    {{ form.id }}
+
+                                    {% if form.cantidad.errors %}
+
+                                        <p
+                                            class="text-sm text-red-600 mt-1"
+                                        >
+                                            {{ form.cantidad.errors|striptags }}
+                                        </p>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="flex justify-end mt-6">
+
+                <button
+                    type="submit"
+                    class="bg-blue-600 hover:bg-blue-700
+                           text-white px-5 py-2 rounded-lg"
+                >
+                    Guardar inventario
+                </button>
+
+            </div>
+
+        </form>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

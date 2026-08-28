@@ -67,7 +67,7 @@ def sidebar_menu(request):
                 },
                 {
                     "titulo": "Registrar inventario",
-                    "url": reverse("ventas:venta_diaria_create"),
+                    "url": reverse("inventario:inventario_diario"),
                 },
 
 
@@ -117,6 +117,15 @@ def sidebar_menu(request):
                 {
                     "titulo": "Productos",
                     "url": reverse("inventario:producto_list"),
+                },
+                {
+                    "titulo": "Inventario diario",
+                    "url": reverse("inventario:inventario_diario"), 
+
+                },
+                {
+                    "titulo": "Historico de inventario diario",
+                    "url": reverse("inventario:inventario_list"), 
                 }
 
             ]

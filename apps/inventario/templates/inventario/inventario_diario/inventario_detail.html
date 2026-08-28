@@ -1,0 +1,139 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Detalle de inventario
+{% endblock %}
+
+{% block page_title %}
+Detalle de inventario
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto">
+
+    <div class="flex justify-between items-center mb-6">
+
+        <div>
+
+            <h1 class="text-3xl font-bold">
+                Inventario diario
+            </h1>
+
+            <div class="text-gray-500 mt-2">
+
+                {{ sucursal.nombre }}
+
+                ·
+
+                {{ fecha|date:"d/m/Y" }}
+
+            </div>
+
+        </div>
+
+        <a
+            href="{% url 'inventario:inventario_update' sucursal.id fecha %}"
+            class="bg-yellow-500 hover:bg-yellow-600
+                text-white px-4 py-2 rounded-lg"
+        >
+            Editar inventario
+        </a>
+
+
+
+
+        <a
+            href="{% url 'inventario:inventario_list' %}"
+            class="bg-gray-600 hover:bg-gray-700
+                   text-white px-4 py-2 rounded-lg"
+        >
+            Regresar
+        </a>
+
+    </div>
+
+
+    <div
+        class="bg-white rounded-xl shadow border
+               overflow-hidden"
+    >
+
+        <table class="min-w-full">
+
+            <thead class="bg-gray-50">
+
+                <tr>
+
+                    <th class="px-6 py-3 text-left">
+                        Producto
+                    </th>
+
+                    <th class="px-6 py-3 text-left">
+                        Variante
+                    </th>
+
+                    <th class="px-6 py-3 text-center">
+                        Inventario final
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody class="divide-y">
+
+                {% for inventario in inventarios %}
+
+                    <tr>
+
+                        <td class="px-6 py-4">
+
+                            {{ inventario.variante.producto.nombre }}
+
+                        </td>
+
+                        <td class="px-6 py-4">
+
+                            {{ inventario.variante.nombre }}
+
+                        </td>
+
+                        <td
+                            class="px-6 py-4
+                                   text-center font-semibold"
+                        >
+
+                            {{ inventario.cantidad }}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="3"
+                            class="text-center py-8
+                                   text-gray-500"
+                        >
+                            No existe inventario para
+                            esta fecha.
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
