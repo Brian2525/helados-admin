@@ -255,43 +255,43 @@
 
     {% if is_paginated %}
 
-    <div class="flex justify-between mt-6">
+<div class="flex justify-between mt-6">
 
-        {% if page_obj.has_previous %}
+    {% if page_obj.has_previous %}
 
-            <a href="?page={{ page_obj.previous_page_number }}"
-               class="px-4 py-2 border rounded-lg">
+        <a href="?{{ pagination_params }}&page={{ page_obj.previous_page_number }}"
+           class="px-4 py-2 border rounded-lg">
 
-                ← Anterior
+            ← Anterior
 
-            </a>
+        </a>
 
-        {% else %}
+    {% else %}
 
-            <div></div>
-
-        {% endif %}
-
-        <span>
-
-            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-
-        </span>
-
-        {% if page_obj.has_next %}
-
-            <a href="?page={{ page_obj.next_page_number }}"
-               class="px-4 py-2 border rounded-lg">
-
-                Siguiente →
-
-            </a>
-
-        {% endif %}
-
-    </div>
+        <div></div>
 
     {% endif %}
+
+    <span>
+        Página {{ page_obj.number }}
+        de
+        {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+
+        <a href="?{{ pagination_params }}&page={{ page_obj.next_page_number }}"
+           class="px-4 py-2 border rounded-lg">
+
+            Siguiente →
+
+        </a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
 
 </div>
 
