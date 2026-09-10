@@ -42,8 +42,24 @@
 
     </main>
 
+    <button
+    type="button"
+    onclick="abrirFeedback()"
+    class="fixed bottom-5 right-5 z-40
+           rounded-full bg-gray-900
+           px-4 py-3 text-sm text-white
+           shadow-lg hover:bg-gray-800"
+>
+    🐛 Reportar problema
+</button>
 </div>
+{% include "feedback/modal.html" %}
+<script src="{% static 'feedback/js/feedback_modal.js' %}"></script>
 
 </body>
+
+
+
+
 
 </html>

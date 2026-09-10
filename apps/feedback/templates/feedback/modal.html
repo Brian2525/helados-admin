@@ -1,0 +1,126 @@
+<div
+    id="feedback-modal"
+    class="hidden fixed inset-0 z-50"
+>
+    <div
+        class="absolute inset-0 bg-black/40"
+        onclick="cerrarFeedback()"
+    ></div>
+
+    <div class="relative flex min-h-screen items-center justify-center p-4">
+
+        <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+
+            <div class="flex items-center justify-between border-b p-5">
+
+                <div>
+                    <h2 class="text-lg font-semibold">
+                        🐛 Reportar un problema
+                    </h2>
+
+                    <p class="text-sm text-gray-500">
+                        Ayúdanos a mejorar el sistema.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="cerrarFeedback()"
+                    class="text-gray-400 hover:text-gray-700"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+            <form
+                id="feedback-form"
+                enctype="multipart/form-data"
+                class="space-y-5 p-5"
+            >
+
+                {% csrf_token %}
+
+               
+                <div>
+
+                    <label class="block text-sm font-medium">
+                        ¿Qué está pasando?
+                    </label>
+
+                    <textarea
+                        name="descripcion"
+                        rows="5"
+                        required
+                        class="mt-1 w-full rounded-lg border-gray-300"
+                        placeholder="Describe el problema..."
+                    ></textarea>
+
+                </div>
+
+                <div>
+
+                    <label class="block text-sm font-medium">
+                        Captura de pantalla
+                    </label>
+
+                    <input
+                        type="file"
+                        name="captura"
+                        accept="image/*"
+                        class="mt-2 w-full text-sm"
+                    >
+
+                </div>
+
+                <!-- Información automática -->
+
+                <input
+                    type="hidden"
+                    name="url"
+                    id="feedback-url"
+                >
+
+                <input
+                    type="hidden"
+                    name="pagina"
+                    id="feedback-pagina"
+                >
+
+                <input
+                    type="hidden"
+                    name="resolucion"
+                    id="feedback-resolucion"
+                >
+
+                <div
+                    id="feedback-error"
+                    class="hidden rounded-lg bg-red-50 p-3 text-sm text-red-700"
+                ></div>
+
+                <div class="flex justify-end gap-3">
+
+                    <button
+                        type="button"
+                        onclick="cerrarFeedback()"
+                        class="rounded-lg px-4 py-2"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-blue-600 px-4 py-2 text-white"
+                    >
+                        Enviar reporte
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>  
+
