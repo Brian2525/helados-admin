@@ -19,9 +19,13 @@ from django.db import transaction
 
 
 from .models import Proveedor, CuentaPorPagar, PagoCuentaPorPagar, ProgramacionPago
-from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm, ProgramacionPagoForm
+from .queries import con_resumen_financiero
+from .forms import ProveedorForm,CuentaPorPagarForm, PagoCuentaForm, ProgramacionPagoForm, FiltroCuentasPorPagarForm
 from apps.gastos.models import Gasto
+from .models import CategoriaGasto, Proveedor
+
 from django.db.models import Q
+
 from django.utils import timezone
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,PropietarioQuerysetMixin, ModulePermissionMixin
 
@@ -88,76 +92,144 @@ class CuentaPorPagarListView(
     context_object_name = "cuentas"
     paginate_by = 20
 
-    def get_queryset(self):
-
-        queryset = super().get_queryset()
-
-        q = self.request.GET.get("q", "").strip()
-        estado = self.request.GET.get("estado", "abiertas")
-
-        cuentas = list(queryset)
-
-        # Búsqueda
-        if q:
-            q = q.lower()
-
-            cuentas = [
-                c for c in cuentas
-                if q in c.proveedor.nombre.lower()
-                or q in (c.descripcion or "").lower()
-            ]
-
-        # Filtro por estado
-        if estado == "pagadas":
-
-            cuentas = [
-                c for c in cuentas
-                if c.estatus == "pagado"
-            ]
-
-        elif estado == "pendientes":
-
-            cuentas = [
-                c for c in cuentas
-                if c.estatus == "pendiente"
-            ]
-
-        elif estado == "parciales":
-
-            cuentas = [
-                c for c in cuentas
-                if c.estatus == "parcial"
-            ]
-
-        elif estado == "vencidas":
-
-            cuentas = [
-                c for c in cuentas
-                if c.estatus == "vencido"
-            ]
-
-        else:
-
-            cuentas = [
-                c for c in cuentas
-                if c.estatus in ("pendiente", "parcial", "vencido")
-            ]
-
-        return cuentas
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
 
-        params = self.request.GET.copy()
+        context["filtros_form"] = self.filtros_form
 
-        # Quitamos page para poder agregar el número
-        # de página nosotros mismos.
-        params.pop("page", None)
+        # Si existen restricciones por empresa o usuario,
+        # aplica también esos permisos a estos catálogos.
+        context["categorias"] = (
+            CategoriaGasto.objects.order_by("pk")
+        )
 
-        context["pagination_params"] = params.urlencode()
+        context["proveedores"] = (
+            Proveedor.objects.order_by("nombre")
+        )
 
-        return context
+        # URL del listado sin filtros.
+        context["list_url"] = self.request.path
+
+        # Conserva los filtros, pero elimina la página actual
+        # para no generar parámetros "page" duplicados.
+        parametros = self.request.GET.copy()
+        parametros.pop("page", None)
+
+        context["pagination_params"] = parametros.urlencode()
+
+        return context 
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # IMPORTANTE:
+        # Este queryset debe estar restringido a la empresa y/o
+        # sucursales que el usuario tiene permitido consultar.
+        # Conserva aquí tu lógica de autorización existente.
+
+        self.filtros_form = FiltroCuentasPorPagarForm(
+            self.request.GET
+        )
+
+        if not self.filtros_form.is_valid():
+            return queryset.none()
+
+        filtros = self.filtros_form.cleaned_data
+
+        queryset = queryset.select_related(
+            "proveedor",
+            "sucursal",
+            "categoria",
+        )
+
+        # -------------------------
+        # BÚSQUEDA
+        # -------------------------
+
+        q = filtros.get("q")
+
+        if q:
+            queryset = queryset.filter(
+                Q(proveedor__nombre__icontains=q)
+                | Q(descripcion__icontains=q)
+            )
+
+        # -------------------------
+        # CATEGORÍA
+        # -------------------------
+
+        categoria = filtros.get("categoria")
+
+        if categoria is not None:
+            queryset = queryset.filter(
+                categoria_id=categoria
+            )
+
+        # -------------------------
+        # PROVEEDOR
+        # -------------------------
+
+        proveedor = filtros.get("proveedor")
+
+        if proveedor is not None:
+            queryset = queryset.filter(
+                proveedor_id=proveedor
+            )
+
+        # -------------------------
+        # FECHAS
+        # -------------------------
+
+        fecha_desde = filtros.get("fecha_desde")
+
+        if fecha_desde:
+            queryset = queryset.filter(
+                fecha__gte=fecha_desde
+            )
+
+        fecha_hasta = filtros.get("fecha_hasta")
+
+        if fecha_hasta:
+            queryset = queryset.filter(
+                fecha__lte=fecha_hasta
+            )
+
+        # -------------------------
+        # RESUMEN FINANCIERO
+        # -------------------------
+
+        queryset = con_resumen_financiero(queryset)
+
+        # -------------------------
+        # ESTADO
+        # -------------------------
+
+        estado = filtros.get("estado") or "abiertas"
+
+        equivalencias = {
+            "pagadas": "pagado",
+            "pendientes": "pendiente",
+            "parciales": "parcial",
+            "vencidas": "vencido",
+        }
+
+        if estado == "abiertas":
+            queryset = queryset.filter(
+                saldo_db__gt=0
+            )
+
+        elif estado in equivalencias:
+            queryset = queryset.filter(
+                estado_filtro=equivalencias[estado]
+            )
+
+        # "todas" no agrega restricciones por estado.
+
+        return queryset.order_by("-fecha", "-pk")
+
+
+  
     
 
 

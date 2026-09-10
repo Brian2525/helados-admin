@@ -155,9 +155,74 @@ class PagoCuentaForm(TailwindModelForm):
 
 class ProgramacionPagoForm(forms.Form):
 
+
     meses = forms.IntegerField(
         min_value=2,
         max_value=60,
         initial=3,
         label="Número de mensualidades"
     )
+
+
+
+
+class FiltroCuentasPorPagarForm(forms.Form):
+    ESTADOS = [
+        ("abiertas", "Abiertas"),
+        ("pagadas", "Pagadas"),
+        ("pendientes", "Pendientes"),
+        ("parciales", "Parciales"),
+        ("vencidas", "Vencidas"),
+        ("todas", "Todas"),
+    ]
+
+    q = forms.CharField(
+        required=False,
+        max_length=200,
+        strip=True,
+    )
+
+    categoria = forms.IntegerField(
+        required=False,
+        min_value=1,
+    )
+
+    proveedor = forms.IntegerField(
+        required=False,
+        min_value=1,
+    )
+
+    estado = forms.ChoiceField(
+        required=False,
+        choices=ESTADOS,
+    )
+
+    fecha_desde = forms.DateField(
+        required=False,
+        input_formats=["%Y-%m-%d"],
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    fecha_hasta = forms.DateField(
+        required=False,
+        input_formats=["%Y-%m-%d"],
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        fecha_desde = cleaned_data.get("fecha_desde")
+        fecha_hasta = cleaned_data.get("fecha_hasta")
+
+        if (
+            fecha_desde
+            and fecha_hasta
+            and fecha_desde > fecha_hasta
+        ):
+            self.add_error(
+                "fecha_hasta",
+                "La fecha final no puede ser anterior a la inicial.",
+            )
+
+        return cleaned_data

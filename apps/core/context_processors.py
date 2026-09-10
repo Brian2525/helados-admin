@@ -32,7 +32,7 @@ def sidebar_menu(request):
 
     if request.user.is_superuser or perfil.finanzas:
         
-                menu.append({
+            menu.append({
                     "titulo": "Cuentas por pagar",
                     "icono": "💳",
                     "url": reverse("compras:cuenta_list"),
