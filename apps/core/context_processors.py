@@ -29,14 +29,6 @@ def sidebar_menu(request):
     # Finanzas
     # ============================
 
-    if request.user.is_superuser or perfil.finanzas:
-
-        menu.append({
-            "titulo": "Compromisos de pago",
-            "icono": "💳",
-            "url": reverse("servicios:list")
-        })
-
 
     if request.user.is_superuser or perfil.finanzas:
         
@@ -46,6 +38,37 @@ def sidebar_menu(request):
                     "url": reverse("compras:cuenta_list"),
         
                 })
+
+     # ============================
+        # Servicios
+        # ============================
+
+    if request.user.is_superuser or perfil.administracion:
+
+            menu.append({
+                "titulo": "Servicios recurrentes",
+                "icono": "  💳",
+
+                "submenu": [
+                    
+                    {
+                        "titulo": "Registrar servicio",
+                        "url": reverse("servicios:create"),
+                    },
+
+                    {
+                        "titulo": "Servicios pendientes",
+                        "url": reverse("servicios:pendientes"),
+                    },
+                    {
+                        "titulo": "Servicios recurrentes",
+                        "url": reverse("servicios:list"),
+                    }
+                ]
+                
+                
+            })
+
 
 
 

@@ -11,6 +11,7 @@ from .models import CategoriaGasto, Gasto
 from .forms import CategoriaGastoForm, GastoForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.sucursales.models import Sucursal
+from django.db.models import Sum
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePermissionMixin
 
 class CategoriaGastoListView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, ListView):
@@ -74,6 +75,19 @@ class GastoListView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredM
             queryset = queryset.filter(fecha__lte=fecha_fin)
 
         return queryset.order_by("-fecha", "-id")
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs) 
+        # Categorías disponibles 
+        context["categorias"] = CategoriaGasto.objects.all() 
+        # Total de todos los gastos que cumplen los filtros 
+        total_gastos = self.get_queryset().aggregate( 
+            total=Sum("monto") 
+            )["total"] or 0 
+        context["total_gastos"] = total_gastos 
+
+        return context
 
 
 class GastoCreateView(ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):

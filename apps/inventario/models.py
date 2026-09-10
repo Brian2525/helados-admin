@@ -115,6 +115,30 @@ class InventarioDiario(models.Model):
         auto_now=True
     )
 
+    @property
+    def inventario_inicial(self):
+
+        inventario_anterior = (
+            InventarioDiario.objects
+            .filter(
+                sucursal=self.sucursal,
+                variante=self.variante,
+                fecha__lt=self.fecha
+            )
+            .order_by("-fecha")
+            .first()
+        )
+
+        if inventario_anterior:
+            return inventario_anterior.cantidad
+
+        return 0
+
+    @property
+    def consumo(self):
+
+        return self.inventario_inicial - self.cantidad
+
     class Meta:
 
         ordering = [
