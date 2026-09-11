@@ -19,7 +19,6 @@ class Producto(models.Model):
         help_text="Indica si sus variantes se muestran en el registro diario de ventas."
     )
 
- 
 
     activo = models.BooleanField(
         default=True

@@ -493,7 +493,7 @@ class InventarioDiarioView(SucursalPermissionMixin,LoginRequiredMixin,View):
             
 
             return redirect(
-                "inventario:inventario_diario_completado",
+                "inventario:inventario_detail",
                 sucursal_id=sucursal.id,
                 fecha=fecha.isoformat()
             )
@@ -603,6 +603,7 @@ class InventarioDiarioListView(SucursalPermissionMixin,LoginRequiredMixin,ListVi
 
 
 
+
 class InventarioDiarioDetailView(SucursalPermissionMixin,LoginRequiredMixin,View):
     module_permission = "administracion"
 
@@ -618,6 +619,11 @@ class InventarioDiarioDetailView(SucursalPermissionMixin,LoginRequiredMixin,View
             sucursales,
             pk=sucursal_id
         )
+
+        fecha = datetime.strptime(
+        fecha,
+            "%Y-%m-%d"
+        ).date()
 
         inventarios = (
             InventarioDiario.objects

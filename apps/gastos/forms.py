@@ -12,6 +12,7 @@ class CategoriaGastoForm(TailwindModelForm):
             "nombre",
             "descripcion",
             "activa",
+            
         ]
 
         widgets = {
@@ -37,6 +38,7 @@ class GastoForm(TailwindModelForm):
             "categoria",
             "monto",
             "descripcion",
+            "comprobante",
           
         ]
 
@@ -64,7 +66,11 @@ class GastoForm(TailwindModelForm):
             "categoria": forms.Select(
                 attrs={"class": "form-select"}
             ),
+            
         }
+
+
+
 
 class PagoServicioForm(TailwindModelForm):
 

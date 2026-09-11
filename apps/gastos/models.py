@@ -92,6 +92,14 @@ class Gasto(models.Model):
         max_digits=12,
         decimal_places=2
     )
+
+    comprobante = models.FileField(
+        upload_to="gastos/comprobantes/%Y/%m/",
+        blank=True,
+        null=True
+    )
+
+
     
     pago_nomina = models.OneToOneField(
         "nomina.PagoNomina",
