@@ -80,17 +80,23 @@ class NominaPendienteListView(SucursalQuerysetMixin,LoginRequiredMixin,ListView)
     context_object_name = "nominas"
     module_permission = "administracion"
 
+    sucursal_lookup = "empleado__sucursal"
+
     def get_queryset(self):
+        # Obtiene el queryset ya restringido por sucursal.
+        queryset = super().get_queryset()
+
         return (
-            Nomina.objects
+            queryset
             .filter(
                 empleado__activo=True,
-                estado="pendiente")
+                estado="pendiente",
+            )
             .select_related(
                 "empleado",
                 "empleado__sucursal",
             )
-            .order_by("fecha_vencimiento")
+            .order_by("fecha_vencimiento", "pk")
         )
 
 
