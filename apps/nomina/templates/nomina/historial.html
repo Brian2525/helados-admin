@@ -26,7 +26,7 @@ Fecha
 
 <th>
 
-Empleado
+Nombre 
 
 </th>
 
@@ -35,6 +35,12 @@ Empleado
 Periodo
 
 </th>
+
+<th>
+
+Sucursal
+    
+    </th>
 <th>
 
 Estatus 
@@ -77,6 +83,14 @@ Monto
 </td>
 
 <td>
+
+    
+
+    {{ pago.empleado.sucursal }}
+    
+    </td>
+
+<td>
 {{ pago.estado }}
 </td>
 
@@ -84,6 +98,7 @@ Monto
 <td>
 
 ${{ pago.monto }}
+
 
 </td>
 

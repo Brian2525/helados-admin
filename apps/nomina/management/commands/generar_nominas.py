@@ -17,7 +17,7 @@ class Command(BaseCommand):
         weekday = hoy.weekday()
 
         # Miércoles
-        if weekday == 0:
+        if weekday == 1:
 
             nominas = generar_nominas("SEMANA")
 
