@@ -46,7 +46,10 @@ class SucursalQuerysetMixin(SucursalPermissionMixin):
             return qs
 
         return qs.filter(
-            sucursal__in=self.get_sucursales_usuario()
+            **{
+                f"{self.sucursal_lookup}__in":
+                    self.get_sucursales_usuario()
+            }
         )
 
 class SucursalFormMixin(SucursalPermissionMixin):

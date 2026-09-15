@@ -2,6 +2,8 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from datetime import timedelta
+from calendar import monthrange
+
 
 from decimal import Decimal
 
@@ -24,7 +26,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,ModulePermissionMixin
 
 
-class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, TemplateView):
+class ServicioRecurrenteListView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    TemplateView
+):
 
     template_name = "servicios/list.html"
 
@@ -33,50 +39,115 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
         context = super().get_context_data(**kwargs)
 
         hoy = date.today()
-       
+
+        # ==========================================================
+        # FILTROS
+        # ==========================================================
 
         tipo = self.request.GET.get("tipo", "todos")
 
+        try:
+            mes = int(self.request.GET.get("mes", hoy.month))
+            if mes < 1 or mes > 12:
+                mes = hoy.month
+        except (TypeError, ValueError):
+            mes = hoy.month
+
+        try:
+            anio = int(self.request.GET.get("anio", hoy.year))
+        except (TypeError, ValueError):
+            anio = hoy.year
+
+        sucursal_id = self.request.GET.get("sucursal", "")
+
         compromisos = []
 
-        # ============================
-        # SERVICIOS RECURRENTES
-        # ============================
+        # ==========================================================
+        # SUCURSALES DISPONIBLES PARA EL USUARIO
+        # ==========================================================
 
-        servicios = self.filtrar_por_sucursal_usuario(
-        ServicioRecurrente.objects.filter(
-            activo=True
-        ).select_related(
-            "sucursal",
-            "categoria"
+        sucursales = self.request.user.sucursales_asignadas.all()
+
+        # Si el usuario es propietario, agregar sus sucursales
+        sucursales_propias = self.request.user.sucursales_propias.all()
+
+        sucursales = (
+            (sucursales | sucursales_propias)
+            .distinct()
+            .order_by("nombre")
         )
-    )
+
+        # ==========================================================
+        # FILTRO DE SUCURSAL
+        # ==========================================================
+
+        if sucursal_id:
+            try:
+                sucursal_id = int(sucursal_id)
+            except (TypeError, ValueError):
+                sucursal_id = ""
+
+        # ==========================================================
+        # SERVICIOS RECURRENTES
+        # ==========================================================
 
         if tipo in ["todos", "servicios"]:
 
+            servicios = self.filtrar_por_sucursal_usuario(
+                ServicioRecurrente.objects.filter(
+                    activo=True
+                ).select_related(
+                    "sucursal",
+                    "categoria"
+                )
+            )
+
+            if sucursal_id:
+                servicios = servicios.filter(
+                    sucursal_id=sucursal_id
+                )
+
+            # Último día del mes seleccionado
+            ultimo_dia = monthrange(anio, mes)[1]
+
             for servicio in servicios:
+
+                # --------------------------------------------------
+                # ¿Ya fue pagado ese servicio durante el mes?
+                # --------------------------------------------------
 
                 pagado = PagoServicio.objects.filter(
                     servicio=servicio,
-                    fecha_pago__year=hoy.year,
-                    fecha_pago__month=hoy.month,
+                    fecha_pago__year=anio,
+                    fecha_pago__month=mes,
                 ).exists()
 
                 if pagado:
                     continue
 
-                fecha_vencimiento = date(
-                    hoy.year,
-                    hoy.month,
-                    servicio.dia_pago
+                # --------------------------------------------------
+                # Evitar error para servicios con día 29, 30 o 31
+                # en meses que no tienen ese día.
+                # --------------------------------------------------
+
+                dia_pago = min(
+                    servicio.dia_pago,
+                    ultimo_dia
                 )
 
-                dias = (fecha_vencimiento - hoy).days
-                dias_restantes = (fecha_vencimiento - hoy).days
+                fecha_vencimiento = date(
+                    anio,
+                    mes,
+                    dia_pago
+                )
 
-                if dias < 0:
+                dias_restantes = (
+                    fecha_vencimiento - hoy
+                ).days
+
+                if dias_restantes < 0:
                     estado = "vencido"
-                elif dias <= 5:
+                elif dias_restantes <= 5:
                     estado = "proximo"
                 else:
                     estado = "pendiente"
@@ -94,25 +165,49 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
                     "dias_restantes": dias_restantes,
                 })
 
-        # ============================
+        # ==========================================================
         # CUENTAS POR PAGAR
-        # ============================
-
-        cuentas = self.filtrar_por_sucursal_usuario(
-        CuentaPorPagar.objects.select_related(
-            "proveedor",
-            "categoria",
-            "sucursal"
-        )
-    )
-
+        # ==========================================================
 
         if tipo in ["todos", "cuentas"]:
+
+            cuentas = self.filtrar_por_sucursal_usuario(
+                CuentaPorPagar.objects.select_related(
+                    "proveedor",
+                    "categoria",
+                    "sucursal"
+                )
+            )
+
+            if sucursal_id:
+                cuentas = cuentas.filter(
+                    sucursal_id=sucursal_id
+                )
+
+            # Filtrar por mes y año
+            cuentas = cuentas.filter(
+                fecha_vencimiento__year=anio,
+                fecha_vencimiento__month=mes,
+            )
 
             for cuenta in cuentas:
 
                 if cuenta.estatus == "pagado":
                     continue
+
+                dias_restantes = (
+                    cuenta.fecha_vencimiento - hoy
+                ).days
+
+                # Si tu modelo usa "parcial", conservarlo
+                if cuenta.estatus == "parcial":
+                    estado = "parcial"
+                elif dias_restantes < 0:
+                    estado = "vencido"
+                elif dias_restantes <= 5:
+                    estado = "proximo"
+                else:
+                    estado = "pendiente"
 
                 compromisos.append({
                     "tipo": "Cuenta",
@@ -122,29 +217,35 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
                     "proveedor": cuenta.proveedor,
                     "monto": cuenta.saldo,
                     "fecha": cuenta.fecha_vencimiento,
-                    "estado": cuenta.estatus,
+                    "estado": estado,
                     "objeto": cuenta,
-                    "dias_restantes": (cuenta.fecha_vencimiento - hoy).days,
+                    "dias_restantes": dias_restantes,
                 })
-        # ============================
+
+        # ==========================================================
         # NÓMINA
-        # ============================
-
-        empleados = self.filtrar_por_sucursal_usuario(
-        Empleado.objects.filter(
-            activo=True
-        ).select_related(
-            "sucursal"
-        )
-    )
-
-
+        # ==========================================================
 
         if tipo in ["todos", "nomina"]:
 
+            empleados = self.filtrar_por_sucursal_usuario(
+                Empleado.objects.filter(
+                    activo=True
+                ).select_related(
+                    "sucursal"
+                )
+            )
+
+            if sucursal_id:
+                empleados = empleados.filter(
+                    sucursal_id=sucursal_id
+                )
+
             nominas = Nomina.objects.filter(
-                empleado__activo=True,
+                empleado__in=empleados,
                 estado__in=["pendiente", "vencida"],
+                fecha_vencimiento__year=anio,
+                fecha_vencimiento__month=mes,
             ).select_related(
                 "empleado",
                 "empleado__sucursal",
@@ -152,11 +253,13 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
 
             for nomina in nominas:
 
-                dias = (nomina.fecha_vencimiento - hoy).days
+                dias_restantes = (
+                    nomina.fecha_vencimiento - hoy
+                ).days
 
-                if dias < 0:
+                if dias_restantes < 0:
                     estado = "vencido"
-                elif dias <= 5:
+                elif dias_restantes <= 5:
                     estado = "proximo"
                 else:
                     estado = "pendiente"
@@ -171,24 +274,29 @@ class ServicioRecurrenteListView(LoginRequiredMixin,SucursalPermissionMixin, Tem
                     "fecha": nomina.fecha_vencimiento,
                     "estado": estado,
                     "objeto": nomina,
-                    "dias_restantes": dias,
+                    "dias_restantes": dias_restantes,
                 })
 
+        # ==========================================================
+        # ORDENAR
+        # ==========================================================
 
+        compromisos.sort(
+            key=lambda x: x["fecha"]
+        )
 
+        # ==========================================================
+        # CONTEXTO
+        # ==========================================================
 
-            # ============================
-            # ORDENAR POR FECHA
-            # ============================
+        context["compromisos"] = compromisos
+        context["tipo"] = tipo
+        context["mes"] = mes
+        context["anio"] = anio
+        context["sucursal_id"] = sucursal_id
+        context["sucursales"] = sucursales
 
-            compromisos.sort(
-                key=lambda x: x["fecha"]
-            )
-
-            context["compromisos"] = compromisos
-            context["tipo"] = tipo
-
-            return context
+        return context
 
 
 class ServicioRecurrenteCreateView( ModulePermissionMixin, SucursalQuerysetMixin, SucursalFormMixin, LoginRequiredMixin, CreateView):

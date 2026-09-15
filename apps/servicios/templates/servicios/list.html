@@ -26,54 +26,128 @@ Compromisos de pago
 
     <div class="bg-white rounded-xl shadow border mb-6">
 
-        <form method="get" class="p-5 flex flex-wrap gap-4 items-end">
-
+        <form method="get"
+              class="p-5 flex flex-wrap gap-4 items-end">
+    
+            <!-- TIPO -->
             <div>
-
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Tipo
                 </label>
-
+    
                 <select
                     name="tipo"
                     class="rounded-lg border-gray-300">
-
+    
                     <option value="todos"
                         {% if tipo == "todos" %}selected{% endif %}>
                         Todos
                     </option>
-
+    
                     <option value="servicios"
                         {% if tipo == "servicios" %}selected{% endif %}>
                         Servicios recurrentes
                     </option>
-
+    
                     <option value="cuentas"
                         {% if tipo == "cuentas" %}selected{% endif %}>
                         Cuentas por pagar
                     </option>
-
+    
                     <option value="nomina"
                         {% if tipo == "nomina" %}selected{% endif %}>
                         Nómina
                     </option>
-
+    
                 </select>
-
             </div>
-
+    
+    
+            <!-- MES -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Mes
+                </label>
+    
+                <select
+                    name="mes"
+                    class="rounded-lg border-gray-300">
+    
+                    {% for numero, nombre in meses %}
+                        <option value="{{ numero }}"
+                            {% if mes == numero %}selected{% endif %}>
+                            {{ nombre }}
+                        </option>
+                    {% endfor %}
+    
+                </select>
+            </div>
+    
+    
+            <!-- AÑO -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Año
+                </label>
+    
+                <select
+                    name="anio"
+                    class="rounded-lg border-gray-300">
+    
+                    {% for anio_opcion in anios %}
+                        <option value="{{ anio_opcion }}"
+                            {% if anio == anio_opcion %}selected{% endif %}>
+                            {{ anio_opcion }}
+                        </option>
+                    {% endfor %}
+    
+                </select>
+            </div>
+    
+    
+            <!-- SUCURSAL -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Sucursal
+                </label>
+    
+                <select
+                    name="sucursal"
+                    class="rounded-lg border-gray-300">
+    
+                    <option value="">
+                        Todas
+                    </option>
+    
+                    {% for sucursal in sucursales %}
+    
+                        <option
+                            value="{{ sucursal.id }}"
+                            {% if sucursal_id|stringformat:"s" == sucursal.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ sucursal.nombre }}
+                        </option>
+    
+                    {% endfor %}
+    
+                </select>
+            </div>
+    
+    
+            <!-- BOTÓN -->
             <button
                 type="submit"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
-
+    
                 Filtrar
-
+    
             </button>
-
+    
         </form>
-
+    
     </div>
-
     <div class="bg-white rounded-xl shadow overflow-hidden">
 
         <table class="min-w-full divide-y divide-gray-200">

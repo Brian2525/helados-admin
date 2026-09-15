@@ -106,6 +106,22 @@ class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalPermi
     context_object_name = "pagos"
     paginate_by = 20
 
+    sucursal_lookup = "empleado__sucursal"
+
+    def get_queryset(self):
+        return (
+            Nomina.objects
+            .filter(
+                empleado__activo=True,
+                estado="pendiente"
+            )
+            .select_related(
+                "empleado",
+                "empleado__sucursal",
+            )
+            .order_by("fecha_vencimiento")
+        )
+
 
 
 

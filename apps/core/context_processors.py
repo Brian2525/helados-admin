@@ -69,6 +69,26 @@ def sidebar_menu(request):
                 
             })
 
+    if request.user.is_superuser or perfil.administracion:
+
+        menu.append({
+
+            "titulo": "Sucursales",
+            "icono": "👥",
+
+            "submenu": [
+                 
+                 {
+                    "titulo": "Todas",
+                    "url": reverse("sucursales:list"),
+                },
+
+            
+
+            ]
+
+        })
+
 
 
 
@@ -204,6 +224,11 @@ def sidebar_menu(request):
             "icono": "👥",
 
             "submenu": [
+                 
+                 {
+                    "titulo": "Pendiente",
+                    "url": reverse("nomina:pendientes"),
+                },
 
                 {
                     "titulo": "Historial",
