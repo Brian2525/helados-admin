@@ -16,7 +16,7 @@ class Command(BaseCommand):
         hoy = timezone.localdate()
         weekday = hoy.weekday()
 
-        # Miércoles
+        # Martes
         if weekday == 1:
 
             nominas = generar_nominas("SEMANA")

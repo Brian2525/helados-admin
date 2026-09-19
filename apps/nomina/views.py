@@ -122,7 +122,7 @@ class PagoNominaListView(ModulePermissionMixin, LoginRequiredMixin,SucursalQuery
             queryset
             .filter(
                 empleado__activo=True,
-                estado="pendiente",
+        
             )
             .select_related(
                 "empleado",
