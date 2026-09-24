@@ -5,6 +5,11 @@ from .views import (
     CategoriaGastoCreateView,
     CategoriaGastoUpdateView,
     CategoriaGastoDeleteView,
+    GastoListView,
+    GastoCreateView,
+    GastoUpdateView,
+    GastoDeleteView,
+    CompromisosListView,
 )
 
 app_name = "gastos"
@@ -35,39 +40,35 @@ urlpatterns = [
         name="categoria_delete"
     ),
 
+    path(
+            "",
+            GastoListView.as_view(),
+            name="list"
+        ),
+    
+    path(
+            "crear/",
+            GastoCreateView.as_view(),
+            name="create"
+        ),
+    
+    path(
+            "<int:pk>/editar/",
+            GastoUpdateView.as_view(),
+            name="update"
+        ),
+    
+    path(
+            "<int:pk>/eliminar/",
+            GastoDeleteView.as_view(),
+            name="delete"
+        ),
+    path(
+            "compromisos_pago/",
+            CompromisosListView.as_view(),
+            name="compromisos_pago"
+        ),
+
+
 ]
 
-
-from .views import (
-    GastoListView,
-    GastoCreateView,
-    GastoUpdateView,
-    GastoDeleteView,
-)
-
-urlpatterns += [
-
-    path(
-        "",
-        GastoListView.as_view(),
-        name="list"
-    ),
-
-    path(
-        "crear/",
-        GastoCreateView.as_view(),
-        name="create"
-    ),
-
-    path(
-        "<int:pk>/editar/",
-        GastoUpdateView.as_view(),
-        name="update"
-    ),
-
-    path(
-        "<int:pk>/eliminar/",
-        GastoDeleteView.as_view(),
-        name="delete"
-    ),
-]

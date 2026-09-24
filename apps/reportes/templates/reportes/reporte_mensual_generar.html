@@ -1,0 +1,11 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+  <h1>Generar reporte mensual</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Generar / Regenerar reporte</button>
+  </form>
+{% endblock %}

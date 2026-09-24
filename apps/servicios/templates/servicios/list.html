@@ -1,126 +1,52 @@
 {% extends 'core/base_dashboard.html' %}
 
 {% block title %}
-Compromisos de pago
+Servicios recurrentes
 {% endblock %}
 
 {% block content %}
 
 <div class="max-w-7xl mx-auto p-6">
 
+    <!-- ENCABEZADO -->
     <div class="flex items-center justify-between mb-6">
 
         <div>
-
             <h1 class="text-3xl font-bold text-gray-900">
-                Compromisos de pago
+                Servicios recurrentes
             </h1>
 
             <p class="mt-1 text-gray-500">
-                Servicios recurrentes y cuentas por pagar.
+                Consulta y administra los servicios recurrentes de tus sucursales.
             </p>
-
         </div>
 
     </div>
 
+
+    <!-- FILTROS -->
     <div class="bg-white rounded-xl shadow border mb-6">
 
         <form method="get"
               class="p-5 flex flex-wrap gap-4 items-end">
-    
-            <!-- TIPO -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo
-                </label>
-    
-                <select
-                    name="tipo"
-                    class="rounded-lg border-gray-300">
-    
-                    <option value="todos"
-                        {% if tipo == "todos" %}selected{% endif %}>
-                        Todos
-                    </option>
-    
-                    <option value="servicios"
-                        {% if tipo == "servicios" %}selected{% endif %}>
-                        Servicios recurrentes
-                    </option>
-    
-                    <option value="cuentas"
-                        {% if tipo == "cuentas" %}selected{% endif %}>
-                        Cuentas por pagar
-                    </option>
-    
-                    <option value="nomina"
-                        {% if tipo == "nomina" %}selected{% endif %}>
-                        Nómina
-                    </option>
-    
-                </select>
-            </div>
-    
-    
-            <!-- MES -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Mes
-                </label>
-    
-                <select
-                    name="mes"
-                    class="rounded-lg border-gray-300">
-    
-                    {% for numero, nombre in meses %}
-                        <option value="{{ numero }}"
-                            {% if mes == numero %}selected{% endif %}>
-                            {{ nombre }}
-                        </option>
-                    {% endfor %}
-    
-                </select>
-            </div>
-    
-    
-            <!-- AÑO -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Año
-                </label>
-    
-                <select
-                    name="anio"
-                    class="rounded-lg border-gray-300">
-    
-                    {% for anio_opcion in anios %}
-                        <option value="{{ anio_opcion }}"
-                            {% if anio == anio_opcion %}selected{% endif %}>
-                            {{ anio_opcion }}
-                        </option>
-                    {% endfor %}
-    
-                </select>
-            </div>
-    
-    
+
             <!-- SUCURSAL -->
             <div>
+
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Sucursal
                 </label>
-    
+
                 <select
                     name="sucursal"
                     class="rounded-lg border-gray-300">
-    
+
                     <option value="">
                         Todas
                     </option>
-    
+
                     {% for sucursal in sucursales %}
-    
+
                         <option
                             value="{{ sucursal.id }}"
                             {% if sucursal_id|stringformat:"s" == sucursal.id|stringformat:"s" %}
@@ -129,25 +55,29 @@ Compromisos de pago
                         >
                             {{ sucursal.nombre }}
                         </option>
-    
+
                     {% endfor %}
-    
+
                 </select>
+
             </div>
-    
-    
+
+
             <!-- BOTÓN -->
             <button
                 type="submit"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
-    
+
                 Filtrar
-    
+
             </button>
-    
+
         </form>
-    
+
     </div>
+
+
+    <!-- TABLA -->
     <div class="bg-white rounded-xl shadow overflow-hidden">
 
         <table class="min-w-full divide-y divide-gray-200">
@@ -155,20 +85,13 @@ Compromisos de pago
             <thead class="bg-gray-50">
 
                 <tr>
-                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
-                            Prioridad
-                    </th>
-
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-                        Tipo
-                    </th>
 
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
                         Sucursal
                     </th>
 
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-                        Concepto
+                        Servicio
                     </th>
 
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
@@ -179,16 +102,12 @@ Compromisos de pago
                         Proveedor
                     </th>
 
-                    <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
-                        Vence
-                    </th>
-
                     <th class="px-6 py-3 text-right text-xs font-semibold uppercase">
-                        Monto
+                        Monto estimado
                     </th>
 
                     <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
-                        Estado
+                        Día de pago
                     </th>
 
                     <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
@@ -199,232 +118,83 @@ Compromisos de pago
 
             </thead>
 
+
             <tbody class="divide-y divide-gray-100">
 
-            {% for compromiso in compromisos %}
+                {% for servicio in servicios %}
 
-                <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50">
 
-                    <td class="px-6 py-4 text-center">
+                        <!-- SUCURSAL -->
+                        <td class="px-6 py-4">
+                            {{ servicio.sucursal }}
+                        </td>
 
-                        {% if compromiso.estado == "vencido" %}
 
-                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
-                                🔴 Alta
-                            </span>
+                        <!-- SERVICIO -->
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            {{ servicio.nombre }}
+                        </td>
 
-                        {% elif compromiso.estado == "proximo" %}
 
-                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
-                                🟠 Media
-                            </span>
+                        <!-- CATEGORÍA -->
+                        <td class="px-6 py-4">
+                            {{ servicio.categoria }}
+                        </td>
 
-                        {% else %}
 
-                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
-                                🟢 Baja
-                            </span>
+                        <!-- PROVEEDOR -->
+                        <td class="px-6 py-4">
+                            {{ servicio.proveedor|default:"—" }}
+                        </td>
 
-                        {% endif %}
 
-                    </td>
-              
-                    
-                    <td class="px-6 py-4">
+                        <!-- MONTO -->
+                        <td class="px-6 py-4 text-right font-semibold">
+                            ${{ servicio.monto_estimado|floatformat:2 }}
+                        </td>
 
-                        {% if compromiso.tipo == "Servicio" %}
 
-                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        <!-- DÍA DE PAGO -->
+                        <td class="px-6 py-4 text-center">
+                            Día {{ servicio.dia_pago }}
+                        </td>
 
-                                Servicio
 
-                            </span>
-                        {% elif compromiso.tipo == "Nomina" %}
+                        <!-- ACCIONES -->
+                        <td class="px-6 py-4">
 
-                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
-
-                                Nómina
-
-                            </span>
-
-                        {% else %}
-
-                            <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">
-
-                                Cuenta
-
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td class="px-6 py-4">
-
-                        {{ compromiso.sucursal }}
-
-                    </td>
-
-                    <td class="px-6 py-4 font-medium">
-
-                        {{ compromiso.concepto }}
-
-                    </td>
-
-                    <td class="px-6 py-4">
-
-                        {{ compromiso.categoria }}
-
-                    </td>
-
-                    <td class="px-6 py-4">
-
-                        {{ compromiso.proveedor|default:"—" }}
-
-                    </td>
-
-                    <td class="px-6 py-4 text-center">
-
-                        {{ compromiso.fecha }}
-
-                    </td>
-
-                    <td class="px-6 py-4 text-right font-semibold">
-
-                        ${{ compromiso.monto |floatformat:2 }}
-
-                    </td>
-
-                    <td class="px-6 py-4 text-center">
-
-                        {% if compromiso.estado == "vencido" %}
-
-                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">
-
-                                Vencido
-
-                            </span>
-
-                        {% elif compromiso.estado == "proximo" %}
-
-                            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs">
-
-                                Próximo
-
-                            </span>
-
-                        {% elif compromiso.estado == "parcial" %}
-
-                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
-
-                                Parcial
-
-                            </span>
-
-                        {% elif compromiso.estado == "pendiente" %}
-
-                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
-
-                                Pendiente
-
-                            </span>
-
-                        {% else %}
-
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
-
-                                Pagado
-
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td class="px-6 py-4">
-
-                        <div class="flex justify-center gap-2 flex-wrap">
-
-                            {% if compromiso.tipo == "Servicio" %}
+                            <div class="flex justify-center gap-2">
 
                                 <a
-                                    href="{% url 'servicios:update' compromiso.objeto.pk %}"
+                                    href="{% url 'servicios:update' servicio.pk %}"
                                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
-                                    Ver
-                                </a>
 
-                                <a
-                                    href="{% url 'servicios:update' compromiso.objeto.pk %}"
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
                                     Editar
+
                                 </a>
 
-                                <a
-                                    href="{% url 'servicios:registrar_pago' compromiso.objeto.pk %}"
-                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                                    Registrar pago
-                                </a>
+                            </div>
 
+                        </td>
 
-                             {% elif compromiso.tipo == "Nomina" %}
+                    </tr>
 
-                                <a
-                                    href="{% url 'nomina:pagar' compromiso.objeto.id %}"
-                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                                    Registrar pago
-                                </a>    
+                {% empty %}
 
-                            {% else %}
+                    <tr>
 
-                                <a
-                                    href="{% url 'compras:cuenta_detail' compromiso.objeto.id   %}"
-                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm">
-                                    Ver
-                                </a>
+                        <td
+                            colspan="7"
+                            class="text-center py-10 text-gray-500">
 
-                                <a
-                                    href="{% url 'compras:cuenta_edit' compromiso.objeto.id %}"
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
-                                    Editar
-                                </a>
-                                <a 
-                                    href="{% url 'compras:cuenta_delete' compromiso.objeto.id %}"
-                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                                    Eliminar
-                                </a>
+                            No existen servicios recurrentes.
 
+                        </td>
 
+                    </tr>
 
-                                
-
-                               
-
-                            {% endif %}
-
-                        </div>
-
-                    </td>
-
-                
-                </tr>
-
-
-                
-
-            {% empty %}
-
-                <tr>
-
-                    <td colspan="8"
-                        class="text-center py-10 text-gray-500">
-
-                        No existen compromisos pendientes.
-
-                    </td>
-
-                </tr>
-
-            {% endfor %}
+                {% endfor %}
 
             </tbody>
 

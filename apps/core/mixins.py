@@ -99,12 +99,15 @@ class ModulePermissionMixin:
                 **kwargs
             )
 
-        if not getattr(
-            request.user.perfil,
-            self.module_permission,
-            False
-        ):
-            raise PermissionDenied
+        perfil = getattr(request.user, "perfil", None)
+
+        if perfil is not None:
+            if not getattr(
+                perfil,
+                self.module_permission,
+                False
+            ):
+                raise PermissionDenied
 
         return super().dispatch(
             request,

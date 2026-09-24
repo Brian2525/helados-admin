@@ -35,6 +35,7 @@ urlpatterns = [
     path('compras/', include('apps.compras.urls', namespace='compras')),
     path('inventario/', include('apps.inventario.urls', namespace='inventario')),
     path('feedback/', include ('apps.feedback.urls', namespace='feedback')),
+    path('reportes/', include('apps.reportes.urls', namespace='reportes')),
     path('nomina/', include('apps.nomina.urls', namespace='nomina')),]
     
 if settings.DEBUG:

@@ -1,0 +1,97 @@
+{% extends 'core/base_dashboard.html' %}
+
+
+{% block content %}
+  <h1>Reportes mensuales</h1>
+
+  <p>
+    <a href="{% url 'reportes:reporte_mensual_generar' %}">
+      Generar nuevo reporte
+    </a>
+  </p>
+
+  <form method="get">
+    {{ filter_form.as_p }}
+    <button type="submit">Filtrar</button>
+    <a href="{% url 'reportes:reporte_mensual_list' %}">Limpiar</a>
+  </form>
+
+  <hr>
+
+  {% if reportes %}
+    <table border="1" cellpadding="6" cellspacing="0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Propietario</th>
+          <th>Periodo</th>
+          <th>Alcance</th>
+          <th>Schema</th>
+          <th>Generado en</th>
+          <th>Generado por</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reporte in reportes %}
+          <tr>
+            <td>{{ reporte.id }}</td>
+            <td>{{ reporte.propietario.username }}</td>
+            <td>{{ reporte.mes }}/{{ reporte.anio }}</td>
+            <td>
+              {% if reporte.sucursal %}
+                {{ reporte.sucursal.nombre }}
+              {% else %}
+                Consolidado
+              {% endif %}
+            </td>
+            <td>{{ reporte.schema_version }}</td>
+            <td>{{ reporte.generado_en }}</td>
+            <td>
+              {% if reporte.generado_por %}
+                {{ reporte.generado_por.username }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'reportes:reporte_mensual_json' pk=reporte.pk %}">
+                Ver JSON
+              </a>
+
+              <form
+                method="post"
+                action="{% url 'reportes:reporte_mensual_regenerar' pk=reporte.pk %}"
+                style="display:inline;"
+              >
+                {% csrf_token %}
+                <button type="submit">Regenerar</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if is_paginated %}
+      <div style="margin-top: 16px;">
+        {% if page_obj.has_previous %}
+          <a href="?page=1">Primera</a>
+          <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {% endif %}
+
+        <span>
+          Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    <p>No hay reportes generados con esos filtros.</p>
+  {% endif %}
+{% endblock %}

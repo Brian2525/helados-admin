@@ -28,6 +28,13 @@ def sidebar_menu(request):
     # ============================
     # Finanzas
     # ============================
+    if request.user.is_superuser or perfil.finanzas:
+
+        menu.append({
+            "titulo": "Compromisos de pago",
+            "url": reverse("gastos:compromisos_pago"),
+        })
+    
 
 
     if request.user.is_superuser or perfil.finanzas:
