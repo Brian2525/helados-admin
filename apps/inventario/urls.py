@@ -14,6 +14,7 @@ from .views import (
     InventarioDiarioDetailView,
     InventarioDiarioUpdateView,
     InventarioDiarioCompletadoView,
+    ConsumoTeoricoView,
 )
 
 app_name = "inventario"
@@ -93,12 +94,13 @@ urlpatterns = [
     "inventario-diario/<int:sucursal_id>/<str:fecha>/editar/",
     InventarioDiarioUpdateView.as_view(),
     name="inventario_update",
-),
+    ),
 
 
     path("inventario-diario/completado/<int:sucursal_id>/<str:fecha>/",
          InventarioDiarioCompletadoView.as_view(),name="inventario_diario_completado"),
 
+    path("consumo-teorico/",ConsumoTeoricoView.as_view(),name="consumo_teorico",),
 
 
 

@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.views import View
 from django.db import transaction
 from django.db.models import Count
-from datetime import datetime
+from datetime import datetime, timedelta
 from datetime import date
 
 
@@ -27,7 +27,8 @@ from django.views.generic import (
 from .forms import ProductoForm, VarianteProductoForm, InventarioDiarioFormSet, InventarioSucursalForm
 from .models import Producto, VarianteProducto, InventarioDiario
 from apps.sucursales.models import Sucursal
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePermissionMixin
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePermissionMixin, SucursalActivaMixin
+from .services import consumo_teorico_periodo
 
 
 
@@ -764,5 +765,167 @@ class InventarioDiarioUpdateView(ModulePermissionMixin,SucursalQuerysetMixin,Log
                 "formset": formset,
                 "sucursal": sucursal,
                 "fecha": fecha,
+            }
+        )
+
+
+class ConsumoTeoricoView(
+    LoginRequiredMixin,
+    SucursalActivaMixin,
+    SucursalPermissionMixin,
+    View
+):
+    template_name = "inventario/consumo_teorico.html"
+
+    def get(self, request):
+
+        sucursal = request.sucursal_activa
+        hoy = timezone.localdate()
+
+        # ==========================================
+        # FILTRO
+        # ==========================================
+
+        periodo = request.GET.get(
+            "periodo",
+            "hoy"
+        )
+
+        fecha_inicio = hoy
+        fecha_fin = hoy
+
+
+        # ==========================================
+        # HOY
+        # ==========================================
+
+        if periodo == "hoy":
+
+            fecha_inicio = hoy
+            fecha_fin = hoy
+
+
+        # ==========================================
+        # ESTA SEMANA
+        # ==========================================
+
+        elif periodo == "semana":
+
+            fecha_inicio = (
+                hoy - timedelta(
+                    days=hoy.weekday()
+                )
+            )
+
+            fecha_fin = hoy
+
+
+        # ==========================================
+        # PERSONALIZADO
+        # ==========================================
+
+        elif periodo == "personalizado":
+
+            fecha_inicio_str = request.GET.get(
+                "fecha_inicio"
+            )
+
+            fecha_fin_str = request.GET.get(
+                "fecha_fin"
+            )
+
+            try:
+
+                if fecha_inicio_str:
+                    fecha_inicio = (
+                        timezone.datetime.strptime(
+                            fecha_inicio_str,
+                            "%Y-%m-%d"
+                        ).date()
+                    )
+
+                if fecha_fin_str:
+                    fecha_fin = (
+                        timezone.datetime.strptime(
+                            fecha_fin_str,
+                            "%Y-%m-%d"
+                        ).date()
+                    )
+
+            except ValueError:
+
+                fecha_inicio = hoy
+                fecha_fin = hoy
+                periodo = "hoy"
+
+
+        # ==========================================
+        # EVITAR RANGO INVERTIDO
+        # ==========================================
+
+        if fecha_inicio > fecha_fin:
+
+            fecha_inicio, fecha_fin = (
+                fecha_fin,
+                fecha_inicio,
+            )
+
+
+        # ==========================================
+        # CONSUMO
+        # ==========================================
+
+        consumos = consumo_teorico_periodo(
+            sucursal=sucursal,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+        )
+
+
+        # ==========================================
+        # AGRUPAR POR PRODUCTO
+        # ==========================================
+
+        productos = {}
+
+        for item in consumos:
+
+            variante = item["variante"]
+
+            producto = variante.producto
+
+            if producto.id not in productos:
+
+                productos[producto.id] = {
+                    "producto": producto,
+                    "variantes": [],
+                }
+
+            productos[
+                producto.id
+            ]["variantes"].append({
+                "variante": variante,
+                "cantidad": item["cantidad"],
+            })
+
+
+        # ==========================================
+        # CONTEXTO
+        # ==========================================
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "sucursal_activa": sucursal,
+
+                "periodo": periodo,
+
+                "fecha_inicio": fecha_inicio,
+                "fecha_fin": fecha_fin,
+
+                "productos": list(
+                    productos.values()
+                ),
             }
         )

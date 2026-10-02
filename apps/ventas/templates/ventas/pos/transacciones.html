@@ -1,0 +1,217 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}
+Transacciones
+{% endblock %}
+
+{% block page_title %}
+Transacciones
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto">
+
+    <!-- HEADER -->
+
+    <div
+        class="
+            flex
+            flex-col
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            gap-4
+            mb-6
+        "
+    >
+
+        <div>
+
+            <h1 class="text-2xl font-bold text-gray-900">
+                Transacciones
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                Ventas registradas hoy
+            </p>
+
+        </div>
+
+
+        <div
+            class="
+                bg-gray-100
+                rounded-xl
+                px-4
+                py-3
+            "
+        >
+
+            <div class="text-xs text-gray-500">
+                Sucursal activa
+            </div>
+
+            <div class="font-bold text-gray-900 mt-1">
+                🏪 {{ sucursal_activa.nombre }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TRANSACCIONES -->
+
+    <div
+        class="
+            bg-white
+            border
+            border-gray-200
+            rounded-2xl
+            overflow-hidden
+            shadow-sm
+        "
+    >
+
+
+
+        {% for venta in ventas %}
+
+            <div
+                class="
+                    flex
+                    items-center
+                    justify-between
+                    gap-4
+
+                    px-5
+                    py-4
+
+                    border-b
+                    border-gray-100
+
+                    last:border-b-0
+                "
+            >
+
+                <div>
+
+                    <div class="font-bold text-gray-900">
+                        Venta #{{ venta.id }}
+                    </div>
+
+
+                        {% for detalle in venta.detalles.all %}
+
+                            <div class="text-sm text-gray-600">
+                                {{ detalle.cantidad|floatformat:"-2" }}
+                                ×
+                                {{ detalle.producto_nombre }}
+
+                                {% if detalle.variante_nombre %}
+                                    · {{ detalle.variante_nombre }}
+                                {% endif %}
+
+                                <span class="text-gray-400">
+                                    · ${{ detalle.subtotal|floatformat:2 }}
+                                </span>
+                            </div>
+
+                        {% endfor %}
+
+
+
+                    <div class="text-sm text-gray-500 mt-1">
+
+                        {{ venta.fecha_hora|date:"H:i" }}
+
+                        {% if venta.usuario %}
+                            · {{ venta.usuario }}
+                        {% endif %}
+
+                    </div>
+
+
+                    {% if venta.estado == "anulada" %}
+
+                        <span
+                            class="
+                                inline-block
+                                mt-2
+
+                                text-xs
+                                font-medium
+
+                                bg-red-100
+                                text-red-700
+
+                                px-2
+                                py-1
+
+                                rounded-full
+                            "
+                        >
+                            Anulada
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="text-right">
+
+                    <div
+                        class="
+                            text-xl
+                            font-bold
+                            text-gray-900
+                        "
+                    >
+                        ${{ venta.total }}
+                    </div>
+
+                    {% if venta.metodo_pago %}
+
+                        <div class="text-sm text-gray-500 mt-1">
+                            {{ venta.get_metodo_pago_display }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="text-center py-16">
+
+                <div class="text-4xl mb-3">
+                    🧾
+                </div>
+
+                <div class="font-medium text-gray-600">
+                    No hay transacciones hoy
+                </div>
+
+                <div class="text-sm text-gray-400 mt-1">
+                    Las ventas aparecerán aquí.
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <div class="h-24"></div>
+
+</div>
+
+
+{% include "ventas/pos/_nav_pos.html" %}
+
+{% endblock %}

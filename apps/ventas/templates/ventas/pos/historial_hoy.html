@@ -1,0 +1,48 @@
+{% extends "core/base_pos.html" %}
+
+{% block content %}
+<h1>Historial del día</h1>
+
+<p><strong>Fecha:</strong> {{ fecha }}</p>
+<p><strong>Total vendido hoy:</strong> ${{ total_hoy }}</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Hora</th>
+            <th>Sucursal</th>
+            <th>Cajero</th>
+            <th>Total</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for venta in ventas %}
+        <tr>
+            <td>{{ venta.fecha_hora|date:"H:i" }}</td>
+            <td>{{ venta.sucursal.nombre }}</td>
+            <td>{{ venta.usuario.username }}</td>
+            <td>${{ venta.total }}</td>
+            <td>
+                <ul>
+                    {% for detalle in venta.detalles.all %}
+                    <li>
+                        {{ detalle.producto_nombre }} - {{ detalle.variante_nombre }}
+                        x {{ detalle.cantidad }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No hay ventas hoy.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>
+    <a href="{% url 'ventas:pos_nueva_venta' %}">Nueva venta</a>
+</p>
+{% endblock %}

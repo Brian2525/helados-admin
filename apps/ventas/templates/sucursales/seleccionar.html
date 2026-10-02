@@ -1,0 +1,159 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}
+Seleccionar sucursal
+{% endblock %}
+
+{% block page_title %}
+Seleccionar sucursal
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+
+    <div class="mb-8">
+
+        <h1 class="text-3xl font-bold text-gray-900">
+            ¿En qué sucursal estás trabajando?
+        </h1>
+
+        <p class="text-gray-500 mt-2">
+            Las ventas que registres se asignarán a esta sucursal.
+        </p>
+
+    </div>
+
+
+    <div
+        class="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            lg:grid-cols-3
+            gap-5
+        "
+    >
+
+        {% for sucursal in sucursales %}
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="sucursal"
+                    value="{{ sucursal.id }}"
+                >
+
+
+                <button
+                    type="submit"
+                    class="
+                        w-full
+                        min-h-[170px]
+
+                        bg-white
+
+                        border-2
+                        border-gray-200
+
+                        rounded-2xl
+
+                        p-6
+
+                        shadow-sm
+
+                        hover:border-blue-500
+                        hover:shadow-md
+                        hover:bg-blue-50
+
+                        active:scale-95
+
+                        transition
+
+                        touch-manipulation
+
+                        text-left
+                    "
+                >
+
+                    <div
+                        class="
+                            w-14
+                            h-14
+
+                            rounded-xl
+
+                            bg-blue-100
+
+                            flex
+                            items-center
+                            justify-center
+
+                            text-2xl
+
+                            mb-5
+                        "
+                    >
+                        🏪
+                    </div>
+
+
+                    <div
+                        class="
+                            text-xl
+                            font-bold
+                            text-gray-900
+                        "
+                    >
+                        {{ sucursal.nombre }}
+                    </div>
+
+
+                    <div
+                        class="
+                            text-sm
+                            text-gray-500
+                            mt-2
+                        "
+                    >
+                        Seleccionar sucursal
+                    </div>
+
+                </button>
+
+            </form>
+
+        {% empty %}
+
+            <div
+                class="
+                    col-span-full
+
+                    bg-white
+
+                    border
+                    border-gray-200
+
+                    rounded-2xl
+
+                    p-10
+
+                    text-center
+                    text-gray-500
+                "
+            >
+
+                No tienes sucursales asignadas.
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

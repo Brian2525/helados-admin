@@ -1,0 +1,30 @@
+{% extends 'core/base_pos.html' %}
+
+{% block content %}
+<h1>Confirmar venta</h1>
+
+<h2>Resumen</h2>
+<ul>
+    {% for item in pos_data.items %}
+        <li>
+            {{ item.producto_nombre }} - {{ item.variante_nombre }}
+            | Cantidad: {{ item.cantidad }}
+            | Subtotal: ${{ item.subtotal }}
+        </li>
+    {% endfor %}
+</ul>
+
+<p><strong>Total:</strong> ${{ total }}</p>
+<p><strong>Monto recibido:</strong> ${{ monto_recibido }}</p>
+<p><strong>Cambio:</strong> ${{ cambio }}</p>
+<p><strong>Forma de pago:</strong> {{ pos_pago.forma_pago }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmar venta</button>
+</form>
+
+<p>
+    <a href="{% url 'ventas:pos_cobro' %}">Volver al cobro</a>
+</p>
+{% endblock %}

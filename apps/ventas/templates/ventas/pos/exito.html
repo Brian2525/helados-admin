@@ -1,0 +1,391 @@
+{% extends 'core/base_pos.html' %}
+
+{% block title %}
+Venta registrada
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-6">
+
+    <div class="w-full max-w-3xl">
+
+        <!-- ====================================== -->
+        <!-- ESTADO DE ÉXITO -->
+        <!-- ====================================== -->
+
+        <div class="text-center mb-6">
+
+            <div
+                class="
+                    w-16 h-16
+                    mx-auto
+                    flex items-center justify-center
+                    rounded-full
+                    bg-green-100
+                    text-green-700
+                    text-3xl
+                    font-bold
+                    mb-3
+                "
+            >
+                ✓
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900">
+                Venta registrada
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                Venta #{{ venta.id }}
+            </p>
+
+        </div>
+
+
+        <!-- ====================================== -->
+        <!-- RESUMEN DEL COBRO -->
+        <!-- ====================================== -->
+
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-2xl
+                shadow-sm
+                overflow-hidden
+            "
+        >
+
+            <!-- TOTAL -->
+
+            <div class="px-6 py-6 text-center">
+
+                <div
+                    class="
+                        text-sm
+                        uppercase
+                        tracking-wide
+                        text-gray-500
+                        font-semibold
+                    "
+                >
+                    Total cobrado
+                </div>
+
+                <div
+                    class="
+                        text-5xl
+                        font-bold
+                        text-gray-900
+                        mt-2
+                    "
+                >
+                    ${{ venta.total|floatformat:2 }}
+                </div>
+
+
+                <!-- MÉTODO DE PAGO -->
+
+                {% if venta.metodo_pago %}
+
+                    <div
+                        class="
+                            inline-flex
+                            items-center
+                            mt-4
+                            px-4
+                            py-2
+                            rounded-full
+                            bg-gray-100
+                            text-gray-700
+                            font-semibold
+                        "
+                    >
+
+                        {% if venta.metodo_pago == "efectivo" %}
+                            💵
+                        {% elif venta.metodo_pago == "tarjeta" %}
+                            💳
+                        {% else %}
+                            •••
+                        {% endif %}
+
+                        <span class="ml-2">
+                            {{ venta.get_metodo_pago_display }}
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ================================== -->
+            <!-- EFECTIVO / CAMBIO -->
+            <!-- ================================== -->
+
+            {% if venta.metodo_pago == "efectivo" %}
+
+                <div
+                    class="
+                        grid
+                        grid-cols-2
+                        border-t
+                        border-gray-200
+                    "
+                >
+
+                    <!-- RECIBIDO -->
+
+                    <div
+                        class="
+                            px-5
+                            py-5
+                            text-center
+                            border-r
+                            border-gray-200
+                        "
+                    >
+
+                        <div class="text-sm text-gray-500">
+                            Efectivo recibido
+                        </div>
+
+                        <div
+                            class="
+                                text-2xl
+                                font-bold
+                                text-gray-900
+                                mt-1
+                            "
+                        >
+                            ${{ venta.monto_recibido|floatformat:2 }}
+                        </div>
+
+                    </div>
+
+
+                    <!-- CAMBIO -->
+
+                    <div
+                        class="
+                            px-5
+                            py-5
+                            text-center
+                            bg-green-50
+                        "
+                    >
+
+                        <div
+                            class="
+                                text-sm
+                                font-semibold
+                                text-green-700
+                            "
+                        >
+                            Cambio a entregar
+                        </div>
+
+                        <div
+                            class="
+                                text-3xl
+                                font-bold
+                                text-green-800
+                                mt-1
+                            "
+                        >
+                            ${{ venta.cambio|floatformat:2 }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- ================================== -->
+            <!-- DETALLE -->
+            <!-- ================================== -->
+
+            <div
+                class="
+                    border-t
+                    border-gray-200
+                    px-6
+                    py-5
+                "
+            >
+
+                <div
+                    class="
+                        flex
+                        items-center
+                        justify-between
+                        mb-3
+                    "
+                >
+
+                    <h2 class="font-bold text-gray-900">
+                        Detalle
+                    </h2>
+
+                    <div class="text-sm text-gray-400">
+                        {{ venta.fecha_hora|date:"d/m/Y H:i" }}
+                    </div>
+
+                </div>
+
+
+                <div class="divide-y divide-gray-100">
+
+                    {% for detalle in venta.detalles.all %}
+
+                        <div
+                            class="
+                                flex
+                                items-center
+                                justify-between
+                                gap-4
+                                py-3
+                            "
+                        >
+
+                            <div>
+
+                                <div
+                                    class="
+                                        font-semibold
+                                        text-gray-900
+                                    "
+                                >
+                                    {{ detalle.producto_nombre }}
+                                </div>
+
+                                <div
+                                    class="
+                                        text-sm
+                                        text-gray-500
+                                        mt-1
+                                    "
+                                >
+                                    {{ detalle.variante_nombre }}
+
+                                    ·
+
+                                    {{ detalle.cantidad|floatformat:"-2" }}
+                                    ×
+                                    ${{ detalle.precio_unitario|floatformat:2 }}
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    font-bold
+                                    text-gray-900
+                                    whitespace-nowrap
+                                "
+                            >
+                                ${{ detalle.subtotal|floatformat:2 }}
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================== -->
+            <!-- ACCIONES -->
+            <!-- ================================== -->
+
+            <div
+                class="
+                    border-t
+                    border-gray-200
+                    bg-gray-50
+                    p-5
+                "
+            >
+
+                <div
+                    class="
+                        grid
+                        grid-cols-1
+                        sm:grid-cols-2
+                        gap-3
+                    "
+                >
+
+                    <!-- DASHBOARD -->
+
+                    <a
+                        href="{% url 'ventas:pos_transacciones' %}"
+                        class="
+                            flex
+                            items-center
+                            justify-center
+                            min-h-[60px]
+
+                            border
+                            border-gray-300
+                            bg-white
+
+                            rounded-xl
+
+                            text-gray-700
+                            font-bold
+                            text-lg
+
+                            hover:bg-gray-100
+                            transition
+                        "
+                    >
+                        Ver transacciones
+                    </a>
+
+
+                    <!-- NUEVA VENTA -->
+
+                    <a
+                        href="{% url 'ventas:pos_nueva_venta' %}"
+                        class="
+                            flex
+                            items-center
+                            justify-center
+                            min-h-[60px]
+
+                            bg-gray-900
+                            text-white
+
+                            rounded-xl
+
+                            font-bold
+                            text-lg
+
+                            hover:bg-black
+                            transition
+                        "
+                    >
+                        + Nueva venta
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

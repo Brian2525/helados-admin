@@ -1,6 +1,7 @@
 from django.db.models import Q
 from apps.sucursales.models import Sucursal
 from apps.compras.models import Proveedor
+from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 
 
@@ -86,6 +87,8 @@ class PropietarioQuerysetMixin:
 
 
 
+
+
 class ModulePermissionMixin:
 
     module_permission = None
@@ -108,6 +111,70 @@ class ModulePermissionMixin:
                 False
             ):
                 raise PermissionDenied
+
+        return super().dispatch(
+            request,
+            *args,
+            **kwargs
+        )
+
+
+
+
+
+class SucursalActivaMixin:
+
+    session_key = "sucursal_activa_id"
+
+    def get_sucursal_activa(self):
+
+        sucursal_id = self.request.session.get(
+            self.session_key
+        )
+
+        if not sucursal_id:
+            return None
+
+        sucursales_permitidas = (
+            self.get_sucursales_usuario()
+        )
+
+        sucursal = (
+            sucursales_permitidas
+            .filter(
+                id=sucursal_id,
+                activa=True,
+            )
+            .first()
+        )
+
+        # La sucursal guardada ya no es válida
+        if not sucursal:
+
+            self.request.session.pop(
+                self.session_key,
+                None
+            )
+
+            return None
+
+        return sucursal
+
+
+    def dispatch(self, request, *args, **kwargs):
+
+        # Superusuario también debe elegir
+        # una sucursal para trabajar.
+
+        sucursal = self.get_sucursal_activa()
+
+        if not sucursal:
+
+            return redirect(
+                "sucursales:seleccionar_sucursal"
+            )
+
+        request.sucursal_activa = sucursal
 
         return super().dispatch(
             request,

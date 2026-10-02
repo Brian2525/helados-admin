@@ -1,0 +1,163 @@
+<nav
+    class="
+        fixed
+        bottom-0
+        left-0
+        right-0
+        z-40
+
+        bg-white
+        border-t
+        border-gray-200
+        shadow-lg
+    "
+>
+
+    <div
+        class="
+            max-w-4xl
+            mx-auto
+
+            grid
+            grid-cols-3
+        "
+    >
+
+        <!-- PROCESO DE PAGO -->
+
+        <a
+            href="{% url 'ventas:pos_nueva_venta' %}"
+            class="
+                min-h-[72px]
+
+                flex
+                flex-col
+                items-center
+                justify-center
+
+                gap-1
+
+                {% if pos_seccion == 'venta' %}
+                    text-blue-600
+                    bg-blue-50
+                {% else %}
+                    text-gray-500
+                    hover:bg-gray-50
+                {% endif %}
+
+                transition
+                touch-manipulation
+            "
+        >
+
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 10h18M7 15h2m4 0h2M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
+                />
+            </svg>
+
+            <span class="text-sm font-semibold">
+                Proceso de pago
+            </span>
+
+        </a>
+
+
+        <!-- TRANSACCIONES -->
+
+        <a
+            href="{% url 'ventas:pos_transacciones' %}"
+            class="
+                min-h-[72px]
+
+                flex
+                flex-col
+                items-center
+                justify-center
+
+                gap-1
+
+                {% if pos_seccion == 'transacciones' %}
+                    text-blue-600
+                    bg-blue-50
+                {% else %}
+                    text-gray-500
+                    hover:bg-gray-50
+                {% endif %}
+
+                transition
+                touch-manipulation
+            "
+        >
+
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6M9 8h6M5 4h14a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 012-2z"
+                />
+            </svg>
+
+            <span class="text-sm font-semibold">
+                Transacciones
+            </span>
+
+        </a>
+
+
+        <!-- MÁS -->
+
+        <a
+            href="{% url 'ventas:pos_mas' %}"
+            class="
+                min-h-[72px]
+
+                flex
+                flex-col
+                items-center
+                justify-center
+
+                gap-1
+
+                {% if pos_seccion == 'mas' %}
+                    text-blue-600
+                    bg-blue-50
+                {% else %}
+                    text-gray-500
+                    hover:bg-gray-50
+                {% endif %}
+
+                transition
+                touch-manipulation
+            "
+        >
+
+            <div class="text-2xl leading-none">
+                •••
+            </div>
+
+            <span class="text-sm font-semibold">
+                Más
+            </span>
+
+        </a>
+
+    </div>
+
+</nav>

@@ -1,0 +1,664 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}
+Resumen del día
+{% endblock %}
+
+{% block page_title %}
+Resumen del día
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+    <!-- ======================================== -->
+    <!-- ENCABEZADO -->
+    <!-- ======================================== -->
+
+    <div
+        class="
+            flex
+            flex-col
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            gap-4
+            mb-6
+        "
+    >
+
+        <div>
+
+            <h1
+                class="
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                "
+            >
+                Resumen del día
+            </h1>
+
+            <p class="text-gray-500 mt-1">
+                {{ fecha|date:"l d \d\e F \d\e Y" }}
+            </p>
+
+        </div>
+
+
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-xl
+                px-4
+                py-3
+            "
+        >
+
+            <div
+                class="
+                    text-xs
+                    uppercase
+                    tracking-wide
+                    text-gray-400
+                "
+            >
+                Sucursal activa
+            </div>
+
+            <div
+                class="
+                    font-bold
+                    text-gray-900
+                    mt-1
+                "
+            >
+                🏪 {{ sucursal_activa.nombre }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ======================================== -->
+    <!-- VENTA TOTAL -->
+    <!-- ======================================== -->
+
+    <div
+        class="
+            bg-white
+            border
+            border-gray-200
+            rounded-2xl
+            shadow-sm
+            p-6
+            mb-5
+        "
+    >
+
+        <div
+            class="
+                flex
+                items-center
+                justify-between
+                gap-5
+            "
+        >
+
+            <div>
+
+                <div
+                    class="
+                        text-sm
+                        font-medium
+                        text-gray-500
+                    "
+                >
+                    Venta total de hoy
+                </div>
+
+                <div
+                    class="
+                        text-sm
+                        text-gray-400
+                        mt-1
+                    "
+                >
+                    Ventas confirmadas
+                </div>
+
+            </div>
+
+
+            <div
+                class="
+                    text-3xl
+                    sm:text-4xl
+                    font-bold
+                    text-gray-900
+                "
+            >
+                ${{ reporte.total|floatformat:2 }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ======================================== -->
+    <!-- MÉTRICAS PRINCIPALES -->
+    <!-- ======================================== -->
+
+    <div
+        class="
+            grid
+            grid-cols-2
+            lg:grid-cols-4
+            gap-4
+            mb-8
+        "
+    >
+
+        <!-- EFECTIVO -->
+
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-2xl
+                shadow-sm
+                p-5
+            "
+        >
+
+            <div
+                class="
+                    w-10
+                    h-10
+                    rounded-xl
+                    bg-green-100
+                    flex
+                    items-center
+                    justify-center
+                    text-xl
+                    mb-4
+                "
+            >
+                💵
+            </div>
+
+            <div class="text-sm text-gray-500">
+                Efectivo
+            </div>
+
+            <div
+                class="
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                    mt-1
+                "
+            >
+                ${{ reporte.efectivo|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <!-- TARJETA -->
+
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-2xl
+                shadow-sm
+                p-5
+            "
+        >
+
+            <div
+                class="
+                    w-10
+                    h-10
+                    rounded-xl
+                    bg-blue-100
+                    flex
+                    items-center
+                    justify-center
+                    text-xl
+                    mb-4
+                "
+            >
+                💳
+            </div>
+
+            <div class="text-sm text-gray-500">
+                Tarjeta
+            </div>
+
+            <div
+                class="
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                    mt-1
+                "
+            >
+                ${{ reporte.tarjeta|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <!-- TRANSACCIONES -->
+
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-2xl
+                shadow-sm
+                p-5
+            "
+        >
+
+            <div
+                class="
+                    w-10
+                    h-10
+                    rounded-xl
+                    bg-purple-100
+                    flex
+                    items-center
+                    justify-center
+                    text-xl
+                    mb-4
+                "
+            >
+                🧾
+            </div>
+
+            <div class="text-sm text-gray-500">
+                Transacciones
+            </div>
+
+            <div
+                class="
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                    mt-1
+                "
+            >
+                {{ reporte.transacciones }}
+            </div>
+
+        </div>
+
+
+        <!-- TICKET PROMEDIO -->
+
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-2xl
+                shadow-sm
+                p-5
+            "
+        >
+
+            <div
+                class="
+                    w-10
+                    h-10
+                    rounded-xl
+                    bg-yellow-100
+                    flex
+                    items-center
+                    justify-center
+                    text-xl
+                    mb-4
+                "
+            >
+                📈
+            </div>
+
+            <div class="text-sm text-gray-500">
+                Ticket promedio
+            </div>
+
+            <div
+                class="
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                    mt-1
+                "
+            >
+                ${{ reporte.ticket_promedio|floatformat:2 }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ======================================== -->
+    <!-- PRODUCTOS VENDIDOS -->
+    <!-- ======================================== -->
+
+    <div
+        class="
+            flex
+            items-end
+            justify-between
+            gap-4
+            mb-4
+        "
+    >
+
+        <div>
+
+            <h2
+                class="
+                    text-xl
+                    font-bold
+                    text-gray-900
+                "
+            >
+                Productos vendidos
+            </h2>
+
+            <p
+                class="
+                    text-sm
+                    text-gray-500
+                    mt-1
+                "
+            >
+                Cantidad vendida por producto y variante
+            </p>
+
+        </div>
+
+
+        <div class="text-right">
+
+            <div
+                class="
+                    text-xs
+                    uppercase
+                    tracking-wide
+                    text-gray-400
+                "
+            >
+                Unidades
+            </div>
+
+            <div
+                class="
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                "
+            >
+                {{ reporte.total_unidades|floatformat:"-2" }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ======================================== -->
+    <!-- LISTADO DE PRODUCTOS -->
+    <!-- ======================================== -->
+
+    <div class="space-y-4">
+
+        {% for producto in reporte.productos %}
+
+            <div
+                class="
+                    bg-white
+                    border
+                    border-gray-200
+                    rounded-2xl
+                    shadow-sm
+                    overflow-hidden
+                "
+            >
+
+                <!-- PRODUCTO -->
+
+                <div
+                    class="
+                        flex
+                        items-center
+                        justify-between
+                        gap-4
+
+                        bg-gray-50
+
+                        px-5
+                        py-4
+                    "
+                >
+
+                    <div
+                        class="
+                            flex
+                            items-center
+                            gap-3
+                        "
+                    >
+
+                        <div
+                            class="
+                                w-10
+                                h-10
+                                rounded-xl
+                                bg-white
+                                border
+                                border-gray-200
+                                flex
+                                items-center
+                                justify-center
+                                text-xl
+                            "
+                        >
+                            🍦
+                        </div>
+
+
+                        <div>
+
+                            <div
+                                class="
+                                    text-lg
+                                    font-bold
+                                    text-gray-900
+                                "
+                            >
+                                {{ producto.nombre }}
+                            </div>
+
+                            <div
+                                class="
+                                    text-xs
+                                    text-gray-400
+                                    mt-0.5
+                                "
+                            >
+                                Total vendido
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="text-right">
+
+                        <div
+                            class="
+                                text-2xl
+                                font-bold
+                                text-gray-900
+                            "
+                        >
+                            {{ producto.cantidad|floatformat:"-2" }}
+                        </div>
+
+                        <div
+                            class="
+                                text-xs
+                                text-gray-400
+                            "
+                        >
+                            unidades
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- VARIANTES -->
+
+                <div class="divide-y divide-gray-100">
+
+                    {% for variante in producto.variantes %}
+
+                        <div
+                            class="
+                                flex
+                                items-center
+                                justify-between
+
+                                px-5
+                                py-3
+                            "
+                        >
+
+                            <div
+                                class="
+                                    flex
+                                    items-center
+                                    gap-3
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        w-2
+                                        h-2
+                                        rounded-full
+                                        bg-gray-300
+                                    "
+                                ></div>
+
+                                <span
+                                    class="
+                                        text-gray-600
+                                    "
+                                >
+                                    {{ variante.nombre }}
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    font-bold
+                                    text-gray-900
+                                "
+                            >
+                                {{ variante.cantidad|floatformat:"-2" }}
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div
+                class="
+                    bg-white
+                    border
+                    border-gray-200
+                    rounded-2xl
+
+                    py-16
+                    px-5
+
+                    text-center
+                "
+            >
+
+                <div class="text-4xl mb-4">
+                    🧾
+                </div>
+
+                <div
+                    class="
+                        font-semibold
+                        text-gray-700
+                    "
+                >
+                    No hay ventas registradas hoy
+                </div>
+
+                <div
+                    class="
+                        text-sm
+                        text-gray-400
+                        mt-1
+                    "
+                >
+                    Los productos aparecerán aquí
+                    conforme se registren ventas.
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+
+    <!-- ======================================== -->
+    <!-- ESPACIO PARA NAV INFERIOR -->
+    <!-- ======================================== -->
+
+    <div class="h-24"></div>
+
+</div>
+
+
+{% include "ventas/pos/_nav_pos.html" %}
+
+{% endblock %}

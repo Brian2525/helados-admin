@@ -2,6 +2,7 @@ from django import forms
 from apps.core.forms import TailwindModelForm
 from django.forms import modelformset_factory
 
+
 from apps.sucursales.models import Sucursal
 from .models import Producto, VarianteProducto, InventarioDiario
 
@@ -12,6 +13,7 @@ class VarianteProductoForm(TailwindModelForm):
         model = VarianteProducto
         fields = [
             "nombre",
+            "precio_venta",
             "activo",
         ]
 
@@ -54,6 +56,7 @@ class ProductoForm(TailwindModelForm):
             "descripcion",
             "registrar_venta_diaria",
             "activo",
+            "tipo",
         ]
 
         widgets = {
@@ -264,3 +267,7 @@ class InventarioSucursalForm(forms.Form):
         self.fields[
             "sucursal"
         ].queryset = sucursales
+
+
+
+

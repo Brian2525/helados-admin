@@ -1,0 +1,643 @@
+{% extends 'core/base_pos.html' %}
+
+{% block title %}
+Cobro
+{% endblock %}
+
+{% block content %}
+
+<form method="post" id="form-cobro">
+    {% csrf_token %}
+
+    <!-- Valores que enviaremos al servidor -->
+    <input
+        type="hidden"
+        name="forma_pago"
+        id="id_forma_pago"
+        value=""
+    >
+
+    <div class="max-w-6xl mx-auto px-4 py-4">
+
+        <!-- ====================================== -->
+        <!-- HEADER -->
+        <!-- ====================================== -->
+
+        <div class="flex items-center justify-between mb-6">
+
+            <a
+                href="{% url 'ventas:pos_nueva_venta' %}"
+                class="
+                    inline-flex
+                    items-center
+                    gap-2
+                    px-5
+                    py-3
+                    rounded-xl
+                    border
+                    border-gray-300
+                    bg-white
+                    text-gray-700
+                    font-semibold
+                    hover:bg-gray-50
+                "
+            >
+                ← Volver
+            </a>
+
+
+            <div class="text-center">
+
+                <h1 class="text-2xl font-bold text-gray-900">
+                    Cobro
+                </h1>
+
+                <p class="text-sm text-gray-500">
+                    Selecciona el método de pago
+                </p>
+
+            </div>
+
+
+            <button
+                type="submit"
+                id="btn-continuar"
+                disabled
+                class="
+                    px-7
+                    py-3
+                    rounded-xl
+                    bg-gray-300
+                    text-white
+                    font-bold
+                    text-lg
+                    cursor-not-allowed
+                    transition
+                "
+            >
+                Cobrar →
+            </button>
+
+        </div>
+
+
+        {{ form.non_field_errors }}
+
+
+        <!-- ====================================== -->
+        <!-- CONTENIDO -->
+        <!-- ====================================== -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+
+            <!-- ================================== -->
+            <!-- RESUMEN -->
+            <!-- ================================== -->
+
+            <div class="lg:col-span-3">
+
+                <div
+                    class="
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-2xl
+                        overflow-hidden
+                        shadow-sm
+                    "
+                >
+
+                    <div
+                        class="
+                            px-5
+                            py-4
+                            border-b
+                            border-gray-200
+                        "
+                    >
+                        <h2 class="font-bold text-gray-900">
+                            Resumen de venta
+                        </h2>
+                    </div>
+
+
+                    <div class="divide-y divide-gray-100">
+
+                        {% for item in pos_data.items %}
+
+                            <div
+                                class="
+                                    flex
+                                    items-center
+                                    justify-between
+                                    px-5
+                                    py-4
+                                "
+                            >
+
+                                <div>
+
+                                    <div class="font-semibold text-gray-900">
+                                        {{ item.producto_nombre }}
+                                    </div>
+
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        {{ item.variante_nombre }}
+                                    </div>
+
+                                    <div class="text-sm text-gray-400 mt-1">
+                                        {{ item.cantidad }}
+                                        ×
+                                        ${{ item.precio_unitario }}
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    class="
+                                        text-lg
+                                        font-bold
+                                        text-gray-900
+                                    "
+                                >
+                                    ${{ item.subtotal }}
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================== -->
+            <!-- COBRO -->
+            <!-- ================================== -->
+
+            <div class="lg:col-span-2">
+
+                <div
+                    class="
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-2xl
+                        shadow-sm
+                        p-6
+                    "
+                >
+
+                    <!-- TOTAL -->
+
+                    <div class="text-center mb-7">
+
+                        <div
+                            class="
+                                text-sm
+                                font-medium
+                                text-gray-500
+                                uppercase
+                                tracking-wide
+                            "
+                        >
+                            Total a cobrar
+                        </div>
+
+                        <div
+                            class="
+                                text-5xl
+                                font-bold
+                                text-gray-900
+                                mt-2
+                            "
+                        >
+                            ${{ total }}
+                        </div>
+
+                    </div>
+
+
+                    <!-- EFECTIVO -->
+
+                    <div class="mb-6">
+
+                        <div
+                            class="
+                                text-sm
+                                font-bold
+                                text-gray-700
+                                mb-3
+                            "
+                        >
+                            Efectivo
+                        </div>
+
+
+                        <div class="grid grid-cols-2 gap-3">
+
+                            <button
+                                type="button"
+                                data-pago="efectivo"
+                                onclick="pagoExacto()"
+                                class="
+                                    metodo-pago
+                                    border-2
+                                    border-gray-200
+                                    rounded-xl
+                                    p-4
+                                    text-left
+                                    hover:border-gray-900
+                                    hover:bg-gray-50
+                                    transition
+                                "
+                            >
+
+                                <div class="text-lg font-bold">
+                                    Exacto
+                                </div>
+
+                                <div class="text-sm text-gray-500 mt-1">
+                                    ${{ total }}
+                                </div>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                data-pago="efectivo"
+                                onclick="pagoPersonalizado()"
+                                class="
+                                    metodo-pago
+                                    border-2
+                                    border-gray-200
+                                    rounded-xl
+                                    p-4
+                                    text-left
+                                    hover:border-gray-900
+                                    hover:bg-gray-50
+                                    transition
+                                "
+                            >
+
+                                <div class="text-lg font-bold">
+                                    Personalizado
+                                </div>
+
+                                <div class="text-sm text-gray-500 mt-1">
+                                    Ingresa efectivo
+                                </div>
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- MONTO PERSONALIZADO -->
+
+                        <div
+                            id="monto-personalizado"
+                            class="hidden mt-4"
+                        >
+
+                            <label
+                                for="id_monto_recibido"
+                                class="
+                                    block
+                                    text-sm
+                                    font-semibold
+                                    text-gray-700
+                                    mb-2
+                                "
+                            >
+                                Efectivo recibido
+                            </label>
+
+                            {{ form.monto_recibido }}
+
+                        </div>
+
+
+                        <!-- CAMBIO -->
+
+                        <div
+                            id="resultado-cambio"
+                            class="hidden mt-4 rounded-xl p-4"
+                        ></div>
+
+                    </div>
+
+
+                    <!-- OTROS METODOS -->
+
+                    <div
+                        class="
+                            border-t
+                            border-gray-200
+                            pt-5
+                        "
+                    >
+
+                        <div class="grid grid-cols-2 gap-3">
+
+                            <button
+                                type="button"
+                                onclick="seleccionarMetodo('tarjeta', this)"
+                                class="
+                                    metodo-pago
+                                    border-2
+                                    border-gray-200
+                                    rounded-xl
+                                    p-5
+                                    text-left
+                                    hover:border-gray-900
+                                    hover:bg-gray-50
+                                    transition
+                                "
+                            >
+
+                                <div class="text-2xl mb-2">
+                                    💳
+                                </div>
+
+                                <div class="font-bold">
+                                    Tarjeta
+                                </div>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                onclick="seleccionarMetodo('otro', this)"
+                                class="
+                                    metodo-pago
+                                    border-2
+                                    border-gray-200
+                                    rounded-xl
+                                    p-5
+                                    text-left
+                                    hover:border-gray-900
+                                    hover:bg-gray-50
+                                    transition
+                                "
+                            >
+
+                                <div class="text-2xl mb-2">
+                                    •••
+                                </div>
+
+                                <div class="font-bold">
+                                    Otro
+                                </div>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+
+<script>
+
+    const total = parseFloat("{{ total }}");
+
+    const inputFormaPago =
+        document.getElementById("id_forma_pago");
+
+    const inputMonto =
+        document.getElementById("id_monto_recibido");
+
+    const resultado =
+        document.getElementById("resultado-cambio");
+
+    const personalizado =
+        document.getElementById("monto-personalizado");
+
+    const btnContinuar =
+        document.getElementById("btn-continuar");
+
+
+    function limpiarSeleccion() {
+
+        document
+            .querySelectorAll(".metodo-pago")
+            .forEach(btn => {
+
+                btn.classList.remove(
+                    "border-gray-900",
+                    "bg-gray-100"
+                );
+
+                btn.classList.add(
+                    "border-gray-200"
+                );
+
+            });
+
+    }
+
+
+    function marcarBoton(boton) {
+
+        limpiarSeleccion();
+
+        boton.classList.remove(
+            "border-gray-200"
+        );
+
+        boton.classList.add(
+            "border-gray-900",
+            "bg-gray-100"
+        );
+
+    }
+
+
+    function activarCobro() {
+
+        btnContinuar.disabled = false;
+
+        btnContinuar.classList.remove(
+            "bg-gray-300",
+            "cursor-not-allowed"
+        );
+
+        btnContinuar.classList.add(
+            "bg-gray-900",
+            "hover:bg-black"
+        );
+
+    }
+
+
+    function desactivarCobro() {
+
+        btnContinuar.disabled = true;
+
+        btnContinuar.classList.add(
+            "bg-gray-300",
+            "cursor-not-allowed"
+        );
+
+        btnContinuar.classList.remove(
+            "bg-gray-900",
+            "hover:bg-black"
+        );
+
+    }
+
+
+    function pagoExacto() {
+
+        const boton = event.currentTarget;
+
+        marcarBoton(boton);
+
+        inputFormaPago.value = "efectivo";
+
+        inputMonto.value = total.toFixed(2);
+
+        personalizado.classList.add("hidden");
+
+        resultado.classList.remove("hidden");
+
+        resultado.className =
+            "mt-4 rounded-xl p-4 bg-green-50 text-green-700 font-semibold";
+
+        resultado.innerHTML =
+            "✓ Pago exacto · Sin cambio";
+
+        activarCobro();
+
+    }
+
+
+    function pagoPersonalizado() {
+
+        const boton = event.currentTarget;
+
+        marcarBoton(boton);
+
+        inputFormaPago.value = "efectivo";
+
+        personalizado.classList.remove("hidden");
+
+        inputMonto.value = "";
+
+        resultado.classList.add("hidden");
+
+        desactivarCobro();
+
+        inputMonto.focus();
+
+    }
+
+
+    function seleccionarMetodo(metodo, boton) {
+
+        marcarBoton(boton);
+
+        inputFormaPago.value = metodo;
+
+        personalizado.classList.add("hidden");
+
+        resultado.classList.add("hidden");
+
+        /*
+        Para tarjeta/otro el monto recibido
+        será tratado en el servidor.
+        */
+
+        inputMonto.value = total.toFixed(2);
+
+        activarCobro();
+
+    }
+
+
+    function calcularCambio() {
+
+        if (
+            inputFormaPago.value !== "efectivo"
+        ) {
+            return;
+        }
+
+        const monto =
+            parseFloat(inputMonto.value || 0);
+
+
+        resultado.classList.remove("hidden");
+
+
+        if (monto < total) {
+
+            resultado.className =
+                "mt-4 rounded-xl p-4 bg-red-50 text-red-700 font-semibold";
+
+            resultado.innerHTML =
+                "Monto insuficiente";
+
+            desactivarCobro();
+
+            return;
+        }
+
+
+        const cambio = monto - total;
+
+
+        resultado.className =
+            "mt-4 rounded-xl p-4 bg-green-50 text-green-700";
+
+
+        if (cambio === 0) {
+
+            resultado.innerHTML =
+                "<strong>Pago exacto</strong><br>Sin cambio";
+
+        } else {
+
+            resultado.innerHTML =
+                "<span class='text-sm'>Cambio a entregar</span>" +
+                "<div class='text-3xl font-bold mt-1'>$" +
+                cambio.toFixed(2) +
+                "</div>";
+
+        }
+
+
+        activarCobro();
+
+    }
+
+
+    if (inputMonto) {
+
+        inputMonto.addEventListener(
+            "input",
+            calcularCambio
+        );
+
+    }
+
+</script>
+
+{% endblock %}

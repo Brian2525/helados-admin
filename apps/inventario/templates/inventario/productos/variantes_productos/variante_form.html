@@ -75,6 +75,31 @@
                 </div>
 
 
+                 <!-- Precio de venta -->
+
+                <div class="mb-5">
+
+                    <label
+                        for="{{ form.precio_venta.id_for_label }}"
+                        class="block text-sm font-medium
+                               text-gray-700 mb-2"
+                    >
+                        Precio de venta
+                    </label>
+
+                    {{ form.precio_venta }}
+
+                    {% if form.precio_venta.errors %}
+
+                        <p class="mt-1 text-sm text-red-600">
+                            {{ form.precio_venta.errors|striptags }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
                 <!-- Activo -->
 
                 <div class="mb-6">

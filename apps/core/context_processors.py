@@ -36,14 +36,6 @@ def sidebar_menu(request):
         })
     
 
-    if request.user.is_superuser or perfil.finanzas:
-
-        menu.append({
-            "titulo": "Compromisos de pago",
-            "url": reverse("compras:cuenta_list"),
-        })
-    
-
 
     if request.user.is_superuser or perfil.finanzas:
         
@@ -119,6 +111,11 @@ def sidebar_menu(request):
             "icono": "🏪",
 
             "submenu": [
+
+                {
+                    "titulo": "POS",
+                    "url": reverse("ventas:pos_nueva_venta"),
+                }, 
                 {
                     "titulo": "Registrar venta",
                     "url": reverse("ventas:venta_diaria_create"),
@@ -143,6 +140,11 @@ def sidebar_menu(request):
                 "icono": "🏪",
     
                 "submenu": [
+
+                     {
+                        "titulo": "POS",
+                        "url": reverse("ventas:pos_nueva_venta"),
+                    }, 
                     {
                         "titulo": "Registrar venta",
                         "url": reverse("ventas:venta_diaria_create"),

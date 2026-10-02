@@ -1,0 +1,152 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}
+Cambiar sucursal
+{% endblock %}
+
+{% block page_title %}
+Cambiar sucursal
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto">
+
+    <div
+        class="
+            bg-white
+
+            border
+            border-gray-200
+
+            rounded-2xl
+
+            shadow-sm
+
+            p-8
+
+            text-center
+        "
+    >
+
+        <div
+            class="
+                w-16
+                h-16
+
+                mx-auto
+
+                flex
+                items-center
+                justify-center
+
+                bg-yellow-100
+
+                rounded-full
+
+                text-3xl
+
+                mb-5
+            "
+        >
+            ⚠️
+        </div>
+
+
+        <h1
+            class="
+                text-2xl
+                font-bold
+                text-gray-900
+            "
+        >
+            ¿Cambiar de sucursal?
+        </h1>
+
+
+        <p class="text-gray-500 mt-3">
+
+            Actualmente estás trabajando en
+
+            <strong class="text-gray-900">
+                {{ sucursal_activa.nombre }}
+            </strong>.
+
+        </p>
+
+
+        <p class="text-gray-500 mt-2">
+
+            Las próximas ventas se registrarán
+            en la nueva sucursal que selecciones.
+
+        </p>
+
+
+        <div
+            class="
+                grid
+                grid-cols-2
+                gap-3
+                mt-8
+            "
+        >
+
+            <a
+                href="{% url 'ventas:pos_nueva_venta' %}"
+                class="
+                    flex
+                    items-center
+                    justify-center
+
+                    min-h-[52px]
+
+                    border
+                    border-gray-300
+
+                    rounded-xl
+
+                    font-medium
+                    text-gray-700
+
+                    hover:bg-gray-50
+                "
+            >
+                Cancelar
+            </a>
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="
+                        w-full
+                        min-h-[52px]
+
+                        bg-blue-600
+                        hover:bg-blue-700
+
+                        text-white
+
+                        rounded-xl
+
+                        font-bold
+
+                        touch-manipulation
+                    "
+                >
+                    Cambiar sucursal
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

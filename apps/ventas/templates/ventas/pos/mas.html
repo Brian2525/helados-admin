@@ -1,0 +1,237 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}
+Más opciones
+{% endblock %}
+
+{% block page_title %}
+Más
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto">
+
+    <!-- SUCURSAL -->
+
+    <div class="mb-7">
+
+        <h1 class="text-2xl font-bold text-gray-900">
+            Más opciones
+        </h1>
+
+        <p class="text-gray-500 mt-1">
+            🏪 {{ sucursal_activa.nombre }}
+        </p>
+
+    </div>
+
+
+    <div class="space-y-3">
+
+
+        <!-- RESUMEN DEL DÍA -->
+
+        <a
+            href="{% url 'ventas:pos_resumen_dia' %}"
+            class="
+                flex
+                items-center
+                justify-between
+
+                bg-white
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                p-5
+
+                hover:border-blue-400
+                hover:shadow-sm
+
+                active:scale-[0.99]
+
+                transition
+            "
+        >
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="
+                        w-12
+                        h-12
+
+                        flex
+                        items-center
+                        justify-center
+
+                        bg-green-100
+
+                        rounded-xl
+
+                        text-2xl
+                    "
+                >
+                    📊
+                </div>
+
+                <div>
+
+                    <div class="font-bold text-gray-900">
+                        Resumen del día
+                    </div>
+
+                    <div class="text-sm text-gray-500 mt-1">
+                        Efectivo, tarjeta y ventas totales
+                    </div>
+
+                </div>
+
+            </div>
+
+            <span class="text-gray-400 text-xl">
+                ›
+            </span>
+
+        </a>
+
+
+        <!-- INVENTARIO -->
+
+        <a
+    href="{% url 'inventario:consumo_teorico' %}"
+    class="
+        flex
+        items-center
+        justify-between
+        bg-white
+        border
+        border-gray-200
+        rounded-xl
+        px-5
+        py-4
+        hover:bg-gray-50
+    "
+>
+    <div>
+        <div class="font-bold text-gray-900">
+            Consumo de inventario
+        </div>
+
+        <div class="text-sm text-gray-500 mt-1">
+            Consumo calculado según las ventas
+        </div>
+    </div>
+
+    <div class="text-gray-400 text-xl">
+        →
+    </div>
+</a>
+
+
+        <!-- CAMBIAR SUCURSAL -->
+
+        <a
+            href="{% url 'sucursales:confirmar_cambio_sucursal' %}"
+            class="
+                flex
+                items-center
+                justify-between
+
+                bg-white
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                p-5
+
+                hover:border-blue-400
+                hover:shadow-sm
+
+                active:scale-[0.99]
+
+                transition
+            "
+        >
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="
+                        w-12
+                        h-12
+
+                        flex
+                        items-center
+                        justify-center
+
+                        bg-blue-100
+
+                        rounded-xl
+
+                        text-2xl
+                    "
+                >
+                    🏪
+                </div>
+
+                <div>
+
+                    <div class="font-bold text-gray-900">
+                        Cambiar sucursal
+                    </div>
+
+                    <div class="text-sm text-gray-500 mt-1">
+                        Actual: {{ sucursal_activa.nombre }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <span class="text-gray-400 text-xl">
+                ›
+            </span>
+
+        </a>
+
+
+
+
+
+        <!-- CERRAR SESIÓN -->
+
+        <form
+            method="post"
+            action="{% url 'logout' %}"
+        >
+
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="w-full bg-red-600 hover:bg-red-700 rounded-lg py-2 transition"
+            >
+
+                Cerrar sesión
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="h-24"></div>
+
+</div>
+
+
+{% include "ventas/pos/_nav_pos.html" %}
+
+{% endblock %}
