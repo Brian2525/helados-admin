@@ -10,18 +10,47 @@ Más
 
 {% block content %}
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto px-4">
 
-    <!-- SUCURSAL -->
+    <!-- ====================================================== -->
+    <!-- ENCABEZADO -->
+    <!-- ====================================================== -->
 
-    <div class="mb-7">
+    <div class="mb-6">
 
         <h1 class="text-2xl font-bold text-gray-900">
             Más opciones
         </h1>
 
-        <p class="text-gray-500 mt-1">
-            🏪 {{ sucursal_activa.nombre }}
+        <div class="flex items-center gap-2 mt-2 text-gray-500">
+
+            <span>🏪</span>
+
+            <span>
+                {{ sucursal_activa.nombre }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- OPERACIÓN DEL DÍA -->
+    <!-- ====================================================== -->
+
+    <div class="mb-3">
+
+        <p
+            class="
+                text-xs
+                font-bold
+                uppercase
+                tracking-wider
+                text-gray-400
+            "
+        >
+            Operación del día
         </p>
 
     </div>
@@ -30,11 +59,100 @@ Más
     <div class="space-y-3">
 
 
+        <!-- ================================================== -->
+        <!-- CIERRE DE CAJA -->
+        <!-- ================================================== -->
+
+        <a
+            href="{% url 'ventas:cierre_caja' %}"
+            class="
+                group
+
+                flex
+                items-center
+                justify-between
+
+                bg-white
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                p-5
+
+                hover:border-emerald-400
+                hover:shadow-sm
+
+                active:scale-[0.99]
+
+                transition
+            "
+        >
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="
+                        w-12
+                        h-12
+
+                        shrink-0
+
+                        flex
+                        items-center
+                        justify-center
+
+                        bg-emerald-100
+                        text-emerald-700
+
+                        rounded-xl
+
+                        text-2xl
+                    "
+                >
+                    💵
+                </div>
+
+
+                <div>
+
+                    <div class="font-bold text-gray-900">
+                        Cierre de caja
+                    </div>
+
+                    <div class="text-sm text-gray-500 mt-1">
+                        Consolidar las ventas del día
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <span
+                class="
+                    text-gray-300
+                    group-hover:text-emerald-500
+                    text-2xl
+                    transition
+                "
+            >
+                ›
+            </span>
+
+        </a>
+
+
+        <!-- ================================================== -->
         <!-- RESUMEN DEL DÍA -->
+        <!-- ================================================== -->
 
         <a
             href="{% url 'ventas:pos_resumen_dia' %}"
             class="
+                group
+
                 flex
                 items-center
                 justify-between
@@ -64,11 +182,14 @@ Más
                         w-12
                         h-12
 
+                        shrink-0
+
                         flex
                         items-center
                         justify-center
 
-                        bg-green-100
+                        bg-blue-100
+                        text-blue-700
 
                         rounded-xl
 
@@ -78,6 +199,7 @@ Más
                     📊
                 </div>
 
+
                 <div>
 
                     <div class="font-bold text-gray-900">
@@ -85,58 +207,37 @@ Más
                     </div>
 
                     <div class="text-sm text-gray-500 mt-1">
-                        Efectivo, tarjeta y ventas totales
+                        Ventas, transacciones y ticket promedio
                     </div>
 
                 </div>
 
             </div>
 
-            <span class="text-gray-400 text-xl">
+
+            <span
+                class="
+                    text-gray-300
+                    group-hover:text-blue-500
+                    text-2xl
+                    transition
+                "
+            >
                 ›
             </span>
 
         </a>
 
 
-        <!-- INVENTARIO -->
+        <!-- ================================================== -->
+        <!-- CIERRE DE INVENTARIO -->
+        <!-- ================================================== -->
 
         <a
-    href="{% url 'inventario:cierre_inventario' %}"
-    class="
-        flex
-        items-center
-        justify-between
-        bg-white
-        border
-        border-gray-200
-        rounded-xl
-        px-5
-        py-4
-        hover:bg-gray-50
-    "
->
-    <div>
-        <div class="font-bold text-gray-900">
-            Cierre de inventario
-        </div>
-
-        <div class="text-sm text-gray-500 mt-1">
-            Para hacer el conteo final de dia. 
-        </div>
-    </div>
-
-    <div class="text-gray-400 text-xl">
-        →
-    </div>
-</a>
-
-
-        <!-- CAMBIAR SUCURSAL -->
-
-        <a
-            href="{% url 'sucursales:confirmar_cambio_sucursal' %}"
+            href="{% url 'inventario:cierre_inventario' %}"
             class="
+                group
+
                 flex
                 items-center
                 justify-between
@@ -150,7 +251,7 @@ Más
 
                 p-5
 
-                hover:border-blue-400
+                hover:border-violet-400
                 hover:shadow-sm
 
                 active:scale-[0.99]
@@ -166,11 +267,125 @@ Más
                         w-12
                         h-12
 
+                        shrink-0
+
                         flex
                         items-center
                         justify-center
 
-                        bg-blue-100
+                        bg-violet-100
+                        text-violet-700
+
+                        rounded-xl
+
+                        text-2xl
+                    "
+                >
+                    📦
+                </div>
+
+
+                <div>
+
+                    <div class="font-bold text-gray-900">
+                        Cierre de inventario
+                    </div>
+
+                    <div class="text-sm text-gray-500 mt-1">
+                        Registrar el conteo físico del día
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <span
+                class="
+                    text-gray-300
+                    group-hover:text-violet-500
+                    text-2xl
+                    transition
+                "
+            >
+                ›
+            </span>
+
+        </a>
+
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- SUCURSAL Y USUARIO -->
+    <!-- ====================================================== -->
+
+    <div class="mt-8 mb-3">
+
+        <p
+            class="
+                text-xs
+                font-bold
+                uppercase
+                tracking-wider
+                text-gray-400
+            "
+        >
+            Sucursal y usuario
+        </p>
+
+    </div>
+
+
+    <div class="space-y-3">
+
+
+        <!-- ================================================== -->
+        <!-- CAMBIAR SUCURSAL -->
+        <!-- ================================================== -->
+
+        <a
+            href="{% url 'sucursales:confirmar_cambio_sucursal' %}"
+            class="
+                group
+
+                flex
+                items-center
+                justify-between
+
+                bg-white
+
+                border
+                border-gray-200
+
+                rounded-2xl
+
+                p-5
+
+                hover:border-amber-400
+                hover:shadow-sm
+
+                active:scale-[0.99]
+
+                transition
+            "
+        >
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="
+                        w-12
+                        h-12
+
+                        shrink-0
+
+                        flex
+                        items-center
+                        justify-center
+
+                        bg-amber-100
+                        text-amber-700
 
                         rounded-xl
 
@@ -179,6 +394,7 @@ Más
                 >
                     🏪
                 </div>
+
 
                 <div>
 
@@ -194,41 +410,137 @@ Más
 
             </div>
 
-            <span class="text-gray-400 text-xl">
+
+            <span
+                class="
+                    text-gray-300
+                    group-hover:text-amber-500
+                    text-2xl
+                    transition
+                "
+            >
                 ›
             </span>
 
         </a>
 
-        <a
-            href="{% url 'ventas:cierre_caja' %}"
-            class="
-                block
-                w-full
-                bg-white
-                border border-gray-200
-                rounded-xl
-                p-4
-                font-semibold
-            "
-        >
-            Cierre de caja
-        </a>
 
-
-
-
-
+        <!-- ================================================== -->
         <!-- CERRAR SESIÓN -->
+        <!-- ================================================== -->
 
-        <form method="post" action="{% url 'logout' %}">
+        <form
+            method="post"
+            action="{% url 'logout' %}"
+        >
+
             {% csrf_token %}
-            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 rounded-lg py-2 transition">
-                Cerrar sesión
+
+            <button
+                type="submit"
+                class="
+                    group
+
+                    w-full
+
+                    flex
+                    items-center
+                    justify-between
+
+                    bg-white
+
+                    border
+                    border-gray-200
+
+                    rounded-2xl
+
+                    p-5
+
+                    text-left
+
+                    hover:border-red-300
+                    hover:bg-red-50
+                    hover:shadow-sm
+
+                    active:scale-[0.99]
+
+                    transition
+                "
+            >
+
+                <div class="flex items-center gap-4">
+
+                    <div
+                        class="
+                            w-12
+                            h-12
+
+                            shrink-0
+
+                            flex
+                            items-center
+                            justify-center
+
+                            bg-red-100
+                            text-red-700
+
+                            rounded-xl
+
+                            text-2xl
+                        "
+                    >
+                        🚪
+                    </div>
+
+
+                    <div>
+
+                        <div
+                            class="
+                                font-bold
+                                text-red-700
+                            "
+                        >
+                            Cerrar sesión
+                        </div>
+
+                        <div
+                            class="
+                                text-sm
+                                text-gray-500
+                                mt-1
+                            "
+                        >
+                            Salir del usuario actual
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <span
+                    class="
+                        text-gray-300
+                        group-hover:text-red-500
+                        text-2xl
+                        transition
+                    "
+                >
+                    ›
+                </span>
+
             </button>
+
         </form>
+
     </div>
-    <div class="h-24"></div>
+
+
+    <!-- ESPACIO PARA NAVEGACIÓN INFERIOR -->
+
+    <div class="h-28"></div>
+
 </div>
 
 
