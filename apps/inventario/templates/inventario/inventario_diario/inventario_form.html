@@ -139,24 +139,24 @@ Inventario diario
 
                         <tr>
 
-                        
-
-                            <th
-                                class="px-6 py-3 text-left"
-                            >
-                                Variante
+                            <th class="px-4 py-3 text-left">
+                                Producto
                             </th>
 
-                            <th
-                                class="px-6 py-3 text-center"
-                            >
-                                Inventario inicial
+                            <th class="px-4 py-3 text-center">
+                                Anterior
                             </th>
 
-                            <th
-                                class="px-6 py-3 text-center"
-                            >
-                                Inventario final
+                            <th class="px-4 py-3 text-center">
+                                Consumo
+                            </th>
+
+                            <th class="px-4 py-3 text-center">
+                                Esperado
+                            </th>
+
+                            <th class="px-4 py-3 text-center">
+                                Conteo físico
                             </th>
 
                         </tr>
@@ -168,45 +168,112 @@ Inventario diario
 
                         {% for form in formset %}
 
+                            {{ form.variante_id }}
+
                             <tr>
 
+                                <!-- PRODUCTO -->
 
+                                <td class="px-4 py-4">
 
-                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-gray-900">
+                                        {{ form.variante.nombre }}
+                                    </div>
 
-                                    {{ form.instance.variante.producto.nombre }} - {{ form.instance.variante.nombre }}
-
-                                </td>
-
-
-                                <td class="px-6 py-4">
-
-                                    <div class="flex justify-center">
-
-                                        {{ form.inventario_inicial }}
-
+                                    <div class="text-sm text-gray-500">
+                                        {{ form.variante.producto.nombre }}
                                     </div>
 
                                 </td>
 
 
-                                <td class="px-6 py-4">
+                                <!-- INVENTARIO ANTERIOR -->
+
+                                <td class="px-4 py-4 text-center">
+
+                                    {% if form.datos_teoricos.fecha_ultimo_conteo %}
+
+                                        <div class="font-semibold">
+                                            {{ form.datos_teoricos.inventario_inicial|floatformat:"-4" }}
+                                        </div>
+
+                                        <div class="text-xs text-gray-400">
+                                            {{ form.datos_teoricos.fecha_ultimo_conteo|date:"d/m/Y" }}
+                                        </div>
+
+                                    {% else %}
+
+                                        <span class="text-gray-400">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- CONSUMO -->
+
+                                <td class="px-4 py-4 text-center">
+
+                                    {% if form.datos_teoricos.fecha_ultimo_conteo %}
+
+                                        {{ form.datos_teoricos.consumo_teorico|floatformat:"-4" }}
+
+                                    {% else %}
+
+                                        <span class="text-gray-400">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ESPERADO -->
+
+                                <td class="px-4 py-4 text-center">
+
+                                    {% if form.datos_teoricos.cantidad_teorica != None %}
+
+                                        <span class="font-bold">
+                                            {{ form.datos_teoricos.cantidad_teorica|floatformat:"-4" }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="text-gray-400">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- CONTEO FÍSICO -->
+
+                                <td class="px-4 py-4 text-center">
 
                                     <div class="flex justify-center">
-
                                         {{ form.cantidad }}
-
                                     </div>
 
-                                    {{ form.id }}
+                                    {% if form.errors %}
 
-                                    {% if form.cantidad.errors %}
+                                        <div class="text-red-600 text-xs mt-2">
 
-                                        <p
-                                            class="text-sm text-red-600 mt-1"
-                                        >
-                                            {{ form.cantidad.errors|striptags }}
-                                        </p>
+                                            {% for field, errors in form.errors.items %}
+
+                                                <div>
+                                                    {{ field }}:
+                                                    {{ errors|striptags }}
+                                                </div>
+
+                                            {% endfor %}
+
+                                        </div>
 
                                     {% endif %}
 
@@ -216,8 +283,7 @@ Inventario diario
 
                         {% endfor %}
 
-                    </tbody>
-
+                        </tbody>
                 </table>
 
             </div>

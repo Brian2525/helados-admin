@@ -1,0 +1,207 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Inventario registrado
+{% endblock %}
+
+{% block page_title %}
+Inventario registrado
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+
+    <!-- CONFIRMACIÓN -->
+
+    <div
+        class="
+            bg-white
+            border border-gray-200
+            rounded-2xl
+            shadow-sm
+            overflow-hidden
+        "
+    >
+
+        <div class="p-8 text-center border-b">
+
+            <div
+                class="
+                    mx-auto
+                    w-16 h-16
+                    rounded-full
+                    bg-green-100
+                    flex items-center
+                    justify-center
+                    text-3xl
+                "
+            >
+                ✓
+            </div>
+
+            <h1
+                class="
+                    mt-4
+                    text-2xl
+                    font-bold
+                    text-gray-900
+                "
+            >
+                Cierre registrado
+            </h1>
+
+            <p class="mt-2 text-gray-500">
+                {{ request.sucursal_activa.nombre }}
+                ·
+                {{ fecha|date:"d/m/Y" }}
+            </p>
+
+        </div>
+
+
+        <!-- RESULTADOS -->
+
+        <div class="p-6">
+
+            <h2 class="font-bold text-gray-900 mb-4">
+                Resultado del cierre
+            </h2>
+
+
+            <div class="divide-y divide-gray-100">
+
+                {% for inventario in inventarios %}
+
+                    <div
+                        class="
+                            flex
+                            items-center
+                            justify-between
+                            gap-4
+                            py-4
+                        "
+                    >
+
+                        <div>
+
+                            <p class="font-semibold text-gray-900">
+                                {{ inventario.variante.producto.nombre }}
+                            </p>
+
+                            <p class="text-sm text-gray-500">
+                                {{ inventario.variante.nombre }}
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            class="
+                                flex
+                                items-center
+                                gap-6
+                                text-right
+                            "
+                        >
+
+                            <div>
+
+                                <p class="text-xs text-gray-400">
+                                    Esperado
+                                </p>
+
+                                <p class="font-semibold">
+                                    {% if inventario.cantidad_teorica is not None %}
+                                        {{ inventario.cantidad_teorica|floatformat:4 }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </p>
+
+                            </div>
+
+
+                            <div>
+
+                                <p class="text-xs text-gray-400">
+                                    Físico
+                                </p>
+
+                                <p class="font-bold">
+                                    {{ inventario.cantidad|floatformat:4 }}
+                                </p>
+
+                            </div>
+
+
+                            <div class="min-w-20">
+
+                                <p class="text-xs text-gray-400">
+                                    Diferencia
+                                </p>
+
+                                {% if inventario.diferencia is None %}
+
+                                    <p class="font-bold text-gray-400">
+                                        Base
+                                    </p>
+
+                                {% elif inventario.diferencia < 0 %}
+
+                                    <p class="font-bold text-red-600">
+                                        {{ inventario.diferencia|floatformat:4 }}
+                                    </p>
+
+                                {% elif inventario.diferencia > 0 %}
+
+                                    <p class="font-bold text-amber-600">
+                                        +{{ inventario.diferencia|floatformat:4 }}
+                                    </p>
+
+                                {% else %}
+
+                                    <p class="font-bold text-green-600">
+                                        0
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACCIONES -->
+
+    <div class="mt-6 flex justify-center">
+
+        <a
+            href="{% url 'ventas:pos_nueva_venta' %}"
+            class="
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                font-semibold
+                px-8 py-4
+                rounded-xl
+            "
+        >
+            Volver al POS
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

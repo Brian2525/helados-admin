@@ -186,6 +186,11 @@ def sidebar_menu(request):
                 {
                     "titulo": "Historico de inventario diario",
                     "url": reverse("inventario:inventario_list"), 
+                }, 
+
+                {
+                    "titulo": "Preparar producto",
+                    "url": reverse("inventario:preparacion_list"), 
                 }
 
             ]

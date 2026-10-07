@@ -1,0 +1,477 @@
+{% extends "core/base_dashboard.html" %}
+
+
+{% load l10n %}
+
+
+
+{% block title %}
+Cierre de inventario
+{% endblock %}
+
+{% block page_title %}
+Cierre de inventario
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+    <!-- HEADER -->
+
+    <div
+        class="
+            flex
+            flex-col
+            md:flex-row
+            md:items-center
+            md:justify-between
+            gap-4
+            mb-6
+        "
+    >
+
+        <div>
+
+            <h1 class="text-2xl font-bold text-gray-900">
+                Cierre de inventario
+            </h1>
+
+            <p class="mt-1 text-gray-500">
+                {{ fecha|date:"d/m/Y" }}
+            </p>
+
+        </div>
+
+
+        <div
+            class="
+                bg-gray-100
+                rounded-xl
+                px-4 py-3
+            "
+        >
+
+            <p
+                class="
+                    text-xs
+                    uppercase
+                    tracking-wide
+                    text-gray-500
+                "
+            >
+                Sucursal activa
+            </p>
+
+            <p class="font-bold text-gray-900">
+                {{ request.sucursal_activa.nombre }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- AYUDA -->
+
+    <div
+        class="
+            bg-blue-50
+            border border-blue-100
+            rounded-2xl
+            p-4
+            mb-6
+        "
+    >
+
+        <p class="font-semibold text-blue-900">
+            Cuenta físicamente la mercancía
+        </p>
+
+        <p class="text-sm text-blue-700 mt-1">
+            El sistema ya calculó cuánto debería existir.
+            Captura únicamente lo que realmente encuentras.
+        </p>
+
+    </div>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ formset.management_form }}
+
+
+        <!-- TABLA -->
+
+        <div
+            class="
+                bg-white
+                border border-gray-200
+                rounded-2xl
+                shadow-sm
+                overflow-hidden
+            "
+        >
+
+            <div class="overflow-x-auto">
+
+                <table class="w-full">
+
+                    <thead class="bg-gray-50">
+
+                        <tr>
+
+                            <th
+                                class="
+                                    text-left
+                                    px-5 py-4
+                                    text-xs
+                                    uppercase
+                                    tracking-wide
+                                    text-gray-500
+                                "
+                            >
+                                Producto
+                            </th>
+
+                            <th
+                                class="
+                                    text-center
+                                    px-4 py-4
+                                    text-xs
+                                    uppercase
+                                    tracking-wide
+                                    text-gray-500
+                                "
+                            >
+                                Esperado
+                            </th>
+
+                            <th
+                                class="
+                                    text-center
+                                    px-4 py-4
+                                    text-xs
+                                    uppercase
+                                    tracking-wide
+                                    text-gray-500
+                                "
+                            >
+                                Físico
+                            </th>
+
+                            <th
+                                class="
+                                    text-center
+                                    px-4 py-4
+                                    text-xs
+                                    uppercase
+                                    tracking-wide
+                                    text-gray-500
+                                "
+                            >
+                                Diferencia
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody class="divide-y divide-gray-100">
+
+                        {% for fila in filas %}
+
+                            <tr
+                                class="fila-inventario"
+                                data-esperado="{% if fila.item.cantidad_teorica is not None %}{{ fila.item.cantidad_teorica|unlocalize }}{% endif %}"
+                            >
+
+                                <td class="px-5 py-4">
+
+                                    {{ fila.form.variante_id }}
+
+                                    <p class="font-semibold text-gray-900">
+                                        {{ fila.item.variante.producto.nombre }}
+                                    </p>
+
+                                    <p class="text-sm text-gray-500">
+                                        {{ fila.item.variante.nombre }}
+                                    </p>
+
+                                </td>
+
+
+                                <!-- ESPERADO -->
+
+                                <td
+                                    class="
+                                        px-4 py-4
+                                        text-center
+                                    "
+                                >
+
+                                    {% if fila.item.cantidad_teorica is not None %}
+
+                                        <span
+                                            class="
+                                                text-lg
+                                                font-bold
+                                                text-gray-900
+                                            "
+                                        >
+                                            {{ fila.item.cantidad_teorica|floatformat:4 }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span
+                                            class="
+                                                text-sm
+                                                text-gray-400
+                                            "
+                                        >
+                                            Sin base
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- FÍSICO -->
+
+                                <td
+                                    class="
+                                        px-4 py-4
+                                        w-44
+                                    "
+                                >
+
+                                    {{ fila.form.cantidad }}
+
+                                    {% for error in fila.form.cantidad.errors %}
+
+                                        <p
+                                            class="
+                                                mt-1
+                                                text-xs
+                                                text-red-600
+                                            "
+                                        >
+                                            {{ error }}
+                                        </p>
+
+                                    {% endfor %}
+
+                                </td>
+
+
+                                <!-- DIFERENCIA -->
+
+                                <td
+                                    class="
+                                        diferencia
+                                        px-4 py-4
+                                        text-center
+                                        text-lg
+                                        font-bold
+                                    "
+                                >
+
+                                    —
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- GUARDAR -->
+
+        <div
+            class="
+                sticky
+                bottom-0
+                mt-6
+                bg-white/95
+                backdrop-blur
+                border border-gray-200
+                shadow-lg
+                rounded-2xl
+                p-4
+            "
+        >
+
+            <div
+                class="
+                    flex
+                    items-center
+                    justify-between
+                    gap-4
+                "
+            >
+
+                <p class="text-sm text-gray-500">
+                    Verifica el conteo antes de guardar.
+                </p>
+
+
+                <button
+                    type="submit"
+                    class="
+                        bg-blue-600
+                        hover:bg-blue-700
+                        active:bg-blue-800
+                        text-white
+                        font-semibold
+                        text-lg
+                        px-8 py-4
+                        rounded-xl
+                    "
+                >
+                    Guardar cierre
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const filas = document.querySelectorAll(
+            ".fila-inventario"
+        );
+
+
+        filas.forEach(function (fila) {
+
+            const input = fila.querySelector(
+                ".cantidad-fisica"
+            );
+
+            const diferencia = fila.querySelector(
+                ".diferencia"
+            );
+
+            const esperadoTexto =
+                fila.dataset.esperado;
+
+
+            // Sin inventario anterior
+            if (!esperadoTexto) {
+
+                diferencia.textContent = "Base";
+
+                diferencia.classList.add(
+                    "text-gray-400"
+                );
+
+                return;
+            }
+
+
+            // Django puede localizar decimales.
+            const esperado = parseFloat(
+                esperadoTexto.replace(",", ".")
+            );
+
+
+            function actualizar() {
+
+                if (input.value === "") {
+
+                    diferencia.textContent = "—";
+
+                    diferencia.className =
+                        "diferencia px-4 py-4 " +
+                        "text-center text-lg font-bold " +
+                        "text-gray-400";
+
+                    return;
+                }
+
+
+                const fisico = parseFloat(
+                    input.value.replace(",", ".")
+                );
+
+
+                const valor =
+                    fisico - esperado;
+
+
+                diferencia.textContent =
+                    valor.toLocaleString(
+                        "es-MX",
+                        {
+                            maximumFractionDigits: 4,
+                            signDisplay: "always"
+                        }
+                    );
+
+
+                diferencia.className =
+                    "diferencia px-4 py-4 " +
+                    "text-center text-lg font-bold";
+
+
+                if (valor < 0) {
+
+                    diferencia.classList.add(
+                        "text-red-600"
+                    );
+
+                } else if (valor > 0) {
+
+                    diferencia.classList.add(
+                        "text-amber-600"
+                    );
+
+                } else {
+
+                    diferencia.classList.add(
+                        "text-green-600"
+                    );
+
+                }
+
+            }
+
+
+            input.addEventListener(
+                "input",
+                actualizar
+            );
+
+
+            actualizar();
+
+        });
+
+    }
+);
+
+</script>
+
+{% endblock %}

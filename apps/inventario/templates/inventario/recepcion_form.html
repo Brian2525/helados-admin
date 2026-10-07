@@ -1,0 +1,295 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Recibir {{ variante.nombre }}
+{% endblock %}
+
+{% block page_title %}
+Recibir mercancía
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+
+
+    <!-- REGRESAR -->
+
+    <div class="mb-6">
+
+        <a
+            href="{% url 'inventario:recepcion_list' %}"
+            class="
+                text-gray-600
+                hover:text-gray-900
+                font-medium
+            "
+        >
+            ← Recibir mercancía
+        </a>
+
+    </div>
+
+
+    <div
+        class="
+            bg-white
+            border border-gray-200
+            rounded-2xl
+            shadow-sm
+            overflow-hidden
+        "
+    >
+
+
+        <!-- PRODUCTO -->
+
+        <div class="p-6 border-b border-gray-100">
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="
+                        w-16 h-16
+                        rounded-2xl
+                        bg-blue-50
+                        flex
+                        items-center
+                        justify-center
+                        text-3xl
+                    "
+                >
+                    📦
+                </div>
+
+
+                <div>
+
+                    <p class="text-sm text-gray-500">
+                        {{ variante.producto.nombre }}
+                    </p>
+
+                    <h1
+                        class="
+                            text-2xl
+                            font-bold
+                            text-gray-900
+                        "
+                    >
+                        {{ variante.nombre }}
+                    </h1>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ request.sucursal_activa.nombre }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <form method="post" class="p-6">
+
+            {% csrf_token %}
+
+
+            <div class="max-w-sm mx-auto text-center">
+
+                <label
+                    for="{{ form.cantidad.id_for_label }}"
+                    class="
+                        block
+                        text-lg
+                        font-semibold
+                        text-gray-900
+                        mb-2
+                    "
+                >
+                    ¿Cuánto recibiste?
+                </label>
+
+                <p class="text-sm text-gray-500 mb-5">
+                    Captura la cantidad que ingresó físicamente.
+                </p>
+
+
+                {{ form.cantidad }}
+
+
+                {% for error in form.cantidad.errors %}
+
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- OBSERVACIONES -->
+
+            <div class="mt-8">
+
+                <label
+                    for="{{ form.observaciones.id_for_label }}"
+                    class="
+                        block
+                        text-sm
+                        font-semibold
+                        text-gray-700
+                        mb-2
+                    "
+                >
+                    Observaciones
+                    <span class="font-normal text-gray-400">
+                        (opcional)
+                    </span>
+                </label>
+
+                {{ form.observaciones }}
+
+            </div>
+
+
+            <!-- RESUMEN -->
+
+            <div
+                class="
+                    mt-6
+                    rounded-2xl
+                    bg-green-50
+                    border border-green-100
+                    p-5
+                "
+            >
+
+                <p class="font-semibold text-green-900">
+                    Se agregará al inventario
+                </p>
+
+
+                <div
+                    class="
+                        flex
+                        justify-between
+                        items-center
+                        mt-3
+                    "
+                >
+
+                    <span class="text-green-800">
+                        {{ variante }}
+                    </span>
+
+                    <span
+                        id="cantidad-preview"
+                        class="
+                            text-2xl
+                            font-bold
+                            text-green-900
+                        "
+                    >
+                        0
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div
+                class="
+                    flex
+                    justify-end
+                    gap-3
+                    mt-8
+                "
+            >
+
+                <a
+                    href="{% url 'inventario:recepcion_list' %}"
+                    class="
+                        px-6 py-4
+                        rounded-xl
+                        border border-gray-300
+                        font-semibold
+                        text-gray-700
+                    "
+                >
+                    Cancelar
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="
+                        px-8 py-4
+                        rounded-xl
+                        bg-blue-600
+                        hover:bg-blue-700
+                        text-white
+                        font-semibold
+                        text-lg
+                    "
+                >
+                    Confirmar recepción
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const input = document.getElementById(
+        "{{ form.cantidad.id_for_label }}"
+    );
+
+    const preview = document.getElementById(
+        "cantidad-preview"
+    );
+
+
+    function actualizar() {
+
+        const cantidad = parseFloat(
+            input.value
+        ) || 0;
+
+        preview.textContent =
+            cantidad.toLocaleString(
+                "es-MX",
+                {
+                    maximumFractionDigits: 4
+                }
+            );
+
+    }
+
+
+    input.addEventListener(
+        "input",
+        actualizar
+    );
+
+    actualizar();
+
+});
+
+</script>
+
+{% endblock %}

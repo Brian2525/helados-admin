@@ -1,10 +1,17 @@
 from django import forms
 from apps.core.forms import TailwindModelForm
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, formset_factory
 
 
 from apps.sucursales.models import Sucursal
-from .models import Producto, VarianteProducto, InventarioDiario
+from .models import Producto, VarianteProducto, InventarioDiario, Receta , MovimientoInventario
+
+
+
+
+
+
+
 
 
 class VarianteProductoForm(TailwindModelForm):
@@ -85,68 +92,9 @@ class ProductoForm(TailwindModelForm):
 
 
 
-class InventarioDiarioFormSet(
-    forms.BaseModelFormSet
-):
-
-    def add_fields(
-        self,
-        form,
-        index
-    ):
-
-        super().add_fields(
-            form,
-            index
-        )
-
-        inventario = form.instance
-
-        fecha = inventario.fecha
-        sucursal = inventario.sucursal
-        variante = inventario.variante
-
-        inventario_anterior = (
-            InventarioDiario.objects
-            .filter(
-                sucursal=sucursal,
-                variante=variante,
-                fecha__lt=fecha
-            )
-            .order_by("-fecha")
-            .first()
-        )
-
-        cantidad_inicial = (
-            inventario_anterior.cantidad
-            if inventario_anterior
-            else 0
-        )
-
-        form.fields[
-            "inventario_inicial"
-        ].initial = cantidad_inicial
-
-
-
-
 
 class InventarioDiarioItemForm(forms.ModelForm):
-
-    inventario_inicial = forms.DecimalField(
-        required=False,
-        disabled=True,
-        label="Inventario inicial",
-        widget=forms.NumberInput(
-            attrs={
-                "class": (
-                    "w-24 rounded-lg border border-gray-200 "
-                    "bg-gray-100 px-3 py-2 text-center "
-                    "text-gray-500"
-                )
-            }
-        )
-    )
+    print("InventarioDiarioItemForm")
 
     class Meta:
         model = InventarioDiario
@@ -158,13 +106,14 @@ class InventarioDiarioItemForm(forms.ModelForm):
             "cantidad": forms.NumberInput(
                 attrs={
                     "class": (
-                        "w-24 rounded-lg border border-gray-300 "
-                        "px-3 py-2 text-center "
+                        "w-28 rounded-lg border border-gray-300 "
+                        "px-3 py-2 text-center font-semibold "
                         "focus:outline-none focus:ring-2 "
                         "focus:ring-blue-500"
                     ),
                     "min": "0",
-                    "step": "0.01",
+                    "step": "0.0001",
+                    "inputmode": "decimal",
                 }
             ),
         }
@@ -174,59 +123,53 @@ class InventarioDiarioItemForm(forms.ModelForm):
 InventarioDiarioFormSet = modelformset_factory(
     InventarioDiario,
     form=InventarioDiarioItemForm,
-    formset=InventarioDiarioFormSet,
     extra=0,
 )
+print("InventarioDiarioFormSet"),
 
 
 
 
 
 
-#Inventario diario inicial 
+class CierreInventarioItemForm(forms.Form):
+
+    variante_id = forms.IntegerField(
+        widget=forms.HiddenInput()
+    )
+
+    cantidad = forms.DecimalField(
+        label="Físico",
+        min_value=0,
+        max_digits=10,
+        decimal_places=4,
+        widget=forms.NumberInput(
+            attrs={
+                "class": (
+                    "cantidad-fisica "
+                    "w-full "
+                    "text-center "
+                    "text-xl "
+                    "font-bold "
+                    "border border-gray-300 "
+                    "rounded-xl "
+                    "px-3 py-3 "
+                    "focus:ring-2 "
+                    "focus:ring-blue-500 "
+                    "focus:border-blue-500"
+                ),
+                "min": "0",
+                "step": "0.0001",
+                "inputmode": "decimal",
+                "placeholder": "0",
+            }
+        ),
+    )
 
 
-class InventarioDiarioBaseFormSet(
-    forms.BaseModelFormSet
-):
 
-    def add_fields(
-        self,
-        form,
-        index
-    ):
-
-        super().add_fields(
-            form,
-            index
-        )
-
-        inventario = form.instance
-
-        inventario_anterior = (
-            InventarioDiario.objects
-            .filter(
-                sucursal=inventario.sucursal,
-                variante=inventario.variante,
-                fecha__lt=inventario.fecha
-            )
-            .order_by("-fecha")
-            .first()
-        )
-
-        form.fields[
-            "inventario_inicial"
-        ].initial = (
-            inventario_anterior.cantidad
-            if inventario_anterior
-            else 0
-        )
-
-
-InventarioDiarioFormSet = modelformset_factory(
-    InventarioDiario,
-    form=InventarioDiarioItemForm,
-    formset=InventarioDiarioBaseFormSet,
+CierreInventarioFormSet = formset_factory(
+    CierreInventarioItemForm,
     extra=0,
 )
 
@@ -270,4 +213,181 @@ class InventarioSucursalForm(forms.Form):
 
 
 
+class InventarioCapturaItemForm(forms.Form):
 
+    variante_id = forms.IntegerField(
+        widget=forms.HiddenInput()
+    )
+    print(variante_id)
+
+    cantidad = forms.DecimalField(
+        min_value=0,
+        max_digits=12,
+        decimal_places=4,
+        label="Cantidad física",
+        widget=forms.NumberInput(
+            attrs={
+                "class": (
+                    "w-28 rounded-lg border border-gray-300 "
+                    "px-3 py-2 text-center font-semibold "
+                    "focus:outline-none focus:ring-2 "
+                    "focus:ring-blue-500"
+                ),
+                "step": "0.0001",
+                "inputmode": "decimal",
+                "placeholder": "0",
+            }
+        )
+    )
+    print(cantidad)
+
+InventarioCapturaFormSet = forms.formset_factory(
+    InventarioCapturaItemForm,
+    extra=0,
+)
+
+
+
+
+
+
+class PreparacionForm(forms.Form):
+
+    cantidad = forms.IntegerField(
+        label="Cantidad preparada",
+        min_value=1,
+        widget=forms.NumberInput(
+            attrs={
+                "class": (
+                    "w-full text-center text-4xl font-bold "
+                    "border border-gray-300 rounded-2xl "
+                    "px-4 py-5 "
+                    "focus:ring-2 focus:ring-blue-500 "
+                    "focus:border-blue-500"
+                ),
+                "min": "1",
+                "step": "1",
+                "inputmode": "numeric",
+                "placeholder": "0",
+                "autofocus": True,
+            }
+        ),
+    )
+
+
+
+class RecepcionMercanciaForm(forms.Form):
+
+    cantidad = forms.DecimalField(
+        label="Cantidad recibida",
+        min_value=0.0001,
+        max_digits=12,
+        decimal_places=4,
+        widget=forms.NumberInput(
+            attrs={
+                "class": (
+                    "w-full text-center text-4xl font-bold "
+                    "border border-gray-300 rounded-2xl "
+                    "px-4 py-5 "
+                    "focus:ring-2 focus:ring-blue-500 "
+                    "focus:border-blue-500"
+                ),
+                "min": "0.0001",
+                "step": "0.0001",
+                "inputmode": "decimal",
+                "placeholder": "0",
+                "autofocus": True,
+            }
+        ),
+    )
+
+    observaciones = forms.CharField(
+        label="Observaciones",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": (
+                    "w-full border border-gray-300 "
+                    "rounded-xl px-4 py-3 "
+                    "focus:ring-2 focus:ring-blue-500"
+                ),
+                "rows": 3,
+                "placeholder": (
+                    "Opcional. Ej. Entrega semanal"
+                ),
+            }
+        ),
+    )
+
+
+class MermaForm(forms.Form):
+
+    cantidad = forms.DecimalField(
+        label="Cantidad perdida",
+        min_value=0.0001,
+        max_digits=12,
+        decimal_places=4,
+        widget=forms.NumberInput(
+            attrs={
+                "class": (
+                    "w-full text-center text-4xl font-bold "
+                    "border border-gray-300 rounded-2xl "
+                    "px-4 py-5 "
+                    "focus:ring-2 focus:ring-red-500 "
+                    "focus:border-red-500"
+                ),
+                "min": "0.0001",
+                "step": "0.0001",
+                "inputmode": "decimal",
+                "placeholder": "0",
+                "autofocus": True,
+            }
+        ),
+    )
+
+    motivo = forms.ChoiceField(
+        label="Motivo",
+        choices=MovimientoInventario.MotivoMerma.choices,
+        initial=MovimientoInventario.MotivoMerma.ROTO,
+        widget=forms.Select(
+            attrs={
+                "class": (
+                    "w-full border border-gray-300 "
+                    "rounded-xl px-4 py-3 bg-white"
+                )
+            }
+        ),
+    )
+
+    observaciones = forms.CharField(
+        label="Observaciones",
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": (
+                    "w-full border border-gray-300 "
+                    "rounded-xl px-4 py-3"
+                ),
+                "rows": 2,
+                "placeholder": "Opcional",
+            }
+        ),
+    )
+
+    def clean(self):
+
+        cleaned_data = super().clean()
+
+        motivo = cleaned_data.get("motivo")
+        observaciones = cleaned_data.get("observaciones")
+
+        if (
+            motivo == MovimientoInventario.MotivoMerma.OTRO
+            and not observaciones
+        ):
+            self.add_error(
+                "observaciones",
+                "Describe el motivo de la merma."
+            )
+
+        return cleaned_data

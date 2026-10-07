@@ -15,6 +15,14 @@ from .views import (
     InventarioDiarioUpdateView,
     InventarioDiarioCompletadoView,
     ConsumoTeoricoView,
+    PreparacionCreateView,
+    PreparacionListView,
+    RecepcionMercanciaListView,
+    RecepcionMercanciaCreateView,
+    MermaListView,
+    MermaCreateView,
+    CierreInventarioView,
+    CierreInventarioCompletadoView,
 )
 
 app_name = "inventario"
@@ -86,15 +94,9 @@ urlpatterns = [
         "inventario-diario/"
         "<int:sucursal_id>/"
         "<str:fecha>/",
-        InventarioDiarioDetailView.as_view(),
-        name="inventario_detail"
-    ),
+        InventarioDiarioDetailView.as_view(),name="inventario_detail"),
 
-    path(
-    "inventario-diario/<int:sucursal_id>/<str:fecha>/editar/",
-    InventarioDiarioUpdateView.as_view(),
-    name="inventario_update",
-    ),
+    path("inventario-diario/<int:sucursal_id>/<str:fecha>/editar/",InventarioDiarioUpdateView.as_view(),name="inventario_update",),
 
 
     path("inventario-diario/completado/<int:sucursal_id>/<str:fecha>/",
@@ -102,14 +104,22 @@ urlpatterns = [
 
     path("consumo-teorico/",ConsumoTeoricoView.as_view(),name="consumo_teorico",),
 
+    path ("preparacion/", PreparacionListView.as_view(), name="preparacion_list",),
+
+    path("preparacion/<int:variante_id>/", PreparacionCreateView.as_view(), name="preparacion_create",),
+
+    path("recibir/", RecepcionMercanciaListView.as_view(),name="recepcion_list",),
+
+    path("recibir/<int:variante_id>/",RecepcionMercanciaCreateView.as_view(),name="recepcion_create",),
 
 
+    path("merma/",MermaListView.as_view(),name="merma_list",),
 
 
+    path("merma/<int:variante_id>/",MermaCreateView.as_view(),name="merma_create",),
 
+    path("cierre/",CierreInventarioView.as_view(),name="cierre_inventario",),
 
-
-
-
+    path("cierre/completado/",CierreInventarioCompletadoView.as_view(),name="cierre_inventario_completado",),
 
 ]

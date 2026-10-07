@@ -11,6 +11,16 @@ from decimal import Decimal
 
 
 class Receta(models.Model):
+    class MomentoConsumo(models.TextChoices):
+        VENTA = "venta", "Al vender"
+        PREPARACION = "preparacion", "Al preparar"
+
+
+    momento_consumo = models.CharField(
+        max_length=20,
+        choices=MomentoConsumo.choices,
+        default=MomentoConsumo.VENTA,
+    )
 
     variante_vendida = models.OneToOneField(
         "inventario.VarianteProducto",
@@ -38,6 +48,10 @@ class Receta(models.Model):
 
     def __str__(self):
         return f"Receta de {self.variante_vendida}"
+
+
+
+    
 
 
 
@@ -90,6 +104,17 @@ class RecetaDetalle(models.Model):
 
 class MovimientoInventario(models.Model):
 
+    class MotivoMerma(models.TextChoices):
+        ROTO = "roto", "Roto"
+        CADUCIDAD = "caducidad", "Caducidad"
+        TRASLADO_SUCURSAL= "traslado_sucursal", "Traslado a otra sucursal"
+        ROBO= "robo", "Robo"
+        PREPARACION_FALLIDA = (
+            "preparacion_fallida",
+            "Preparación fallida",
+        )
+        OTRO = "otro", "Otro"
+
     class TipoMovimiento(models.TextChoices):
         INVENTARIO_INICIAL = "inventario_inicial", "Inventario inicial"
         COMPRA = "compra", "Compra"
@@ -99,12 +124,15 @@ class MovimientoInventario(models.Model):
         MERMA = "merma", "Merma"
         TRASLADO_ENTRADA = "traslado_entrada", "Traslado entrada"
         TRASLADO_SALIDA = "traslado_salida", "Traslado salida"
+        PRODUCCION_ENTRADA = ("produccion_entrada","Producto preparado")
+        PRODUCCION_SALIDA = ("produccion_salida","Consumo por preparación")
 
     TIPOS_ENTRADA = {
         TipoMovimiento.INVENTARIO_INICIAL,
         TipoMovimiento.COMPRA,
         TipoMovimiento.AJUSTE_ENTRADA,
         TipoMovimiento.TRASLADO_ENTRADA,
+        TipoMovimiento.PRODUCCION_ENTRADA,
     }
 
     TIPOS_SALIDA = {
@@ -112,7 +140,10 @@ class MovimientoInventario(models.Model):
         TipoMovimiento.MERMA,
         TipoMovimiento.AJUSTE_SALIDA,
         TipoMovimiento.TRASLADO_SALIDA,
+        TipoMovimiento.PRODUCCION_SALIDA,
     }
+
+
 
     sucursal = models.ForeignKey(
         Sucursal,
@@ -139,6 +170,13 @@ class MovimientoInventario(models.Model):
         max_digits=12,
         decimal_places=4,
         help_text="Guardar siempre como valor positivo."
+    )
+
+    motivo_merma = models.CharField(
+    max_length=30,
+    choices=MotivoMerma.choices,
+    null=True,
+    blank=True,
     )
 
     usuario = models.ForeignKey(
@@ -205,6 +243,11 @@ class MovimientoInventario(models.Model):
         return f"{self.sucursal} - {self.variante} - {self.tipo} - {self.cantidad}"
 
 
+
+
+
+
+
 class Producto(models.Model):
 
     class TipoProducto(models.TextChoices):
@@ -230,6 +273,14 @@ class Producto(models.Model):
         default=True,
         help_text="Indica si sus variantes se muestran en el registro diario de ventas."
     )
+
+    controlar_inventario = models.BooleanField(
+        default=False,
+        help_text=(
+            "Indica si las variantes de este producto "
+            "se incluyen en el conteo físico de inventario."
+            )
+        )
 
 
     activo = models.BooleanField(
@@ -316,13 +367,38 @@ class InventarioDiario(models.Model):
         related_name="inventarios_diarios"
     )
 
+    # Cantidad físicamente contada
     cantidad = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
+        max_digits=12,
+        decimal_places=4,
         default=0
     )
 
+    # Cantidad que el sistema esperaba
+    consumo_teorico = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+    )
 
+
+     # Cantidad que debería existir
+    cantidad_teorica = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+    )
+
+    # Persona que realizó el conteo
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="inventarios_diarios_registrados"
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True
@@ -356,6 +432,17 @@ class InventarioDiario(models.Model):
 
         return self.inventario_inicial - self.cantidad
 
+    @property
+    def diferencia(self):
+
+        if self.cantidad_teorica is None:
+            return None
+
+        return (
+            self.cantidad
+            - self.cantidad_teorica
+        )
+
     class Meta:
 
         ordering = [
@@ -371,7 +458,8 @@ class InventarioDiario(models.Model):
                     "variante",
                     "fecha",
                 ],
-                name="unique_inventario_diario"
+                name="unique_inventario_"
+                 "sucursal_fecha_variante"
             )
         ]
 

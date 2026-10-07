@@ -18,7 +18,7 @@ media/
 
 # Static collected
 staticfiles/
-static/
+
 # Environment variables
 .env
 

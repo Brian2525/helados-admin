@@ -1,0 +1,278 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Preparar productos
+{% endblock %}
+
+{% block page_title %}
+Preparar productos
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+    <!-- ENCABEZADO -->
+    <div class="mb-8">
+
+        <div class="flex items-start justify-between gap-4">
+
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    Preparar productos
+                </h1>
+
+                <p class="mt-2 text-gray-500">
+                    Selecciona el producto que vas a preparar.
+                </p>
+            </div>
+
+            <!-- SUCURSAL ACTIVA -->
+            <div
+                class="
+                    hidden sm:block
+                    bg-gray-100
+                    rounded-xl
+                    px-4 py-3
+                    text-right
+                "
+            >
+                <p class="text-xs text-gray-500 uppercase tracking-wide">
+                    Sucursal
+                </p>
+
+                <p class="font-semibold text-gray-900">
+                    {{ request.sucursal_activa.nombre }}
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUCURSAL EN MÓVIL -->
+    <div
+        class="
+            sm:hidden
+            mb-6
+            bg-gray-100
+            rounded-xl
+            px-4 py-3
+        "
+    >
+        <p class="text-xs text-gray-500 uppercase tracking-wide">
+            Sucursal activa
+        </p>
+
+        <p class="font-semibold text-gray-900">
+            {{ request.sucursal_activa.nombre }}
+        </p>
+    </div>
+
+
+    {% if recetas %}
+
+        <!-- MOSAICOS -->
+        <div
+            class="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-3
+                gap-5
+            "
+        >
+
+            {% for receta in recetas %}
+
+                <a
+                    href="{% url 'inventario:preparacion_create' receta.variante_vendida.id %}"
+                    class="
+                        group
+                        relative
+                        bg-white
+                        border border-gray-200
+                        rounded-2xl
+                        p-6
+                        min-h-48
+                        shadow-sm
+
+                        flex
+                        flex-col
+                        justify-between
+
+                        hover:shadow-md
+                        hover:border-blue-300
+                        hover:-translate-y-0.5
+
+                        active:scale-[0.99]
+
+                        transition
+                        duration-150
+                    "
+                >
+
+                    <!-- PRODUCTO -->
+                    <div>
+
+                        <!-- ICONO -->
+                        <div
+                            class="
+                                w-14 h-14
+                                rounded-2xl
+                                bg-blue-50
+                                flex
+                                items-center
+                                justify-center
+                                text-2xl
+                                mb-5
+
+                                group-hover:bg-blue-100
+                                transition
+                            "
+                        >
+                            🍦
+                        </div>
+
+
+                        <!-- NOMBRE DEL PRODUCTO -->
+                        <p
+                            class="
+                                text-sm
+                                font-medium
+                                text-gray-500
+                                mb-1
+                            "
+                        >
+                            {{ receta.variante_vendida.producto.nombre }}
+                        </p>
+
+                        <!-- VARIANTE -->
+                        <h2
+                            class="
+                                text-xl
+                                font-bold
+                                text-gray-900
+                            "
+                        >
+                            {{ receta.variante_vendida.nombre }}
+                        </h2>
+
+                    </div>
+
+
+                    <!-- ACCIÓN -->
+                    <div
+                        class="
+                            flex
+                            items-center
+                            justify-between
+                            mt-6
+                            pt-4
+                            border-t
+                            border-gray-100
+                        "
+                    >
+
+                        <span
+                            class="
+                                text-blue-600
+                                font-semibold
+                            "
+                        >
+                            Preparar
+                        </span>
+
+                        <span
+                            class="
+                                text-xl
+                                text-gray-400
+                                group-hover:text-blue-600
+                                group-hover:translate-x-1
+                                transition
+                            "
+                        >
+                            →
+                        </span>
+
+                    </div>
+
+                </a>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- EXPLICACIÓN -->
+        <div
+            class="
+                mt-8
+                rounded-2xl
+                bg-blue-50
+                border
+                border-blue-100
+                p-5
+            "
+        >
+
+            <div class="flex gap-3">
+
+                <div class="text-xl">
+                    ℹ️
+                </div>
+
+                <div>
+
+                    <p class="font-semibold text-blue-900">
+                        ¿Qué sucede al registrar una preparación?
+                    </p>
+
+                    <p class="mt-1 text-sm text-blue-800">
+                        El sistema descontará automáticamente los
+                        ingredientes definidos en la receta y agregará
+                        las unidades preparadas al inventario.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    {% else %}
+
+        <!-- SIN PRODUCTOS -->
+        <div
+            class="
+                bg-white
+                border
+                border-gray-200
+                rounded-2xl
+                p-10
+                text-center
+            "
+        >
+
+            <div class="text-4xl mb-4">
+                🍦
+            </div>
+
+            <h2 class="text-lg font-bold text-gray-900">
+                No hay productos para preparar
+            </h2>
+
+            <p class="mt-2 text-gray-500">
+                No existen recetas activas configuradas
+                para consumirse durante la preparación.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

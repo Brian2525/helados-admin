@@ -1,0 +1,441 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block title %}
+Merma - {{ variante.nombre }}
+{% endblock %}
+
+{% block page_title %}
+Registrar merma
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+
+    <!-- REGRESAR + SUCURSAL -->
+
+    <div class="flex items-center justify-between gap-4 mb-6">
+
+        <a
+            href="{% url 'inventario:merma_list' %}"
+            class="
+                inline-flex
+                items-center
+                gap-2
+                text-gray-600
+                hover:text-gray-900
+                font-medium
+            "
+        >
+            ← Registrar merma
+        </a>
+
+
+        <div class="text-right">
+
+            <p class="text-xs text-gray-500 uppercase tracking-wide">
+                Sucursal
+            </p>
+
+            <p class="font-semibold text-gray-900">
+                {{ request.sucursal_activa.nombre }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- TARJETA -->
+
+    <div
+        class="
+            bg-white
+            border border-gray-200
+            rounded-2xl
+            shadow-sm
+            overflow-hidden
+        "
+    >
+
+        <!-- PRODUCTO -->
+
+        <div class="p-6 border-b border-gray-100">
+
+            <div class="flex items-center gap-4">
+
+                <div
+                    class="
+                        w-16 h-16
+                        rounded-2xl
+                        bg-red-50
+                        flex
+                        items-center
+                        justify-center
+                        text-3xl
+                        flex-shrink-0
+                    "
+                >
+                    ⚠️
+                </div>
+
+
+                <div>
+
+                    <p class="text-sm text-gray-500">
+                        {{ variante.producto.nombre }}
+                    </p>
+
+                    <h1
+                        class="
+                            text-2xl
+                            font-bold
+                            text-gray-900
+                        "
+                    >
+                        {{ variante.nombre }}
+                    </h1>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FORMULARIO -->
+
+        <form method="post" class="p-6">
+
+            {% csrf_token %}
+
+
+            <!-- ERRORES -->
+
+            {% if form.non_field_errors %}
+
+                <div
+                    class="
+                        mb-6
+                        rounded-xl
+                        bg-red-50
+                        border border-red-100
+                        p-4
+                        text-red-700
+                    "
+                >
+                    {{ form.non_field_errors }}
+                </div>
+
+            {% endif %}
+
+
+            <!-- CANTIDAD -->
+
+            <div class="max-w-sm mx-auto text-center">
+
+                <label
+                    for="{{ form.cantidad.id_for_label }}"
+                    class="
+                        block
+                        text-lg
+                        font-semibold
+                        text-gray-900
+                        mb-2
+                    "
+                >
+                    ¿Cuánto se perdió?
+                </label>
+
+                <p class="text-sm text-gray-500 mb-5">
+                    Captura la cantidad que debe descontarse
+                    del inventario.
+                </p>
+
+
+                {{ form.cantidad }}
+
+
+                {% for error in form.cantidad.errors %}
+
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- MOTIVO -->
+
+            <div class="mt-8">
+
+                <label
+                    for="{{ form.motivo.id_for_label }}"
+                    class="
+                        block
+                        text-sm
+                        font-semibold
+                        text-gray-700
+                        mb-2
+                    "
+                >
+                    Motivo
+                </label>
+
+                {{ form.motivo }}
+
+
+                {% for error in form.motivo.errors %}
+
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- OBSERVACIONES -->
+
+            <div
+                id="contenedor-observaciones"
+                class="mt-6"
+            >
+
+                <label
+                    for="{{ form.observaciones.id_for_label }}"
+                    class="
+                        block
+                        text-sm
+                        font-semibold
+                        text-gray-700
+                        mb-2
+                    "
+                >
+                    Observaciones
+
+                    <span class="font-normal text-gray-400">
+                        (opcional)
+                    </span>
+                </label>
+
+                {{ form.observaciones }}
+
+
+                {% for error in form.observaciones.errors %}
+
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ error }}
+                    </p>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- RESUMEN -->
+
+            <div
+                class="
+                    mt-8
+                    rounded-2xl
+                    bg-red-50
+                    border border-red-100
+                    p-5
+                "
+            >
+
+                <p class="font-semibold text-red-900">
+                    Se descontará del inventario
+                </p>
+
+
+                <div
+                    class="
+                        flex
+                        items-center
+                        justify-between
+                        gap-4
+                        mt-4
+                    "
+                >
+
+                    <div>
+
+                        <p class="font-medium text-red-900">
+                            {{ variante.producto.nombre }}
+                        </p>
+
+                        <p class="text-sm text-red-700">
+                            {{ variante.nombre }}
+                        </p>
+
+                    </div>
+
+
+                    <div class="text-right">
+
+                        <p
+                            id="cantidad-preview"
+                            class="
+                                text-2xl
+                                font-bold
+                                text-red-900
+                            "
+                        >
+                            0
+                        </p>
+
+                        <p class="text-xs text-red-700">
+                            unidades
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div
+                class="
+                    flex
+                    flex-col-reverse
+                    sm:flex-row
+                    sm:justify-end
+                    gap-3
+                    mt-8
+                "
+            >
+
+                <a
+                    href="{% url 'inventario:merma_list' %}"
+                    class="
+                        text-center
+                        px-6 py-4
+                        rounded-xl
+                        border border-gray-300
+                        text-gray-700
+                        font-semibold
+                        hover:bg-gray-50
+                    "
+                >
+                    Cancelar
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="
+                        px-8 py-4
+                        rounded-xl
+                        bg-red-600
+                        hover:bg-red-700
+                        active:bg-red-800
+                        text-white
+                        font-semibold
+                        text-lg
+                    "
+                >
+                    Confirmar merma
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const cantidadInput = document.getElementById(
+        "{{ form.cantidad.id_for_label }}"
+    );
+
+    const preview = document.getElementById(
+        "cantidad-preview"
+    );
+
+    const motivoSelect = document.getElementById(
+        "{{ form.motivo.id_for_label }}"
+    );
+
+    const observacionesInput = document.getElementById(
+        "{{ form.observaciones.id_for_label }}"
+    );
+
+
+    // ==========================================
+    // PREVIEW DE CANTIDAD
+    // ==========================================
+
+    function actualizarCantidad() {
+
+        const cantidad = parseFloat(
+            cantidadInput.value
+        ) || 0;
+
+        preview.textContent =
+            cantidad.toLocaleString(
+                "es-MX",
+                {
+                    maximumFractionDigits: 4
+                }
+            );
+
+    }
+
+
+    cantidadInput.addEventListener(
+        "input",
+        actualizarCantidad
+    );
+
+
+    actualizarCantidad();
+
+
+    // ==========================================
+    // OBSERVACIONES
+    // ==========================================
+
+    function actualizarObservaciones() {
+
+        if (motivoSelect.value === "otro") {
+
+            observacionesInput.placeholder =
+                "Describe el motivo de la merma";
+
+        } else {
+
+            observacionesInput.placeholder =
+                "Opcional";
+
+        }
+
+    }
+
+
+    motivoSelect.addEventListener(
+        "change",
+        actualizarObservaciones
+    );
+
+
+    actualizarObservaciones();
+
+});
+
+</script>
+
+{% endblock %}

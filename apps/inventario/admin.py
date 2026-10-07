@@ -3,7 +3,7 @@ from .models import Producto, VarianteProducto, InventarioDiario, Receta, Receta
 
 # Register your models here.
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "descripcion", "registrar_venta_diaria", "activo", "tipo")
+    list_display = ("nombre", "descripcion", "registrar_venta_diaria", "activo", "tipo", "controlar_inventario")
     list_filter = ("activo", "tipo")
     search_fields = ("nombre", "descripcion")
 

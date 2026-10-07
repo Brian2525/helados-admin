@@ -397,49 +397,40 @@ Detalle de inventario
 
                     <tr>
 
-                        <th
-                            class="px-6 py-4 text-left
-                                   text-xs font-semibold
-                                   uppercase tracking-wider
-                                   text-gray-500"
-                        >
+                        <th class="px-5 py-4 text-left
+                                text-xs font-semibold uppercase
+                                tracking-wider text-gray-500">
                             Producto
                         </th>
 
-                        <th
-                            class="px-6 py-4 text-left
-                                   text-xs font-semibold
-                                   uppercase tracking-wider
-                                   text-gray-500"
-                        >
-                            Variante
+                        <th class="px-5 py-4 text-center
+                                text-xs font-semibold uppercase
+                                tracking-wider text-gray-500">
+                            Anterior
                         </th>
 
-                        <th
-                            class="px-6 py-4 text-center
-                                   text-xs font-semibold
-                                   uppercase tracking-wider
-                                   text-gray-500"
-                        >
-                            Inventario inicial
-                        </th>
-
-                        <th
-                            class="px-6 py-4 text-center
-                                   text-xs font-semibold
-                                   uppercase tracking-wider
-                                   text-gray-500"
-                        >
-                            Inventario final
-                        </th>
-
-                        <th
-                            class="px-6 py-4 text-center
-                                   text-xs font-semibold
-                                   uppercase tracking-wider
-                                   text-gray-500"
-                        >
+                        <th class="px-5 py-4 text-center
+                                text-xs font-semibold uppercase
+                                tracking-wider text-gray-500">
                             Consumo
+                        </th>
+
+                        <th class="px-5 py-4 text-center
+                                text-xs font-semibold uppercase
+                                tracking-wider text-gray-500">
+                            Esperado
+                        </th>
+
+                        <th class="px-5 py-4 text-center
+                                text-xs font-semibold uppercase
+                                tracking-wider text-gray-500">
+                            Físico
+                        </th>
+
+                        <th class="px-5 py-4 text-center
+                                text-xs font-semibold uppercase
+                                tracking-wider text-gray-500">
+                            Diferencia
                         </th>
 
                     </tr>
@@ -449,147 +440,170 @@ Detalle de inventario
 
                 <tbody class="divide-y divide-gray-100">
 
-                    {% for inventario in inventarios %}
+                {% for inventario in inventarios %}
 
-                        <tr
-                            class="hover:bg-gray-50
-                                   transition"
-                        >
+                <tr class="hover:bg-gray-50 transition">
 
-                            <!-- Producto -->
+                    <!-- PRODUCTO -->
 
-                            <td class="px-6 py-4">
+                    <td class="px-5 py-4">
 
-                                <span class="font-medium text-gray-900">
+                        <div class="font-medium text-gray-900">
+                            {{ inventario.variante.nombre }}
+                        </div>
 
-                                    {{ inventario.variante.producto.nombre }}
+                        <div class="text-sm text-gray-500">
+                            {{ inventario.variante.producto.nombre }}
+                        </div>
 
-                                </span>
-
-                            </td>
-
-
-                            <!-- Variante -->
-
-                            <td class="px-6 py-4">
-
-                                <span
-                                    class="inline-flex items-center
-                                           px-2.5 py-1 rounded-md
-                                           bg-gray-100
-                                           text-sm text-gray-700"
-                                >
-
-                                    {{ inventario.variante.nombre }}
-
-                                </span>
-
-                            </td>
+                    </td>
 
 
-                            <!-- Inicial -->
+                    <!-- ANTERIOR -->
 
-                            <td class="px-6 py-4 text-center">
+                    <td class="px-5 py-4 text-center">
 
-                                <span
-                                    class="text-gray-500
-                                           font-medium"
-                                >
+                        {% if inventario.conteo_anterior != None %}
 
-                                    {{ inventario.inventario_inicial }}
+                            <div class="font-medium text-gray-700">
+                                {{ inventario.conteo_anterior|floatformat:"-4" }}
+                            </div>
 
-                                </span>
+                            <div class="text-xs text-gray-400">
+                                {{ inventario.fecha_conteo_anterior|date:"d/m/Y" }}
+                            </div>
 
-                            </td>
+                        {% else %}
 
+                            <span class="text-gray-400">
+                                —
+                            </span>
 
-                            <!-- Final -->
+                        {% endif %}
 
-                            <td class="px-6 py-4 text-center">
-
-                                <span
-                                    class="inline-flex items-center
-                                           justify-center
-                                           min-w-[60px]
-                                           px-3 py-1.5
-                                           rounded-lg
-                                           bg-blue-50
-                                           text-blue-700
-                                           font-bold"
-                                >
-
-                                    {{ inventario.cantidad }}
-
-                                </span>
-
-                            </td>
+                    </td>
 
 
-                            <!-- Consumo -->
+                    <!-- CONSUMO TEÓRICO -->
 
-                            <td class="px-6 py-4 text-center">
+                    <td class="px-5 py-4 text-center">
 
-                                {% if inventario.consumo > 0 %}
+                        {% if inventario.consumo_teorico != None %}
 
-                                    <span
-                                        class="inline-flex items-center
-                                               justify-center
-                                               min-w-[60px]
-                                               px-3 py-1.5
-                                               rounded-lg
-                                               bg-orange-50
-                                               text-orange-700
-                                               font-bold"
-                                    >
+                            <span class="text-gray-700 font-medium">
+                                {{ inventario.consumo_teorico|floatformat:"-4" }}
+                            </span>
 
-                                        {{ inventario.consumo }}
+                        {% else %}
 
-                                    </span>
+                            <span class="text-gray-400">
+                                —
+                            </span>
 
-                                {% elif inventario.consumo == 0 %}
+                        {% endif %}
 
-                                    <span
-                                        class="inline-flex items-center
-                                               justify-center
-                                               min-w-[60px]
-                                               px-3 py-1.5
-                                               rounded-lg
-                                               bg-gray-100
-                                               text-gray-500
-                                               font-medium"
-                                    >
+                    </td>
 
-                                        0
 
-                                    </span>
+                    <!-- ESPERADO -->
 
-                                {% else %}
+                    <td class="px-5 py-4 text-center">
 
-                                    <span
-                                        class="inline-flex items-center
-                                               justify-center
-                                               min-w-[60px]
-                                               px-3 py-1.5
-                                               rounded-lg
-                                               bg-red-50
-                                               text-red-700
-                                               font-bold"
-                                    >
+                        {% if inventario.cantidad_teorica != None %}
 
-                                        {{ inventario.consumo }}
+                            <span class="inline-flex items-center
+                                        justify-center min-w-[70px]
+                                        px-3 py-1.5 rounded-lg
+                                        bg-gray-100 text-gray-800
+                                        font-bold">
 
-                                    </span>
+                                {{ inventario.cantidad_teorica|floatformat:"-4" }}
 
-                                {% endif %}
+                            </span>
 
-                            </td>
+                        {% else %}
 
-                        </tr>
+                            <span class="text-gray-400">
+                                —
+                            </span>
 
-                    {% endfor %}
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- FÍSICO -->
+
+                    <td class="px-5 py-4 text-center">
+
+                        <span class="inline-flex items-center
+                                    justify-center min-w-[70px]
+                                    px-3 py-1.5 rounded-lg
+                                    bg-blue-50 text-blue-700
+                                    font-bold">
+
+                            {{ inventario.cantidad|floatformat:"-4" }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- DIFERENCIA -->
+
+                    <td class="px-5 py-4 text-center">
+
+                        {% if inventario.diferencia == None %}
+
+                            <span class="text-gray-400">
+                                —
+                            </span>
+
+                        {% elif inventario.diferencia < 0 %}
+
+                            <span class="inline-flex items-center
+                                        justify-center min-w-[70px]
+                                        px-3 py-1.5 rounded-lg
+                                        bg-red-50 text-red-700
+                                        font-bold">
+
+                                {{ inventario.diferencia|floatformat:"-4" }}
+
+                            </span>
+
+                        {% elif inventario.diferencia > 0 %}
+
+                            <span class="inline-flex items-center
+                                        justify-center min-w-[70px]
+                                        px-3 py-1.5 rounded-lg
+                                        bg-yellow-50 text-yellow-700
+                                        font-bold">
+
+                                +{{ inventario.diferencia|floatformat:"-4" }}
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="inline-flex items-center
+                                        justify-center min-w-[70px]
+                                        px-3 py-1.5 rounded-lg
+                                        bg-green-50 text-green-700
+                                        font-bold">
+
+                                0 ✓
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
 
                 </tbody>
-
             </table>
 
         </div>
