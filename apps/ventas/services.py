@@ -5,6 +5,10 @@ from datetime import timedelta
 from apps.ventas.models import VentaDiaria, ResumenSemanal, Venta, VentaDetalle
 from apps.sucursales.models import Sucursal
 from django.db.models.functions import Coalesce
+from django.db import transaction
+from django.utils import timezone
+
+
 
 
 
@@ -263,3 +267,157 @@ def reporte_ventas_periodo(
         "productos":
             productos,
     }
+
+
+
+
+
+
+@transaction.atomic
+def generar_venta_diaria(
+    *,
+    sucursal,
+    usuario,
+    fecha=None,
+):
+
+    if fecha is None:
+        fecha = timezone.localdate()
+
+    ventas = Venta.objects.filter(
+        sucursal=sucursal,
+        fecha_hora__date=fecha,
+        estado=Venta.EstadoVenta.CONFIRMADA,
+    )
+
+    efectivo = (
+        ventas
+        .filter(
+            metodo_pago=Venta.MetodoPago.EFECTIVO
+        )
+        .aggregate(total=Sum("total"))
+        ["total"]
+        or Decimal("0.00")
+    )
+
+    tarjeta = (
+        ventas
+        .filter(
+            metodo_pago=Venta.MetodoPago.TARJETA
+        )
+        .aggregate(total=Sum("total"))
+        ["total"]
+        or Decimal("0.00")
+    )
+
+    venta_diaria, creada = (
+        VentaDiaria.objects.update_or_create(
+            sucursal=sucursal,
+            fecha=fecha,
+            defaults={
+                "usuario": usuario,
+                "efectivo": efectivo,
+                "tarjeta": tarjeta,
+            },
+        )
+    )
+
+    return venta_diaria
+
+
+
+
+
+def resumen_ventas_dia(
+    *,
+    sucursal,
+    fecha,
+):
+
+    ventas = Venta.objects.filter(
+        sucursal=sucursal,
+        fecha_hora__date=fecha,
+        estado=Venta.EstadoVenta.CONFIRMADA,
+    )
+
+    efectivo = (
+        ventas
+        .filter(
+            metodo_pago=Venta.MetodoPago.EFECTIVO
+        )
+        .aggregate(total=Sum("total"))
+        ["total"]
+        or Decimal("0.00")
+    )
+
+    tarjeta = (
+        ventas
+        .filter(
+            metodo_pago=Venta.MetodoPago.TARJETA
+        )
+        .aggregate(total=Sum("total"))
+        ["total"]
+        or Decimal("0.00")
+    )
+
+    otro = (
+        ventas
+        .filter(
+            metodo_pago=Venta.MetodoPago.OTRO
+        )
+        .aggregate(total=Sum("total"))
+        ["total"]
+        or Decimal("0.00")
+    )
+
+    numero_ventas = ventas.count()
+
+    total = (
+        efectivo
+        + tarjeta
+        + otro
+    )
+
+    ticket_promedio = (
+        total / numero_ventas
+        if numero_ventas
+        else Decimal("0.00")
+    )
+
+    return {
+        "efectivo": efectivo,
+        "tarjeta": tarjeta,
+        "otro": otro,
+        "total": total,
+        "numero_ventas": numero_ventas,
+        "ticket_promedio": ticket_promedio,
+    }
+
+
+@transaction.atomic
+def generar_venta_diaria(
+    *,
+    sucursal,
+    usuario,
+    fecha,
+):
+
+    resumen = resumen_ventas_dia(
+        sucursal=sucursal,
+        fecha=fecha,
+    )
+
+    venta_diaria, creada = (
+        VentaDiaria.objects.update_or_create(
+            sucursal=sucursal,
+            fecha=fecha,
+            defaults={
+                "usuario": usuario,
+                "efectivo": resumen["efectivo"],
+                "tarjeta": resumen["tarjeta"],
+                "otro": resumen["otro"],
+            },
+        )
+    )
+
+    return venta_diaria, creada

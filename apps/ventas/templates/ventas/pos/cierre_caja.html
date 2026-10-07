@@ -1,0 +1,306 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}
+Cierre de caja
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto px-4 py-6">
+
+    <!-- ENCABEZADO -->
+
+    <div class="mb-6">
+
+        <h1 class="text-3xl font-bold text-gray-900">
+            Cierre de caja
+        </h1>
+
+        <p class="mt-2 text-gray-500">
+
+            {{ request.sucursal_activa.nombre }}
+
+            ·
+
+            {{ fecha|date:"d/m/Y" }}
+
+        </p>
+
+    </div>
+
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div
+                class="
+                    mb-6
+                    bg-green-50
+                    border border-green-200
+                    text-green-800
+                    rounded-xl
+                    px-5 py-4
+                "
+            >
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- ESTADO -->
+
+    {% if venta_diaria %}
+
+        <div
+            class="
+                mb-6
+                bg-blue-50
+                border border-blue-200
+                rounded-xl
+                p-4
+            "
+        >
+
+            <p class="font-semibold text-blue-900">
+                ✓ Ya existe un cierre de caja de hoy
+            </p>
+
+            <p class="text-sm text-blue-700 mt-1">
+                Puedes volver a cerrar para actualizarlo
+                si hubo ventas posteriores.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- RESUMEN -->
+
+    <div
+        class="
+            bg-white
+            border border-gray-200
+            rounded-2xl
+            shadow-sm
+            overflow-hidden
+        "
+    >
+
+        <div class="p-6 border-b">
+
+            <div class="text-sm text-gray-500">
+                Venta total
+            </div>
+
+            <div
+                class="
+                    text-4xl
+                    font-bold
+                    text-gray-900
+                    mt-1
+                "
+            >
+                ${{ resumen.total|floatformat:2 }}
+            </div>
+
+        </div>
+
+
+        <div class="divide-y divide-gray-100">
+
+            <div
+                class="
+                    flex
+                    justify-between
+                    items-center
+                    px-6 py-5
+                "
+            >
+
+                <span class="text-gray-600">
+                    Efectivo
+                </span>
+
+                <span class="text-xl font-bold">
+                    ${{ resumen.efectivo|floatformat:2 }}
+                </span>
+
+            </div>
+
+
+            <div
+                class="
+                    flex
+                    justify-between
+                    items-center
+                    px-6 py-5
+                "
+            >
+
+                <span class="text-gray-600">
+                    Tarjeta
+                </span>
+
+                <span class="text-xl font-bold">
+                    ${{ resumen.tarjeta|floatformat:2 }}
+                </span>
+
+            </div>
+
+
+            <div
+                class="
+                    flex
+                    justify-between
+                    items-center
+                    px-6 py-5
+                "
+            >
+
+                <span class="text-gray-600">
+                    Otro
+                </span>
+
+                <span class="text-xl font-bold">
+                    ${{ resumen.otro|floatformat:2 }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ESTADÍSTICAS -->
+
+    <div class="grid grid-cols-2 gap-4 mt-5">
+
+        <div
+            class="
+                bg-white
+                border
+                rounded-xl
+                p-5
+            "
+        >
+
+            <div class="text-sm text-gray-500">
+                Transacciones
+            </div>
+
+            <div class="text-2xl font-bold mt-1">
+                {{ resumen.numero_ventas }}
+            </div>
+
+        </div>
+
+
+        <div
+            class="
+                bg-white
+                border
+                rounded-xl
+                p-5
+            "
+        >
+
+            <div class="text-sm text-gray-500">
+                Ticket promedio
+            </div>
+
+            <div class="text-2xl font-bold mt-1">
+                ${{ resumen.ticket_promedio|floatformat:2 }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CONFIRMACIÓN -->
+
+    <div
+        class="
+            mt-6
+            bg-yellow-50
+            border border-yellow-200
+            rounded-xl
+            p-4
+        "
+    >
+
+        <p class="text-sm text-yellow-800">
+
+            El cierre se calculará automáticamente
+            utilizando las ventas confirmadas registradas
+            en el POS.
+
+        </p>
+
+    </div>
+
+
+    <form method="post" class="mt-6">
+
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="
+                w-full
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                text-lg
+                font-bold
+                py-4
+                rounded-xl
+            "
+        >
+
+            {% if venta_diaria %}
+
+                Actualizar cierre de caja
+
+            {% else %}
+
+                Cerrar caja
+
+            {% endif %}
+
+        </button>
+
+        <div class="mt-4 text-center">
+
+    <a
+        href="{% url 'ventas:pos_nueva_venta' %}"
+        class="
+            inline-flex
+            items-center
+            justify-center
+            w-full
+            border border-gray-300
+            bg-white
+            hover:bg-gray-50
+            text-gray-700
+            font-semibold
+            py-4
+            rounded-xl
+        "
+    >
+        ← Regresar a ventas
+    </a>
+
+</div>
+
+    </form>
+
+</div>
+
+{% endblock %}

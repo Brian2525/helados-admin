@@ -391,6 +391,12 @@ class VentaDiaria(models.Model):
         default=0
     )
 
+    otro = models.DecimalField(
+    max_digits=12,
+    decimal_places=2,
+    default=0,
+    )
+
     observaciones = models.TextField(
         blank=True,
         null=True
@@ -420,10 +426,15 @@ class VentaDiaria(models.Model):
 
         ]
 
+
+
     @property
     def total(self):
-
-        return self.efectivo + self.tarjeta
+        return (
+            self.efectivo
+            + self.tarjeta
+            + self.otro
+        )
 
     def __str__(self):
 

@@ -102,7 +102,7 @@ Más
         <!-- INVENTARIO -->
 
         <a
-    href="{% url 'inventario:consumo_teorico' %}"
+    href="{% url 'inventario:cierre_inventario' %}"
     class="
         flex
         items-center
@@ -118,11 +118,11 @@ Más
 >
     <div>
         <div class="font-bold text-gray-900">
-            Consumo de inventario
+            Cierre de inventario
         </div>
 
         <div class="text-sm text-gray-500 mt-1">
-            Consumo calculado según las ventas
+            Para hacer el conteo final de dia. 
         </div>
     </div>
 
@@ -200,35 +200,35 @@ Más
 
         </a>
 
+        <a
+            href="{% url 'ventas:cierre_caja' %}"
+            class="
+                block
+                w-full
+                bg-white
+                border border-gray-200
+                rounded-xl
+                p-4
+                font-semibold
+            "
+        >
+            Cierre de caja
+        </a>
+
 
 
 
 
         <!-- CERRAR SESIÓN -->
 
-        <form
-            method="post"
-            action="{% url 'logout' %}"
-        >
-
+        <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
-
-            <button
-                type="submit"
-                class="w-full bg-red-600 hover:bg-red-700 rounded-lg py-2 transition"
-            >
-
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 rounded-lg py-2 transition">
                 Cerrar sesión
-
             </button>
-
         </form>
-
     </div>
-
-
     <div class="h-24"></div>
-
 </div>
 
 

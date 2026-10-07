@@ -122,7 +122,7 @@ def sidebar_menu(request):
                 },
                 {
                     "titulo": "Registrar inventario",
-                    "url": reverse("inventario:inventario_diario"),
+                    "url": reverse("inventario:cierre_inventario"),
                 },
 
 
@@ -191,6 +191,14 @@ def sidebar_menu(request):
                 {
                     "titulo": "Preparar producto",
                     "url": reverse("inventario:preparacion_list"), 
+                },
+                {
+                   "titulo": "Recibir mercancia ",
+                    "url": reverse("inventario:recepcion_list"), 
+                },
+                {
+                   "titulo": "Cierre inventario",
+                    "url": reverse("inventario:cierre_inventario"), 
                 }
 
             ]

@@ -26,7 +26,7 @@ from .models import Venta, VentaDetalle
 from django.utils import timezone
 from apps.inventario.models import VarianteProducto, Producto
 from .forms import POSCobroForm
-from .services import reporte_ventas_periodo
+from .services import reporte_ventas_periodo, resumen_ventas_dia, generar_venta_diaria
 
 
 
@@ -1049,5 +1049,80 @@ class POSResumenDiaView(LoginRequiredMixin,SucursalActivaMixin,SucursalPermissio
             }
         )
 
+
+
+class CierreCajaView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    TemplateView,
+):
+
+    template_name = "ventas/pos/cierre_caja.html"
+
+    def get_fecha(self):
+        return timezone.localdate()
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        fecha = self.get_fecha()
+        sucursal = self.request.sucursal_activa
+
+        resumen = resumen_ventas_dia(
+            sucursal=sucursal,
+            fecha=fecha,
+        )
+
+        venta_diaria = (
+            VentaDiaria.objects
+            .filter(
+                sucursal=sucursal,
+                fecha=fecha,
+            )
+            .first()
+        )
+
+        context["fecha"] = fecha
+        context["resumen"] = resumen
+        context["venta_diaria"] = venta_diaria
+
+        return context
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+
+        fecha = self.get_fecha()
+
+        venta_diaria, creada = generar_venta_diaria(
+            sucursal=request.sucursal_activa,
+            usuario=request.user,
+            fecha=fecha,
+        )
+
+        if creada:
+
+            messages.success(
+                request,
+                (
+                    "Cierre de caja registrado "
+                    "correctamente."
+                )
+            )
+
+        else:
+
+            messages.success(
+                request,
+                (
+                    "Cierre de caja actualizado "
+                    "correctamente."
+                )
+            )
+
+        return redirect(
+            "ventas:cierre_caja"
+        )
 
 

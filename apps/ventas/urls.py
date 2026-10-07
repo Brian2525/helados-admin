@@ -23,6 +23,7 @@ from .views import (
     POSMasView,
     POSTransaccionesView,
     POSResumenDiaView,
+    CierreCajaView,
    
 )
 
@@ -58,6 +59,8 @@ urlpatterns = [
     path("pos/transacciones/",POSTransaccionesView.as_view(),name="pos_transacciones"),
     path("pos/mas/",POSMasView.as_view(),name="pos_mas"),
     path("pos/resumen-dia/",POSResumenDiaView.as_view(),name="pos_resumen_dia"),
+    path("pos/cierre-caja/",CierreCajaView.as_view(),name="cierre_caja",
+),
     
 
 
