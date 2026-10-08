@@ -15,7 +15,7 @@ def inicio(request):
 
     if perfil.ventas:
         return redirect(
-            "ventas:venta_diaria_create"
+            "ventas:pos_nueva_venta"
         )
 
     if perfil.gastos:

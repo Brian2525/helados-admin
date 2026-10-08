@@ -103,33 +103,7 @@ def sidebar_menu(request):
     # Ventas
     # ============================
 
-    if request.user.is_superuser or perfil.ventas:
-
-        menu.append({
-
-            "titulo": "Resumen del día",
-            "icono": "🏪",
-
-            "submenu": [
-
-                {
-                    "titulo": "POS",
-                    "url": reverse("ventas:pos_nueva_venta"),
-                }, 
-                {
-                    "titulo": "Registrar venta",
-                    "url": reverse("ventas:venta_diaria_create"),
-                },
-                {
-                    "titulo": "Registrar inventario",
-                    "url": reverse("inventario:cierre_inventario"),
-                },
-
-
-
-            ]
-
-        })
+    
 
 
     if request.user.is_superuser or perfil.administracion:
