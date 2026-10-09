@@ -15,6 +15,8 @@ from django.contrib import messages
 from django.db import transaction
 from django.urls import reverse
 from django.db.models import Prefetch
+from django.core.exceptions import ValidationError
+
 
 from .forms import ResumenSemanalForm, VentaDiariaForm, VentaDetalleFormSet, VentaForm
 from decimal import Decimal
@@ -26,7 +28,7 @@ from .models import Venta, VentaDetalle
 from django.utils import timezone
 from apps.inventario.models import VarianteProducto, Producto
 from .forms import POSCobroForm
-from .services import reporte_ventas_periodo, resumen_ventas_dia, generar_venta_diaria
+from .services import reporte_ventas_periodo, resumen_ventas_dia, generar_venta_diaria, aplicar_promociones_venta
 
 
 
@@ -282,7 +284,7 @@ class VentaDetailView(SucursalPermissionMixin, LoginRequiredMixin, DetailView):
             Venta.objects
             .filter(sucursal__in=self.get_sucursales_usuario())
             .select_related("sucursal", "usuario")
-            .prefetch_related("detalles__variante__producto")
+            .prefetch_related("detalles", "detalles__producto", "detalles__variantes_elegibles")
         )
 
 
@@ -637,8 +639,6 @@ class POSNuevaVentaView(LoginRequiredMixin, SucursalPermissionMixin,SucursalActi
             "ventas:pos_cobro"
         )
 
-
-
 class POSCobroView(
     LoginRequiredMixin,
     SucursalPermissionMixin,
@@ -650,9 +650,133 @@ class POSCobroView(
         return request.session.get("pos_venta")
 
 
+    # ==========================================================
+    # CALCULAR TOTALES REALES DESDE EL SERVIDOR
+    # ==========================================================
+
+    def calcular_totales_pos(self, pos_data):
+
+        from apps.promociones.services import (
+            calcular_promociones_carrito,
+        )
+
+        cantidades_carrito = {}
+        items_calculados = []
+
+        subtotal = Decimal("0.00")
+
+        # ==========================================
+        # LEER PRODUCTOS DESDE BASE DE DATOS
+        # ==========================================
+
+        for item in pos_data.get("items", []):
+
+            variante = get_object_or_404(
+                VarianteProducto.objects.select_related(
+                    "producto"
+                ),
+                pk=item["variante_id"],
+                activo=True,
+            )
+
+            cantidad = Decimal(
+                str(item["cantidad"])
+            )
+
+            if cantidad <= 0:
+                continue
+
+            # IMPORTANTE:
+            # Precio obtenido desde BD.
+            # No confiar en el precio de sesión/JS.
+            precio_unitario = (
+                variante.precio_venta
+            )
+
+            subtotal_item = (
+                cantidad
+                * precio_unitario
+            )
+
+            subtotal += subtotal_item
+
+            # Si por alguna razón aparece dos veces
+            # una variante en el carrito,
+            # acumulamos cantidades.
+            cantidades_carrito[
+                variante.id
+            ] = (
+                cantidades_carrito.get(
+                    variante.id,
+                    Decimal("0.00")
+                )
+                + cantidad
+            )
+
+            items_calculados.append({
+                "variante": variante,
+                "variante_id": variante.id,
+                "producto_nombre": (
+                    variante.producto.nombre
+                ),
+                "variante_nombre": (
+                    variante.nombre
+                ),
+                "cantidad": cantidad,
+                "precio_unitario": (
+                    precio_unitario
+                ),
+                "subtotal": subtotal_item,
+            })
+
+        # ==========================================
+        # PROMOCIONES
+        # ==========================================
+
+        resultado_promociones = (
+            calcular_promociones_carrito(
+                cantidades_carrito=cantidades_carrito,
+                fecha=timezone.localdate(),
+            )
+        )
+
+        descuento = (
+            resultado_promociones[
+                "descuento_total"
+            ]
+        )
+
+        total = subtotal - descuento
+
+        if total < Decimal("0.00"):
+            total = Decimal("0.00")
+
+        return {
+            "items": items_calculados,
+            "cantidades_carrito":
+                cantidades_carrito,
+
+            "subtotal": subtotal,
+            "descuento": descuento,
+            "total": total,
+
+            "promociones": (
+                resultado_promociones[
+                    "promociones"
+                ]
+            ),
+        }
+
+
+    # ==========================================================
+    # GET
+    # ==========================================================
+
     def get(self, request):
 
-        pos_data = self.get_pos_data(request)
+        pos_data = self.get_pos_data(
+            request
+        )
 
         if not pos_data:
 
@@ -665,9 +789,15 @@ class POSCobroView(
                 "ventas:pos_nueva_venta"
             )
 
-        total = Decimal(
-            pos_data["total"]
+        # ==========================================
+        # RECALCULAR TOTAL REAL
+        # ==========================================
+
+        calculo = self.calcular_totales_pos(
+            pos_data
         )
+
+        total = calculo["total"]
 
         form = POSCobroForm(
             total=total
@@ -678,11 +808,30 @@ class POSCobroView(
             self.template_name,
             {
                 "pos_data": pos_data,
-                "total": total,
+
+                "items":
+                    calculo["items"],
+
+                "subtotal":
+                    calculo["subtotal"],
+
+                "descuento":
+                    calculo["descuento"],
+
+                "total":
+                    total,
+
+                "promociones":
+                    calculo["promociones"],
+
                 "form": form,
             }
         )
 
+
+    # ==========================================================
+    # POST
+    # ==========================================================
 
     @transaction.atomic
     def post(self, request):
@@ -691,7 +840,9 @@ class POSCobroView(
         # VENTA TEMPORAL
         # ==========================================
 
-        pos_data = self.get_pos_data(request)
+        pos_data = self.get_pos_data(
+            request
+        )
 
         if not pos_data:
 
@@ -705,9 +856,17 @@ class POSCobroView(
             )
 
 
-        total = Decimal(
-            pos_data["total"]
+        # ==========================================
+        # RECALCULAR TODO EN SERVIDOR
+        # ==========================================
+
+        calculo = self.calcular_totales_pos(
+            pos_data
         )
+
+        subtotal = calculo["subtotal"]
+        descuento = calculo["descuento"]
+        total = calculo["total"]
 
 
         # ==========================================
@@ -719,7 +878,6 @@ class POSCobroView(
             total=total
         )
 
-
         if not form.is_valid():
 
             return render(
@@ -727,14 +885,31 @@ class POSCobroView(
                 self.template_name,
                 {
                     "pos_data": pos_data,
-                    "total": total,
+
+                    "items":
+                        calculo["items"],
+
+                    "subtotal":
+                        subtotal,
+
+                    "descuento":
+                        descuento,
+
+                    "total":
+                        total,
+
+                    "promociones":
+                        calculo["promociones"],
+
                     "form": form,
                 }
             )
 
 
         forma_pago = (
-            form.cleaned_data["forma_pago"]
+            form.cleaned_data[
+                "forma_pago"
+            ]
         )
 
         monto_recibido = (
@@ -749,13 +924,19 @@ class POSCobroView(
         # VALIDACIONES DE EFECTIVO
         # ==========================================
 
-        if forma_pago == "efectivo":
+        if (
+            forma_pago
+            == Venta.MetodoPago.EFECTIVO
+        ):
 
             if monto_recibido < total:
 
                 form.add_error(
                     "monto_recibido",
-                    "El monto recibido es menor al total."
+                    (
+                        "El monto recibido es "
+                        "menor al total."
+                    )
                 )
 
                 return render(
@@ -763,18 +944,39 @@ class POSCobroView(
                     self.template_name,
                     {
                         "pos_data": pos_data,
-                        "total": total,
+
+                        "items":
+                            calculo["items"],
+
+                        "subtotal":
+                            subtotal,
+
+                        "descuento":
+                            descuento,
+
+                        "total":
+                            total,
+
+                        "promociones":
+                            calculo[
+                                "promociones"
+                            ],
+
                         "form": form,
                     }
                 )
 
             cambio = (
-                monto_recibido - total
+                monto_recibido
+                - total
             )
 
         else:
 
-            monto_recibido = Decimal("0.00")
+            monto_recibido = (
+                Decimal("0.00")
+            )
+
             cambio = Decimal("0.00")
 
 
@@ -786,7 +988,6 @@ class POSCobroView(
             "sucursal_id"
         )
 
-
         sucursal = (
             self.get_sucursales_usuario()
             .filter(
@@ -796,13 +997,14 @@ class POSCobroView(
             .first()
         )
 
-
         if not sucursal:
 
             messages.error(
                 request,
-                "La sucursal de esta venta "
-                "no está disponible."
+                (
+                    "La sucursal de esta venta "
+                    "no está disponible."
+                )
             )
 
             return redirect(
@@ -828,31 +1030,22 @@ class POSCobroView(
 
             metodo_pago=forma_pago,
 
-            subtotal=total,
+            # Estos valores todavía serán
+            # recalculados después de crear
+            # los detalles.
+            subtotal=Decimal("0.00"),
 
             descuento=Decimal("0.00"),
 
-            total=total,
+            total=Decimal("0.00"),
 
-            efectivo=(
-                total
-                if forma_pago == "efectivo"
-                else Decimal("0.00")
-            ),
+            efectivo=Decimal("0.00"),
 
-            tarjeta=(
-                total
-                if forma_pago == "tarjeta"
-                else Decimal("0.00")
-            ),
+            tarjeta=Decimal("0.00"),
 
-            monto_recibido=(
-                monto_recibido
-                if forma_pago == "efectivo"
-                else Decimal("0.00")
-            ),
+            monto_recibido=Decimal("0.00"),
 
-            cambio=cambio,
+            cambio=Decimal("0.00"),
 
             observaciones=(
                 f"Forma de pago: {forma_pago}"
@@ -864,45 +1057,160 @@ class POSCobroView(
         # CREAR DETALLES
         # ==========================================
 
-        for item in pos_data["items"]:
-
-            variante = get_object_or_404(
-                VarianteProducto,
-                pk=item["variante_id"],
-                activo=True,
-            )
-
+        for item in calculo["items"]:
 
             VentaDetalle.objects.create(
 
                 venta=venta,
 
-                variante=variante,
+                variante=item[
+                    "variante"
+                ],
 
-                producto_nombre=(
-                    item["producto_nombre"]
-                ),
+                producto_nombre=item[
+                    "producto_nombre"
+                ],
 
-                variante_nombre=(
-                    item["variante_nombre"]
-                ),
+                variante_nombre=item[
+                    "variante_nombre"
+                ],
 
-                cantidad=Decimal(
-                    item["cantidad"]
-                ),
+                cantidad=item[
+                    "cantidad"
+                ],
 
-                precio_unitario=Decimal(
-                    item["precio_unitario"]
-                ),
-
-                subtotal=Decimal(
-                    item["subtotal"]
-                ),
+                precio_unitario=item[
+                    "precio_unitario"
+                ],
             )
 
 
         # ==========================================
-        # LIMPIAR SESION
+        # APLICAR PROMOCIONES
+        # ==========================================
+
+        aplicar_promociones_venta(
+            venta
+        )
+
+        # IMPORTANTE:
+        # Desde aquí venta.total,
+        # venta.subtotal y venta.descuento
+        # contienen los valores definitivos.
+
+        venta.refresh_from_db()
+
+
+        # ==========================================
+        # PROTECCIÓN ADICIONAL
+        # ==========================================
+        # El resultado debería ser el mismo
+        # que mostramos antes del cobro.
+        #
+        # Sin embargo usamos venta.total como
+        # fuente definitiva.
+
+        total_final = venta.total
+
+
+        # ==========================================
+        # FORMA DE PAGO DEFINITIVA
+        # ==========================================
+
+        if (
+            forma_pago
+            == Venta.MetodoPago.EFECTIVO
+        ):
+
+            if monto_recibido < total_final:
+
+                # Normalmente no debería ocurrir,
+                # pero protege contra un cambio
+                # inesperado en precios/promociones.
+
+                raise ValidationError(
+                    "El monto recibido es menor "
+                    "al total definitivo."
+                )
+
+            venta.efectivo = (
+                total_final
+            )
+
+            venta.tarjeta = (
+                Decimal("0.00")
+            )
+
+            venta.monto_recibido = (
+                monto_recibido
+            )
+
+            venta.cambio = (
+                monto_recibido
+                - total_final
+            )
+
+
+        elif (
+            forma_pago
+            == Venta.MetodoPago.TARJETA
+        ):
+
+            venta.efectivo = (
+                Decimal("0.00")
+            )
+
+            venta.tarjeta = (
+                total_final
+            )
+
+            venta.monto_recibido = (
+                Decimal("0.00")
+            )
+
+            venta.cambio = (
+                Decimal("0.00")
+            )
+
+
+        else:
+
+            venta.efectivo = (
+                Decimal("0.00")
+            )
+
+            venta.tarjeta = (
+                Decimal("0.00")
+            )
+
+            venta.monto_recibido = (
+                Decimal("0.00")
+            )
+
+            venta.cambio = (
+                Decimal("0.00")
+            )
+
+
+        # ==========================================
+        # VALIDAR VENTA
+        # ==========================================
+
+        venta.full_clean()
+
+        venta.save(
+            update_fields=[
+                "efectivo",
+                "tarjeta",
+                "monto_recibido",
+                "cambio",
+                "updated_at",
+            ]
+        )
+
+
+        # ==========================================
+        # LIMPIAR SESIÓN
         # ==========================================
 
         request.session.pop(
@@ -914,6 +1222,8 @@ class POSCobroView(
             "pos_pago",
             None
         )
+
+        request.session.modified = True
 
 
         # ==========================================

@@ -1189,10 +1189,7 @@ class CierreInventarioView(
 
         if not formset.is_valid():
   
-            print("FORMSET INVALIDO")
-            print("Errores:", formset.errors)
-            print("Errores generales:", formset.non_form_errors())
-            print("POST:", request.POST)
+           
 
             return self.render_to_response(
                 self.get_context_data(

@@ -94,7 +94,7 @@ class ProductoForm(TailwindModelForm):
 
 
 class InventarioDiarioItemForm(forms.ModelForm):
-    print("InventarioDiarioItemForm")
+    
 
     class Meta:
         model = InventarioDiario
@@ -125,7 +125,6 @@ InventarioDiarioFormSet = modelformset_factory(
     form=InventarioDiarioItemForm,
     extra=0,
 )
-print("InventarioDiarioFormSet"),
 
 
 
@@ -218,7 +217,7 @@ class InventarioCapturaItemForm(forms.Form):
     variante_id = forms.IntegerField(
         widget=forms.HiddenInput()
     )
-    print(variante_id)
+    
 
     cantidad = forms.DecimalField(
         min_value=0,
@@ -239,7 +238,7 @@ class InventarioCapturaItemForm(forms.Form):
             }
         )
     )
-    print(cantidad)
+   
 
 InventarioCapturaFormSet = forms.formset_factory(
     InventarioCapturaItemForm,

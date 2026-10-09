@@ -12,6 +12,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from apps.promociones.models import Promocion
 
 
 
@@ -180,20 +181,7 @@ class Venta(models.Model):
         if errors:
             raise ValidationError(errors)
 
-    def recalcular_totales(self, commit=True):
-        subtotal = sum(
-            (detalle.subtotal for detalle in self.detalles.all()),
-            Decimal("0.00")
-        )
 
-        self.subtotal = subtotal
-        self.total = subtotal - self.descuento
-
-        if self.total < Decimal("0.00"):
-            self.total = Decimal("0.00")
-
-        if commit:
-            self.save(update_fields=["subtotal", "total", "updated_at"])
 
     @property
     def total_pagado(self):
@@ -203,6 +191,73 @@ class Venta(models.Model):
         return f"Venta #{self.pk or 'N/A'} - {self.sucursal} - {self.fecha_hora:%Y-%m-%d %H:%M}"
 
 
+
+
+class VentaPromocion(models.Model):
+
+    venta = models.ForeignKey(
+        "ventas.Venta",
+        on_delete=models.CASCADE,
+        related_name="promociones_aplicadas"
+    )
+
+    promocion = models.ForeignKey(
+        Promocion,
+        on_delete=models.PROTECT
+    )
+
+    nombre = models.CharField(
+        max_length=150
+    )
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=Promocion.Tipo.choices
+    )
+
+    cantidad_aplicaciones = models.PositiveIntegerField(
+        default=1
+    )
+
+    descuento_por_aplicacion = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    descuento = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["venta", "promocion"],
+                name="unique_promocion_por_venta"
+            )
+        ]
+
+    def clean(self):
+        errors = {}
+
+        if self.cantidad_aplicaciones <= 0:
+            errors["cantidad_aplicaciones"] = (
+                "Debe existir al menos una aplicación."
+            )
+
+        if self.descuento_por_aplicacion < Decimal("0.00"):
+            errors["descuento_por_aplicacion"] = (
+                "El descuento no puede ser negativo."
+            )
+
+        if self.descuento < Decimal("0.00"):
+            errors["descuento"] = (
+                "El descuento no puede ser negativo."
+            )
+
+        if errors:
+            raise ValidationError(errors)
 
 
 class VentaDetalle(models.Model):

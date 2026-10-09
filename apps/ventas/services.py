@@ -7,6 +7,11 @@ from apps.sucursales.models import Sucursal
 from django.db.models.functions import Coalesce
 from django.db import transaction
 from django.utils import timezone
+from apps.promociones.services import (
+    calcular_promociones_carrito,
+)
+from .models import VentaPromocion
+
 
 
 
@@ -421,3 +426,143 @@ def generar_venta_diaria(
     )
 
     return venta_diaria, creada
+
+
+
+
+
+
+@transaction.atomic
+def aplicar_promociones_venta(venta):
+
+    # ============================================
+    # 1. OBTENER DETALLES
+    # ============================================
+
+    detalles = list(
+        venta.detalles.select_related(
+            "variante",
+            "variante__producto",
+        )
+    )
+
+    # ============================================
+    # 2. CONSTRUIR CANTIDADES DEL CARRITO
+    # ============================================
+
+    cantidades_carrito = {}
+
+    for detalle in detalles:
+
+        cantidades_carrito[
+            detalle.variante_id
+        ] = (
+            cantidades_carrito.get(
+                detalle.variante_id,
+                Decimal("0.00")
+            )
+            + detalle.cantidad
+        )
+
+    # ============================================
+    # 3. FECHA LOCAL DE LA VENTA
+    # ============================================
+
+    fecha_venta = timezone.localtime(
+        venta.fecha_hora
+    ).date()
+
+    # ============================================
+    # 4. CALCULAR PROMOCIONES
+    # ============================================
+
+    resultado = calcular_promociones_carrito(
+        cantidades_carrito=cantidades_carrito,
+        fecha=fecha_venta,
+    )
+
+    # ============================================
+    # 5. ELIMINAR PROMOCIONES PREVIAS
+    # ============================================
+
+    venta.promociones_aplicadas.all().delete()
+
+    # ============================================
+    # 6. GUARDAR PROMOCIONES APLICADAS
+    # ============================================
+
+    for promo in resultado["promociones"]:
+
+        VentaPromocion.objects.create(
+
+            venta=venta,
+
+            promocion=promo["promocion"],
+
+            nombre=promo["nombre"],
+
+            tipo=promo["tipo"],
+
+            cantidad_aplicaciones=(
+                promo["cantidad_aplicaciones"]
+            ),
+
+            descuento_por_aplicacion=(
+                promo["descuento_por_aplicacion"]
+            ),
+
+            descuento=promo["descuento"],
+        )
+
+    # ============================================
+    # 7. CALCULAR SUBTOTAL
+    # ============================================
+
+    subtotal = sum(
+        (
+            detalle.subtotal
+            for detalle in detalles
+        ),
+        Decimal("0.00")
+    )
+
+    # ============================================
+    # 8. DESCUENTO
+    # ============================================
+
+    descuento_total = resultado[
+        "descuento_total"
+    ]
+
+    # ============================================
+    # 9. TOTAL
+    # ============================================
+
+    total = (
+        subtotal
+        - descuento_total
+    )
+
+    if total < Decimal("0.00"):
+        total = Decimal("0.00")
+
+    # ============================================
+    # 10. ACTUALIZAR VENTA
+    # ============================================
+
+    venta.subtotal = subtotal
+    venta.descuento = descuento_total
+    venta.total = total
+
+    venta.save(
+        update_fields=[
+            "subtotal",
+            "descuento",
+            "total",
+            "updated_at",
+        ]
+    )
+
+    return resultado
+
+

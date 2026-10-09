@@ -4,18 +4,24 @@
 Cobro
 {% endblock %}
 
+
 {% block content %}
 
 <form method="post" id="form-cobro">
+
     {% csrf_token %}
 
-    <!-- Valores que enviaremos al servidor -->
+    <!-- ====================================== -->
+    <!-- VALORES ENVIADOS AL SERVIDOR -->
+    <!-- ====================================== -->
+
     <input
         type="hidden"
         name="forma_pago"
         id="id_forma_pago"
         value=""
     >
+
 
     <div class="max-w-6xl mx-auto px-4 py-4">
 
@@ -92,7 +98,7 @@ Cobro
 
 
             <!-- ================================== -->
-            <!-- RESUMEN -->
+            <!-- RESUMEN DE VENTA -->
             <!-- ================================== -->
 
             <div class="lg:col-span-3">
@@ -116,15 +122,21 @@ Cobro
                             border-gray-200
                         "
                     >
+
                         <h2 class="font-bold text-gray-900">
                             Resumen de venta
                         </h2>
+
                     </div>
 
 
+                    <!-- ====================================== -->
+                    <!-- PRODUCTOS -->
+                    <!-- ====================================== -->
+
                     <div class="divide-y divide-gray-100">
 
-                        {% for item in pos_data.items %}
+                        {% for item in items %}
 
                             <div
                                 class="
@@ -147,9 +159,13 @@ Cobro
                                     </div>
 
                                     <div class="text-sm text-gray-400 mt-1">
-                                        {{ item.cantidad }}
+
+                                        {{ item.cantidad|floatformat:"-2" }}
+
                                         ×
-                                        ${{ item.precio_unitario }}
+
+                                        ${{ item.precio_unitario|floatformat:2 }}
+
                                     </div>
 
                                 </div>
@@ -162,12 +178,208 @@ Cobro
                                         text-gray-900
                                     "
                                 >
-                                    ${{ item.subtotal }}
+                                    ${{ item.subtotal|floatformat:2 }}
                                 </div>
 
                             </div>
 
+                        {% empty %}
+
+                            <div class="px-5 py-8 text-center text-gray-500">
+                                No hay productos en la venta.
+                            </div>
+
                         {% endfor %}
+
+                    </div>
+
+
+                    <!-- ====================================== -->
+                    <!-- PROMOCIONES -->
+                    <!-- ====================================== -->
+
+                    {% if promociones %}
+
+                        <div
+                            class="
+                                border-t
+                                border-gray-200
+                                bg-green-50/50
+                                px-5
+                                py-4
+                            "
+                        >
+
+                            <div
+                                class="
+                                    text-sm
+                                    font-bold
+                                    text-green-800
+                                    mb-3
+                                "
+                            >
+                                Promociones aplicadas
+                            </div>
+
+
+                            <div class="space-y-3">
+
+                                {% for promo in promociones %}
+
+                                    <div
+                                        class="
+                                            flex
+                                            items-start
+                                            justify-between
+                                            gap-4
+                                        "
+                                    >
+
+                                        <div>
+
+                                            <div
+                                                class="
+                                                    font-semibold
+                                                    text-green-700
+                                                "
+                                            >
+                                                {{ promo.nombre }}
+                                            </div>
+
+
+                                            {% if promo.cantidad_aplicaciones > 1 %}
+
+                                                <div
+                                                    class="
+                                                        text-xs
+                                                        text-green-600
+                                                        mt-1
+                                                    "
+                                                >
+                                                    {{ promo.cantidad_aplicaciones }}
+                                                    aplicaciones
+                                                    ×
+                                                    ${{ promo.descuento_por_aplicacion|floatformat:2 }}
+                                                </div>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div
+                                            class="
+                                                font-bold
+                                                text-green-700
+                                                whitespace-nowrap
+                                            "
+                                        >
+                                            -${{ promo.descuento|floatformat:2 }}
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ====================================== -->
+                    <!-- TOTALES -->
+                    <!-- ====================================== -->
+
+                    <div
+                        class="
+                            border-t
+                            border-gray-200
+                            px-5
+                            py-5
+                            bg-gray-50
+                        "
+                    >
+
+                        <div class="space-y-3">
+
+                            <div
+                                class="
+                                    flex
+                                    justify-between
+                                    text-gray-600
+                                "
+                            >
+
+                                <span>
+                                    Subtotal
+                                </span>
+
+                                <span class="font-semibold">
+                                    ${{ subtotal|floatformat:2 }}
+                                </span>
+
+                            </div>
+
+
+                            {% if descuento > 0 %}
+
+                                <div
+                                    class="
+                                        flex
+                                        justify-between
+                                        text-green-700
+                                    "
+                                >
+
+                                    <span>
+                                        Descuento
+                                    </span>
+
+                                    <span class="font-semibold">
+                                        -${{ descuento|floatformat:2 }}
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div
+                                class="
+                                    flex
+                                    justify-between
+                                    items-center
+                                    border-t
+                                    border-gray-300
+                                    pt-4
+                                "
+                            >
+
+                                <span
+                                    class="
+                                        text-lg
+                                        font-bold
+                                        text-gray-900
+                                    "
+                                >
+                                    Total
+                                </span>
+
+                                <span
+                                    class="
+                                        text-3xl
+                                        font-bold
+                                        text-gray-900
+                                    "
+                                >
+                                    ${{ total|floatformat:2 }}
+                                </span>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -193,7 +405,9 @@ Cobro
                     "
                 >
 
-                    <!-- TOTAL -->
+                    <!-- ====================================== -->
+                    <!-- TOTAL A COBRAR -->
+                    <!-- ====================================== -->
 
                     <div class="text-center mb-7">
 
@@ -217,13 +431,36 @@ Cobro
                                 mt-2
                             "
                         >
-                            ${{ total }}
+                            ${{ total|floatformat:2 }}
                         </div>
+
+                        {% if descuento > 0 %}
+
+                            <div
+                                class="
+                                    inline-flex
+                                    items-center
+                                    mt-3
+                                    px-3
+                                    py-1
+                                    rounded-full
+                                    bg-green-100
+                                    text-green-700
+                                    text-sm
+                                    font-semibold
+                                "
+                            >
+                                Ahorras ${{ descuento|floatformat:2 }}
+                            </div>
+
+                        {% endif %}
 
                     </div>
 
 
+                    <!-- ====================================== -->
                     <!-- EFECTIVO -->
+                    <!-- ====================================== -->
 
                     <div class="mb-6">
 
@@ -241,10 +478,12 @@ Cobro
 
                         <div class="grid grid-cols-2 gap-3">
 
+                            <!-- PAGO EXACTO -->
+
                             <button
                                 type="button"
                                 data-pago="efectivo"
-                                onclick="pagoExacto()"
+                                onclick="pagoExacto(this)"
                                 class="
                                     metodo-pago
                                     border-2
@@ -263,16 +502,18 @@ Cobro
                                 </div>
 
                                 <div class="text-sm text-gray-500 mt-1">
-                                    ${{ total }}
+                                    ${{ total|floatformat:2 }}
                                 </div>
 
                             </button>
 
 
+                            <!-- PAGO PERSONALIZADO -->
+
                             <button
                                 type="button"
                                 data-pago="efectivo"
-                                onclick="pagoPersonalizado()"
+                                onclick="pagoPersonalizado(this)"
                                 class="
                                     metodo-pago
                                     border-2
@@ -299,7 +540,9 @@ Cobro
                         </div>
 
 
+                        <!-- ====================================== -->
                         <!-- MONTO PERSONALIZADO -->
+                        <!-- ====================================== -->
 
                         <div
                             id="monto-personalizado"
@@ -321,10 +564,24 @@ Cobro
 
                             {{ form.monto_recibido }}
 
+                            {% if form.monto_recibido.errors %}
+
+                                <div class="mt-2 text-sm text-red-600">
+
+                                    {% for error in form.monto_recibido.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
                         </div>
 
 
+                        <!-- ====================================== -->
                         <!-- CAMBIO -->
+                        <!-- ====================================== -->
 
                         <div
                             id="resultado-cambio"
@@ -334,7 +591,9 @@ Cobro
                     </div>
 
 
-                    <!-- OTROS METODOS -->
+                    <!-- ====================================== -->
+                    <!-- OTROS MÉTODOS -->
+                    <!-- ====================================== -->
 
                     <div
                         class="
@@ -345,6 +604,8 @@ Cobro
                     >
 
                         <div class="grid grid-cols-2 gap-3">
+
+                            <!-- TARJETA -->
 
                             <button
                                 type="button"
@@ -372,6 +633,8 @@ Cobro
 
                             </button>
 
+
+                            <!-- OTRO -->
 
                             <button
                                 type="button"
@@ -416,23 +679,54 @@ Cobro
 
 <script>
 
-    const total = parseFloat("{{ total }}");
+    /*
+    |--------------------------------------------------------------------------
+    | TOTAL CALCULADO POR DJANGO
+    |--------------------------------------------------------------------------
+    |
+    | Este valor ya incluye las promociones calculadas
+    | en el servidor.
+    |
+    */
+
+    const total = parseFloat(
+        "{{ total|floatformat:2 }}"
+    );
+
 
     const inputFormaPago =
-        document.getElementById("id_forma_pago");
+        document.getElementById(
+            "id_forma_pago"
+        );
+
 
     const inputMonto =
-        document.getElementById("id_monto_recibido");
+        document.getElementById(
+            "id_monto_recibido"
+        );
+
 
     const resultado =
-        document.getElementById("resultado-cambio");
+        document.getElementById(
+            "resultado-cambio"
+        );
+
 
     const personalizado =
-        document.getElementById("monto-personalizado");
+        document.getElementById(
+            "monto-personalizado"
+        );
+
 
     const btnContinuar =
-        document.getElementById("btn-continuar");
+        document.getElementById(
+            "btn-continuar"
+        );
 
+
+    // =========================================================
+    // LIMPIAR SELECCIÓN
+    // =========================================================
 
     function limpiarSeleccion() {
 
@@ -454,6 +748,10 @@ Cobro
     }
 
 
+    // =========================================================
+    // MARCAR BOTÓN
+    // =========================================================
+
     function marcarBoton(boton) {
 
         limpiarSeleccion();
@@ -469,6 +767,10 @@ Cobro
 
     }
 
+
+    // =========================================================
+    // ACTIVAR BOTÓN COBRAR
+    // =========================================================
 
     function activarCobro() {
 
@@ -487,6 +789,10 @@ Cobro
     }
 
 
+    // =========================================================
+    // DESACTIVAR BOTÓN COBRAR
+    // =========================================================
+
     function desactivarCobro() {
 
         btnContinuar.disabled = true;
@@ -504,22 +810,32 @@ Cobro
     }
 
 
-    function pagoExacto() {
+    // =========================================================
+    // PAGO EXACTO
+    // =========================================================
 
-        const boton = event.currentTarget;
+    function pagoExacto(boton) {
 
         marcarBoton(boton);
 
-        inputFormaPago.value = "efectivo";
+        inputFormaPago.value =
+            "efectivo";
 
-        inputMonto.value = total.toFixed(2);
+        inputMonto.value =
+            total.toFixed(2);
 
-        personalizado.classList.add("hidden");
+        personalizado.classList.add(
+            "hidden"
+        );
 
-        resultado.classList.remove("hidden");
+        resultado.classList.remove(
+            "hidden"
+        );
 
         resultado.className =
-            "mt-4 rounded-xl p-4 bg-green-50 text-green-700 font-semibold";
+            "mt-4 rounded-xl p-4 " +
+            "bg-green-50 text-green-700 " +
+            "font-semibold";
 
         resultado.innerHTML =
             "✓ Pago exacto · Sin cambio";
@@ -529,19 +845,26 @@ Cobro
     }
 
 
-    function pagoPersonalizado() {
+    // =========================================================
+    // PAGO PERSONALIZADO
+    // =========================================================
 
-        const boton = event.currentTarget;
+    function pagoPersonalizado(boton) {
 
         marcarBoton(boton);
 
-        inputFormaPago.value = "efectivo";
+        inputFormaPago.value =
+            "efectivo";
 
-        personalizado.classList.remove("hidden");
+        personalizado.classList.remove(
+            "hidden"
+        );
 
         inputMonto.value = "";
 
-        resultado.classList.add("hidden");
+        resultado.classList.add(
+            "hidden"
+        );
 
         desactivarCobro();
 
@@ -550,47 +873,71 @@ Cobro
     }
 
 
-    function seleccionarMetodo(metodo, boton) {
+    // =========================================================
+    // TARJETA / OTRO
+    // =========================================================
+
+    function seleccionarMetodo(
+        metodo,
+        boton
+    ) {
 
         marcarBoton(boton);
 
-        inputFormaPago.value = metodo;
+        inputFormaPago.value =
+            metodo;
 
-        personalizado.classList.add("hidden");
+        personalizado.classList.add(
+            "hidden"
+        );
 
-        resultado.classList.add("hidden");
+        resultado.classList.add(
+            "hidden"
+        );
 
         /*
-        Para tarjeta/otro el monto recibido
-        será tratado en el servidor.
+        Para tarjeta y "otro" el monto recibido
+        se establece realmente en el servidor.
         */
 
-        inputMonto.value = total.toFixed(2);
+        inputMonto.value = "";
 
         activarCobro();
 
     }
 
 
+    // =========================================================
+    // CALCULAR CAMBIO
+    // =========================================================
+
     function calcularCambio() {
 
         if (
-            inputFormaPago.value !== "efectivo"
+            inputFormaPago.value
+            !== "efectivo"
         ) {
             return;
         }
 
+
         const monto =
-            parseFloat(inputMonto.value || 0);
+            parseFloat(
+                inputMonto.value || 0
+            );
 
 
-        resultado.classList.remove("hidden");
+        resultado.classList.remove(
+            "hidden"
+        );
 
 
         if (monto < total) {
 
             resultado.className =
-                "mt-4 rounded-xl p-4 bg-red-50 text-red-700 font-semibold";
+                "mt-4 rounded-xl p-4 " +
+                "bg-red-50 text-red-700 " +
+                "font-semibold";
 
             resultado.innerHTML =
                 "Monto insuficiente";
@@ -598,26 +945,34 @@ Cobro
             desactivarCobro();
 
             return;
+
         }
 
 
-        const cambio = monto - total;
+        const cambio =
+            monto - total;
 
 
         resultado.className =
-            "mt-4 rounded-xl p-4 bg-green-50 text-green-700";
+            "mt-4 rounded-xl p-4 " +
+            "bg-green-50 text-green-700";
 
 
         if (cambio === 0) {
 
             resultado.innerHTML =
-                "<strong>Pago exacto</strong><br>Sin cambio";
+                "<strong>Pago exacto</strong>" +
+                "<br>Sin cambio";
 
         } else {
 
             resultado.innerHTML =
-                "<span class='text-sm'>Cambio a entregar</span>" +
-                "<div class='text-3xl font-bold mt-1'>$" +
+                "<span class='text-sm'>" +
+                "Cambio a entregar" +
+                "</span>" +
+
+                "<div class='text-3xl font-bold mt-1'>" +
+                "$" +
                 cambio.toFixed(2) +
                 "</div>";
 
@@ -628,6 +983,10 @@ Cobro
 
     }
 
+
+    // =========================================================
+    // EVENTO INPUT
+    // =========================================================
 
     if (inputMonto) {
 
