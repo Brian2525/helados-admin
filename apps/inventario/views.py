@@ -932,7 +932,12 @@ class PreparacionCreateView(
             (f"Se prepararon correctamente " f"{cantidad} unidades de {variante}."),
         )
 
-        return redirect("inventario:preparacion_list")
+        return redirect("ventas:pos_nueva_venta")
+
+
+
+
+
 
 
 class PreparacionListView(

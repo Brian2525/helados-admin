@@ -1,4 +1,4 @@
-{% extends "core/base_dashboard.html" %}
+{% extends "core/base_pos.html" %}
 
 
 {% load l10n %}
@@ -194,12 +194,13 @@ Cierre de inventario
                                     {{ fila.form.variante_id }}
 
                                     <p class="font-semibold text-gray-900">
-                                        {{ fila.item.variante.producto.nombre }}
+                                        {{ fila.item.variante.nombre }}
                                     </p>
 
                                     <p class="text-sm text-gray-500">
-                                        {{ fila.item.variante.nombre }}
-                                    </p>
+                                         {{ fila.item.variante.producto.nombre }}
+                                        
+                                                                           </p>
 
                                 </td>
 

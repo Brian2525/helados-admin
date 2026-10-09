@@ -420,6 +420,12 @@ class ResumenSemanal(models.Model):
 
 class VentaDiaria(models.Model):
 
+
+    class TipoRegistro(models.TextChoices):
+        MANUAL = "manual", "Manual"
+        AUTOMATICO = "automatico", "Automático"
+
+
     sucursal = models.ForeignKey(
         Sucursal,
         on_delete=models.PROTECT,
@@ -438,6 +444,13 @@ class VentaDiaria(models.Model):
         max_digits=12,
         decimal_places=2,
         default=0
+    )
+
+    efectivo_contado = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True
     )
 
     tarjeta = models.DecimalField(
@@ -465,20 +478,25 @@ class VentaDiaria(models.Model):
         auto_now=True
     )
 
-    class Meta:
 
+    tipo_registro = models.CharField(
+        max_length=15,
+        choices=TipoRegistro.choices,
+        default=TipoRegistro.MANUAL
+    )
+
+    fecha_registro = models.DateTimeField(
+        default=timezone.now
+    )
+
+    class Meta:
         ordering = ["-fecha"]
 
         constraints = [
-
             models.UniqueConstraint(
-                fields=[
-                    "sucursal",
-                    "fecha"
-                ],
-                name="unique_venta_diaria"
+                fields=["sucursal", "fecha"],
+                name="unique_venta_diaria_sucursal_fecha"
             )
-
         ]
 
 
@@ -494,6 +512,8 @@ class VentaDiaria(models.Model):
     def __str__(self):
 
         return f"{self.sucursal} - {self.fecha}"
+
+
 
 
 

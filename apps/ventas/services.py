@@ -10,7 +10,73 @@ from django.utils import timezone
 from apps.promociones.services import (
     calcular_promociones_carrito,
 )
-from .models import VentaPromocion
+from .models import VentaPromocion, Venta
+from django.db.models import (
+    Sum,
+    Count,
+    Avg,
+)
+from datetime import datetime, time, timedelta
+
+
+
+
+
+
+
+
+def resumen_ventas_hoy(sucursales=None):
+
+    hoy = timezone.localdate()
+
+    ventas = Venta.objects.filter(
+        fecha_hora__date=hoy,
+        estado=Venta.EstadoVenta.CONFIRMADA,
+    )
+
+    if sucursales is not None:
+        ventas = ventas.filter(
+            sucursal__in=sucursales
+        )
+
+    resumen = ventas.aggregate(
+
+        total=Coalesce(
+            Sum("total"),
+            Decimal("0.00")
+        ),
+
+        subtotal=Coalesce(
+            Sum("subtotal"),
+            Decimal("0.00")
+        ),
+
+        descuentos=Coalesce(
+            Sum("descuento"),
+            Decimal("0.00")
+        ),
+
+        efectivo=Coalesce(
+            Sum("efectivo"),
+            Decimal("0.00")
+        ),
+
+        tarjeta=Coalesce(
+            Sum("tarjeta"),
+            Decimal("0.00")
+        ),
+
+        transacciones=Count("id"),
+
+        ticket_promedio=Coalesce(
+            Avg("total"),
+            Decimal("0.00")
+        ),
+    )
+
+    return resumen
+
+
 
 
 
@@ -278,56 +344,69 @@ def reporte_ventas_periodo(
 
 
 
+
 @transaction.atomic
 def generar_venta_diaria(
     *,
     sucursal,
     usuario,
     fecha=None,
+    efectivo_contado=None,
+    tipo_registro=VentaDiaria.TipoRegistro.MANUAL,
 ):
 
     if fecha is None:
         fecha = timezone.localdate()
 
+    # Evitar modificar cierres existentes
+    venta_existente = VentaDiaria.objects.filter(
+        sucursal=sucursal,
+        fecha=fecha,
+    ).first()
+
+    if venta_existente:
+        return venta_existente, False
+
+    # Obtener ventas confirmadas del POS
     ventas = Venta.objects.filter(
         sucursal=sucursal,
         fecha_hora__date=fecha,
         estado=Venta.EstadoVenta.CONFIRMADA,
     )
 
-    efectivo = (
-        ventas
-        .filter(
-            metodo_pago=Venta.MetodoPago.EFECTIVO
-        )
-        .aggregate(total=Sum("total"))
-        ["total"]
-        or Decimal("0.00")
+    totales = ventas.aggregate(
+        efectivo=Sum("efectivo"),
+        tarjeta=Sum("tarjeta"),
+        total=Sum("total"),
     )
 
-    tarjeta = (
-        ventas
-        .filter(
-            metodo_pago=Venta.MetodoPago.TARJETA
-        )
-        .aggregate(total=Sum("total"))
-        ["total"]
-        or Decimal("0.00")
+    efectivo = totales["efectivo"] or Decimal("0.00")
+    tarjeta = totales["tarjeta"] or Decimal("0.00")
+    total = totales["total"] or Decimal("0.00")
+
+    otro = total - efectivo - tarjeta
+
+    # Crear registro sin sobrescribir cierres anteriores
+    venta_diaria, creada = VentaDiaria.objects.get_or_create(
+        sucursal=sucursal,
+        fecha=fecha,
+        defaults={
+            "usuario": usuario,
+            "efectivo": efectivo,
+            "tarjeta": tarjeta,
+            "otro": otro,
+            "efectivo_contado": efectivo_contado,
+            "tipo_registro": tipo_registro,
+        },
     )
 
-    venta_diaria, creada = (
-        VentaDiaria.objects.update_or_create(
-            sucursal=sucursal,
-            fecha=fecha,
-            defaults={
-                "usuario": usuario,
-                "efectivo": efectivo,
-                "tarjeta": tarjeta,
-            },
+    if creada:
+        construir_resumen_semanal(
+            sucursal,
+            fecha
         )
-    )
 
-    return venta_diaria
+    return venta_diaria, creada
 
 
 
@@ -397,35 +476,6 @@ def resumen_ventas_dia(
         "numero_ventas": numero_ventas,
         "ticket_promedio": ticket_promedio,
     }
-
-
-@transaction.atomic
-def generar_venta_diaria(
-    *,
-    sucursal,
-    usuario,
-    fecha,
-):
-
-    resumen = resumen_ventas_dia(
-        sucursal=sucursal,
-        fecha=fecha,
-    )
-
-    venta_diaria, creada = (
-        VentaDiaria.objects.update_or_create(
-            sucursal=sucursal,
-            fecha=fecha,
-            defaults={
-                "usuario": usuario,
-                "efectivo": resumen["efectivo"],
-                "tarjeta": resumen["tarjeta"],
-                "otro": resumen["otro"],
-            },
-        )
-    )
-
-    return venta_diaria, creada
 
 
 
@@ -566,3 +616,42 @@ def aplicar_promociones_venta(venta):
     return resultado
 
 
+
+
+
+def calcular_totales_pos(sucursal, fecha):
+
+    inicio = timezone.make_aware(
+        datetime.combine(fecha, time.min)
+    )
+
+    fin = timezone.make_aware(
+        datetime.combine(
+            fecha + timedelta(days=1),
+            time.min
+        )
+    )
+
+    ventas = Venta.objects.filter(
+        sucursal=sucursal,
+        estado=Venta.EstadoVenta.CONFIRMADA,
+        fecha_hora__gte=inicio,
+        fecha_hora__lt=fin,
+    )
+
+    totales = ventas.aggregate(
+        efectivo=Sum("efectivo"),
+        tarjeta=Sum("tarjeta"),
+        total=Sum("total"),
+    )
+
+    efectivo = totales["efectivo"] or Decimal("0.00")
+    tarjeta = totales["tarjeta"] or Decimal("0.00")
+    total = totales["total"] or Decimal("0.00")
+
+    return {
+        "efectivo": efectivo,
+        "tarjeta": tarjeta,
+        "otro": total - efectivo - tarjeta,
+        "total": total,
+    }

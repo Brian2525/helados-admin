@@ -2,16 +2,22 @@ from calendar import monthrange
 from decimal import Decimal
 from django.db.models import Q
 from datetime import timedelta, date
-
+from django.utils import timezone
 from django.db.models import Sum
 from django.views.generic import TemplateView
-
 from apps.gastos.models import Gasto
-from apps.ventas.models import ResumenSemanal, VentaDiaria
+from apps.ventas.models import ResumenSemanal, VentaDiaria, Venta
 from apps.sucursales.models import Sucursal
 from apps.servicios.models import ServicioRecurrente, PagoServicio
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.core.mixins import SucursalPermissionMixin, ModulePermissionMixin
+
+from django.db.models import (
+    Sum,
+    Count,
+    Avg,
+    Q,
+)
 
 
 
@@ -30,15 +36,17 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
 
         context = super().get_context_data(**kwargs)
 
-        hoy = date.today()
+        hoy = timezone.localdate()
 
         inicio_semana = hoy - timedelta(days=hoy.weekday())
+
         fin_semana = inicio_semana + timedelta(days=6)
 
 
 
         servicios_por_vencer = []
         servicios_vencidos = []
+
         if self.request.user.is_superuser:
             servicios = ServicioRecurrente.objects.filter(
                 activo=True
@@ -93,28 +101,84 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
 
         sucursales = self.get_sucursales_usuario()
 
-        ventas_hoy = VentaDiaria.objects.filter(fecha=hoy)
+        ventas_hoy = Venta.objects.filter(
+            fecha_hora__date=hoy,
+            estado=Venta.EstadoVenta.CONFIRMADA,
+        )
 
-
+        # ==========================================
+        # PERMISOS DE SUCURSAL
+        # ==========================================
 
         if not self.request.user.is_superuser:
+
             ventas_hoy = ventas_hoy.filter(
-                Q(sucursal__propietario=self.request.user) |
-                Q(sucursal__usuarios=self.request.user)
+                Q(
+                    sucursal__propietario=
+                        self.request.user
+                )
+                |
+                Q(
+                    sucursal__usuarios=
+                        self.request.user
+                )
             ).distinct()
 
+
+        # ==========================================
+        # FILTRO POR SUCURSAL
+        # ==========================================
+
         if sucursal_id:
-            sucursal = sucursales.filter(id=sucursal_id).first()
+
+            sucursal = (
+                sucursales
+                .filter(
+                    id=sucursal_id
+                )
+                .first()
+            )
 
             if sucursal:
+
                 ventas_hoy = ventas_hoy.filter(
                     sucursal=sucursal
                 )
 
+
+        # ==========================================
+        # TOTALES DE HOY
+        # ==========================================
+
         totales_hoy = ventas_hoy.aggregate(
-            efectivo=Sum("efectivo"),
-            tarjeta=Sum("tarjeta")
+
+            efectivo=Sum(
+                "efectivo"
+            ),
+
+            tarjeta=Sum(
+                "tarjeta"
+            ),
+
+            subtotal=Sum(
+                "subtotal"
+            ),
+
+            descuentos=Sum(
+                "descuento"
+            ),
+
+            total=Sum(
+                "total"
+            ),
+
+            transacciones=Count(
+                "id"
+            ),
+
+           
         )
+
 
         ventas_hoy_efectivo = (
             totales_hoy["efectivo"]
@@ -126,10 +190,33 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
             or Decimal("0.00")
         )
 
-        total_ventas_hoy = (
-            ventas_hoy_efectivo +
-            ventas_hoy_tarjeta
+        ventas_hoy_subtotal = (
+            totales_hoy["subtotal"]
+            or Decimal("0.00")
         )
+
+        ventas_hoy_descuentos = (
+            totales_hoy["descuentos"]
+            or Decimal("0.00")
+        )
+
+        total_ventas_hoy = (
+            totales_hoy["total"]
+            or Decimal("0.00")
+        )
+
+        ventas_hoy_transacciones = (
+            totales_hoy["transacciones"]
+            or 0
+        )
+
+        
+
+        
+
+
+
+
 
         ventas_semana = ResumenSemanal.objects.filter(
             fecha_inicio=inicio_semana,
@@ -271,6 +358,10 @@ class DashboardView(ModulePermissionMixin,SucursalPermissionMixin, LoginRequired
         context["ventas_hoy_efectivo"] = ventas_hoy_efectivo
         context["ventas_hoy_tarjeta"] = ventas_hoy_tarjeta
         context["total_ventas_hoy"] = total_ventas_hoy
+
+
+
+
 
         context["ventas_semana_efectivo"] = ventas_semana_efectivo
         context["ventas_semana_tarjeta"] = ventas_semana_tarjeta
