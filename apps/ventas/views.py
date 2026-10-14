@@ -18,7 +18,7 @@ from django.db.models import Prefetch
 from django.core.exceptions import ValidationError
 
 
-from .forms import ResumenSemanalForm, VentaDiariaForm, VentaDetalleFormSet, VentaForm
+from .forms import ResumenSemanalForm, VentaDiariaForm, VentaDetalleFormSet, VentaForm, CierreCajaForm 
 from decimal import Decimal, InvalidOperation
 from apps.sucursales.models import Sucursal
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -1373,7 +1373,6 @@ class CierreCajaView(
         return timezone.localdate()
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
 
         fecha = self.get_fecha()
@@ -1393,6 +1392,11 @@ class CierreCajaView(
         context["resumen"] = resumen
         context["venta_diaria"] = venta_diaria
 
+        context["form"] = kwargs.get(
+            "form",
+            CierreCajaForm()
+        )
+
         return context
 
     @transaction.atomic
@@ -1401,7 +1405,7 @@ class CierreCajaView(
         fecha = self.get_fecha()
         sucursal = request.sucursal_activa
 
-        # Evitar duplicar o modificar cierres existentes
+        # Evitar modificar un cierre existente
         if VentaDiaria.objects.filter(
             sucursal=sucursal,
             fecha=fecha,
@@ -1414,29 +1418,37 @@ class CierreCajaView(
 
             return redirect("ventas:cierre_caja")
 
-        # Obtener efectivo contado
-        try:
-            efectivo_contado = Decimal(
-                request.POST.get("efectivo_contado", "")
-            )
+        # Validar formulario
+        form = CierreCajaForm(request.POST)
 
-            if (
-                not efectivo_contado.is_finite()
-                or efectivo_contado < 0
-                or efectivo_contado.as_tuple().exponent < -2
-            ):
-                raise ValueError
-
-        except (InvalidOperation, ValueError, TypeError):
+        if not form.is_valid():
 
             messages.error(
                 request,
-                "Ingresa un monto de efectivo válido."
+                "Revisa el monto de efectivo ingresado."
             )
 
-            return redirect("ventas:cierre_caja")
+            return self.render_to_response(
+                self.get_context_data(form=form)
+            )
 
-        # Generar cierre utilizando tu servicio actual
+        efectivo_contado = form.cleaned_data[
+            "efectivo_contado"
+        ]
+
+        # Obtener efectivo esperado del POS
+        resumen = resumen_ventas_dia(
+            sucursal=sucursal,
+            fecha=fecha,
+        )
+
+        efectivo_esperado = resumen["efectivo"]
+
+        diferencia = (
+            efectivo_contado - efectivo_esperado
+        )
+
+        # Registrar cierre
         venta_diaria, creada = generar_venta_diaria(
             sucursal=sucursal,
             usuario=request.user,
@@ -1445,17 +1457,40 @@ class CierreCajaView(
         )
 
         if creada:
-            messages.success(
-                request,
-                "Cierre de caja registrado correctamente."
-            )
+
+            if diferencia == Decimal("0.00"):
+
+                messages.success(
+                    request,
+                    "Cierre registrado. "
+                    "El efectivo coincide correctamente."
+                )
+
+            elif diferencia < 0:
+
+                messages.warning(
+                    request,
+                    f"Cierre registrado con un faltante "
+                    f"de ${abs(diferencia):.2f}."
+                )
+
+            else:
+
+                messages.warning(
+                    request,
+                    f"Cierre registrado con un sobrante "
+                    f"de ${diferencia:.2f}."
+                )
+
         else:
+
             messages.warning(
                 request,
                 "Esta caja ya tenía un cierre registrado."
             )
 
         return redirect("ventas:cierre_caja")
+
 
 
 class VentaDiariaTicketView(

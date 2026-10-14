@@ -213,3 +213,24 @@ class POSCobroForm(forms.Form):
 
 
 
+
+class CierreCajaForm(forms.Form):
+
+    efectivo_contado = forms.DecimalField(
+        label="Efectivo contado",
+        max_digits=12,
+        decimal_places=2,
+        min_value=Decimal("0.00"),
+        widget=forms.NumberInput(
+            attrs={
+                "id": "efectivo-contado",
+                "class": (
+                    "w-full rounded-xl border border-gray-300 "
+                    "px-4 py-4 text-2xl font-bold"
+                ),
+                "placeholder": "0.00",
+                "step": "0.01",
+                "min": "0",
+            }
+        ),
+    )

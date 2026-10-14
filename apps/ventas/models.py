@@ -509,6 +509,30 @@ class VentaDiaria(models.Model):
             + self.otro
         )
 
+    @property
+    def estado_cuadre(self):
+
+        diferencia = self.diferencia_efectivo
+
+        if diferencia is None:
+            return "sin_verificar"
+
+        if diferencia == 0:
+            return "cuadrado"
+
+        if diferencia < 0:
+            return "faltante"
+
+        return "sobrante"
+
+
+    @property
+    def diferencia_efectivo(self):
+        if self.efectivo_contado is None:
+            return None
+
+        return self.efectivo_contado - self.efectivo
+
     def __str__(self):
 
         return f"{self.sucursal} - {self.fecha}"
