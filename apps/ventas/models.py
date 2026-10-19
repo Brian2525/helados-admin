@@ -539,8 +539,50 @@ class VentaDiaria(models.Model):
 
 
 
+#Cierre de caja diario, para registrar el cierre de ventas y gastos del día en una sucursal
 
 
+
+class CierreDiario(models.Model):
+
+    class Estado(models.TextChoices):
+        PENDIENTE = "pendiente", "Pendiente"
+        EN_PROCESO = "en_proceso", "En proceso"
+        COMPLETADO = "completado", "Completado"
+        REVISADO = "revisado", "Revisado"
+
+    sucursal = models.ForeignKey(
+        Sucursal,
+        on_delete=models.PROTECT,
+    )
+
+    fecha = models.DateField()
+
+    responsable = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+    )
+
+    estado = models.CharField(
+        max_length=20,
+        choices=Estado.choices,
+        default=Estado.PENDIENTE,
+    )
+
+    observaciones = models.TextField(blank=True)
+
+    completado_en = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sucursal", "fecha"],
+                name="unique_cierre_diario_sucursal_fecha",
+            )
+        ]
 
 
 

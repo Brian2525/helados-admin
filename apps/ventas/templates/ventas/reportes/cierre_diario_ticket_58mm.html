@@ -1,0 +1,54 @@
+
+<div id="ticket-cierre" class="bg-white text-black">
+
+    <div class="text-center">
+        <h2 class="font-bold">HELADOS AMERICANOS</h2>
+        <p>CIERRE DIARIO</p>
+        <p>{{ sucursal.nombre }}</p>
+        <p>{{ fecha|date:"d/m/Y" }}</p>
+    </div>
+
+    <hr class="my-2">
+
+    <p class="font-bold">VENTAS</p>
+
+    {% if cierre_caja %}
+        <div class="flex justify-between">
+            <span>Efectivo:</span>
+            <span>${{ cierre_caja.efectivo }}</span>
+        </div>
+
+        <div class="flex justify-between">
+            <span>Tarjeta:</span>
+            <span>${{ cierre_caja.tarjeta }}</span>
+        </div>
+
+        <div class="flex justify-between font-bold">
+            <span>Total:</span>
+            <span>${{ total_ventas }}</span>
+        </div>
+    {% else %}
+        <p>Caja pendiente</p>
+    {% endif %}
+
+    <hr class="my-2">
+
+    <p class="font-bold">DIFERENCIAS</p>
+
+    {% for item in faltantes %}
+        <p>
+            {{ item.variante }}:
+            {{ item.diferencia }}
+        </p>
+    {% empty %}
+        <p>Sin faltantes calculables</p>
+    {% endfor %}
+
+    <hr class="my-2">
+
+    <p class="text-center mt-4">
+        ____________________
+    </p>
+    <p class="text-center">Responsable</p>
+
+</div>

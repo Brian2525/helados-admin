@@ -13,9 +13,10 @@ from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
-from django.urls import reverse
 from django.db.models import Prefetch
 from django.core.exceptions import ValidationError
+from datetime import date
+
 
 
 from .forms import ResumenSemanalForm, VentaDiariaForm, VentaDetalleFormSet, VentaForm, CierreCajaForm 
@@ -24,7 +25,8 @@ from apps.sucursales.models import Sucursal
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,ModulePermissionMixin, SucursalPermissionMixin, SucursalActivaMixin
 from .services import construir_resumen_semanal
-from .models import Venta, VentaDetalle
+from .models import Venta, VentaDetalle, CierreDiario
+from apps.inventario.models import InventarioDiario
 from django.utils import timezone
 from apps.inventario.models import VarianteProducto, Producto
 from .forms import POSCobroForm
@@ -1489,7 +1491,7 @@ class CierreCajaView(
                 "Esta caja ya tenía un cierre registrado."
             )
 
-        return redirect("ventas:cierre_caja")
+        return redirect("ventas:cierre_diario_flow")
 
 
 
@@ -1502,3 +1504,254 @@ class VentaDiariaTicketView(
         "ventas/ventas_diarias/ticket.html"
     )
     context_object_name = "cierre"
+
+
+
+
+
+class ReporteCierreDiarioView(LoginRequiredMixin,SucursalPermissionMixin,TemplateView,):
+    template_name = "ventas/reportes/cierre_diario.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        sucursal = get_object_or_404(
+            self.get_sucursales_usuario(),
+            pk=self.kwargs["sucursal_id"],
+        )
+
+        fecha = date.fromisoformat(
+            self.kwargs["fecha"]
+        )
+
+        cierre_caja = VentaDiaria.objects.filter(
+            sucursal=sucursal,
+            fecha=fecha,
+        ).select_related("usuario").first()
+
+        inventarios = list(
+            InventarioDiario.objects.filter(
+                sucursal=sucursal,
+                fecha=fecha,
+            )
+            .select_related(
+                "variante",
+                "variante__producto",
+            )
+            .order_by(
+                "variante__producto__nombre",
+                "variante__nombre",
+            )
+        )
+
+        faltantes = [
+            inventario
+            for inventario in inventarios
+            if inventario.diferencia is not None
+            and inventario.diferencia < 0
+        ]
+
+        sobrantes = [
+            inventario
+            for inventario in inventarios
+            if inventario.diferencia is not None
+            and inventario.diferencia > 0
+        ]
+
+        context.update({
+            "sucursal": sucursal,
+            "fecha": fecha,
+            "cierre_caja": cierre_caja,
+            "inventarios": inventarios,
+            "faltantes": faltantes,
+            "sobrantes": sobrantes,
+            "inventario_registrado": bool(inventarios),
+            "caja_registrada": cierre_caja is not None,
+        })
+
+
+        context["total_ventas"] = (
+        (cierre_caja.efectivo or Decimal("0"))
+        + (cierre_caja.tarjeta or Decimal("0"))
+        + (cierre_caja.otro or Decimal("0"))
+    ) if cierre_caja else Decimal("0")
+
+
+
+
+
+        return context
+
+
+
+
+
+class CierreDiarioFlowView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+
+    template_name = "ventas/pos/cierre_diario_flow.html"
+
+    def get_datos_cierre(self, sucursal, fecha):
+
+        # =====================================
+        # 1. VALIDAR CAJA
+        # =====================================
+
+        venta_diaria = VentaDiaria.objects.filter(
+            sucursal=sucursal,
+            fecha=fecha,
+        ).first()
+
+        caja_completada = (
+            venta_diaria is not None
+            and venta_diaria.efectivo_contado is not None
+            and venta_diaria.tipo_registro
+                == VentaDiaria.TipoRegistro.MANUAL
+        )
+
+        # =====================================
+        # 2. VALIDAR INVENTARIO
+        # =====================================
+
+        # Usamos el mismo criterio de variantes
+        # que tu formulario de inventario actual.
+
+        variantes_obligatorias = set(
+        VarianteProducto.objects.filter(
+            activo=True,
+            producto__activo=True,
+            producto__controlar_inventario=True,
+        ).values_list("id", flat=True)
+    )
+
+
+
+
+        variantes_registradas = set(
+            InventarioDiario.objects.filter(
+                sucursal=sucursal,
+                fecha=fecha,
+            ).values_list("variante_id", flat=True)
+        )
+
+        faltantes_captura = (
+            variantes_obligatorias - variantes_registradas
+        )
+
+        inventario_completado = (
+            bool(variantes_obligatorias)
+            and not faltantes_captura
+        )
+
+        return {
+            "caja_completada": caja_completada,
+            "inventario_completado": inventario_completado,
+            "variantes_pendientes": len(faltantes_captura),
+            "puede_finalizar": (
+                caja_completada
+                and inventario_completado
+            ),
+        }
+
+    def get(self, request):
+
+        sucursal = request.sucursal_activa
+        fecha = timezone.localdate()
+
+        cierre, creado = CierreDiario.objects.get_or_create(
+            sucursal=sucursal,
+            fecha=fecha,
+            defaults={
+                "responsable": request.user,
+            },
+        )
+
+        datos = self.get_datos_cierre(
+            sucursal=sucursal,
+            fecha=fecha,
+        )
+
+        if (
+            cierre.estado == CierreDiario.Estado.PENDIENTE
+            and not creado
+            and (
+                datos["caja_completada"]
+                or datos["inventario_completado"]
+            )
+        ):
+            cierre.estado = CierreDiario.Estado.EN_PROCESO
+            cierre.save(update_fields=["estado"])
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "sucursal": sucursal,
+                "fecha": fecha,
+                "cierre": cierre,
+                **datos,
+            },
+        )
+
+    @transaction.atomic
+    def post(self, request):
+
+        sucursal = request.sucursal_activa
+        fecha = timezone.localdate()
+
+        cierre = CierreDiario.objects.select_for_update().get(
+            sucursal=sucursal,
+            fecha=fecha,
+        )
+
+        if cierre.estado in (
+            CierreDiario.Estado.COMPLETADO,
+            CierreDiario.Estado.REVISADO,
+        ):
+            messages.info(
+                request,
+                "Este cierre ya está finalizado.",
+            )
+            return redirect("ventas:cierre_diario_flow")
+
+        datos = self.get_datos_cierre(
+            sucursal=sucursal,
+            fecha=fecha,
+        )
+
+        if not datos["puede_finalizar"]:
+
+            messages.warning(
+                request,
+                "Debes completar el cierre de caja "
+                "y el inventario antes de finalizar.",
+            )
+
+            return redirect("ventas:cierre_diario_flow")
+
+        cierre.estado = CierreDiario.Estado.COMPLETADO
+        cierre.responsable = request.user
+        cierre.completado_en = timezone.now()
+
+        cierre.save(
+            update_fields=[
+                "estado",
+                "responsable",
+                "completado_en",
+            ]
+        )
+
+        messages.success(
+            request,
+            "Cierre diario completado correctamente.",
+        )
+
+        return redirect(
+            "ventas:reporte_cierre_diario",
+            sucursal_id=sucursal.id,
+            fecha=fecha.isoformat(),
+        )

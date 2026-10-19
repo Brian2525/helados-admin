@@ -173,7 +173,8 @@ def sidebar_menu(request):
                 {
                    "titulo": "Cierre inventario",
                     "url": reverse("inventario:cierre_inventario"), 
-                }
+                }, 
+               
 
             ]
 

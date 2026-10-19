@@ -1,571 +1,72 @@
 {% extends "core/base_pos.html" %}
-
-{% block title %}
-Más opciones
-{% endblock %}
-
-{% block page_title %}
-Más
-{% endblock %}
-
+{% block title %}Más opciones{% endblock %}
+{% block page_title %}Más{% endblock %}
 {% block content %}
-
-<div class="max-w-3xl mx-auto px-4">
-
-    <!-- ====================================================== -->
-    <!-- ENCABEZADO -->
-    <!-- ====================================================== -->
-
-    <div class="mb-6">
-
-        <h1 class="text-2xl font-bold text-gray-900">
-            Más opciones
-        </h1>
-
-        <div class="flex items-center gap-2 mt-2 text-gray-500">
-
-            <span>🏪</span>
-
-            <span>
-                {{ sucursal_activa.nombre }}
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <!-- ====================================================== -->
-    <!-- OPERACIÓN DEL DÍA -->
-    <!-- ====================================================== -->
-
-    <div class="mb-3">
-
-        <p
-            class="
-                text-xs
-                font-bold
-                uppercase
-                tracking-wider
-                text-gray-400
-            "
-        >
-            Operación del día
-        </p>
-
-    </div>
-
-
-    <div class="space-y-3">
-
-
-        <!-- ================================================== -->
-        <!-- CIERRE DE CAJA -->
-        <!-- ================================================== -->
-
-        <a
-            href="{% url 'ventas:cierre_caja' %}"
-            class="
-                group
-
-                flex
-                items-center
-                justify-between
-
-                bg-white
-
-                border
-                border-gray-200
-
-                rounded-2xl
-
-                p-5
-
-                hover:border-emerald-400
-                hover:shadow-sm
-
-                active:scale-[0.99]
-
-                transition
-            "
-        >
-
-            <div class="flex items-center gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-
-                        shrink-0
-
-                        flex
-                        items-center
-                        justify-center
-
-                        bg-emerald-100
-                        text-emerald-700
-
-                        rounded-xl
-
-                        text-2xl
-                    "
-                >
-                    💵
-                </div>
-
-
-                <div>
-
-                    <div class="font-bold text-gray-900">
-                        Cierre de caja
-                    </div>
-
-                    <div class="text-sm text-gray-500 mt-1">
-                        Consolidar las ventas del día
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <span
-                class="
-                    text-gray-300
-                    group-hover:text-emerald-500
-                    text-2xl
-                    transition
-                "
-            >
-                ›
-            </span>
-
-        </a>
-
-
-        <!-- ================================================== -->
-        <!-- RESUMEN DEL DÍA -->
-        <!-- ================================================== -->
-
-        <a
-            href="{% url 'ventas:pos_resumen_dia' %}"
-            class="
-                group
-
-                flex
-                items-center
-                justify-between
-
-                bg-white
-
-                border
-                border-gray-200
-
-                rounded-2xl
-
-                p-5
-
-                hover:border-blue-400
-                hover:shadow-sm
-
-                active:scale-[0.99]
-
-                transition
-            "
-        >
-
-            <div class="flex items-center gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-
-                        shrink-0
-
-                        flex
-                        items-center
-                        justify-center
-
-                        bg-blue-100
-                        text-blue-700
-
-                        rounded-xl
-
-                        text-2xl
-                    "
-                >
-                    📊
-                </div>
-
-
-                <div>
-
-                    <div class="font-bold text-gray-900">
-                        Resumen del día
-                    </div>
-
-                    <div class="text-sm text-gray-500 mt-1">
-                        Ventas, transacciones y ticket promedio
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <span
-                class="
-                    text-gray-300
-                    group-hover:text-blue-500
-                    text-2xl
-                    transition
-                "
-            >
-                ›
-            </span>
-
-        </a>
-
-
-        <a
-            href="{% url 'inventario:preparacion_list' %}"
-            class="
-                flex
-                items-center
-                gap-3
-                px-4
-                py-3
-                rounded-xl
-                hover:bg-gray-100
-            "
-        >
-            <span class="text-xl">
-                🧁
-            </span>
-
-            <span class="font-semibold">
-                Preparar productos
-            </span>
-        </a>
-
-
-        <!-- ================================================== -->
-        <!-- CIERRE DE INVENTARIO -->
-        <!-- ================================================== -->
-
-        <a
-            href="{% url 'inventario:cierre_inventario' %}"
-            class="
-                group
-
-                flex
-                items-center
-                justify-between
-
-                bg-white
-
-                border
-                border-gray-200
-
-                rounded-2xl
-
-                p-5
-
-                hover:border-violet-400
-                hover:shadow-sm
-
-                active:scale-[0.99]
-
-                transition
-            "
-        >
-
-            <div class="flex items-center gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-
-                        shrink-0
-
-                        flex
-                        items-center
-                        justify-center
-
-                        bg-violet-100
-                        text-violet-700
-
-                        rounded-xl
-
-                        text-2xl
-                    "
-                >
-                    📦
-                </div>
-
-
-                <div>
-
-                    <div class="font-bold text-gray-900">
-                        Cierre de inventario
-                    </div>
-
-                    <div class="text-sm text-gray-500 mt-1">
-                        Registrar el conteo físico del día
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <span
-                class="
-                    text-gray-300
-                    group-hover:text-violet-500
-                    text-2xl
-                    transition
-                "
-            >
-                ›
-            </span>
-
-        </a>
-
-    </div>
-
-
-    <!-- ====================================================== -->
-    <!-- SUCURSAL Y USUARIO -->
-    <!-- ====================================================== -->
-
-    <div class="mt-8 mb-3">
-
-        <p
-            class="
-                text-xs
-                font-bold
-                uppercase
-                tracking-wider
-                text-gray-400
-            "
-        >
-            Sucursal y usuario
-        </p>
-
-    </div>
-
-
-    <div class="space-y-3">
-
-
-        <!-- ================================================== -->
-        <!-- CAMBIAR SUCURSAL -->
-        <!-- ================================================== -->
-
-        <a
-            href="{% url 'sucursales:confirmar_cambio_sucursal' %}"
-            class="
-                group
-
-                flex
-                items-center
-                justify-between
-
-                bg-white
-
-                border
-                border-gray-200
-
-                rounded-2xl
-
-                p-5
-
-                hover:border-amber-400
-                hover:shadow-sm
-
-                active:scale-[0.99]
-
-                transition
-            "
-        >
-
-            <div class="flex items-center gap-4">
-
-                <div
-                    class="
-                        w-12
-                        h-12
-
-                        shrink-0
-
-                        flex
-                        items-center
-                        justify-center
-
-                        bg-amber-100
-                        text-amber-700
-
-                        rounded-xl
-
-                        text-2xl
-                    "
-                >
-                    🏪
-                </div>
-
-
-                <div>
-
-                    <div class="font-bold text-gray-900">
-                        Cambiar sucursal
-                    </div>
-
-                    <div class="text-sm text-gray-500 mt-1">
-                        Actual: {{ sucursal_activa.nombre }}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <span
-                class="
-                    text-gray-300
-                    group-hover:text-amber-500
-                    text-2xl
-                    transition
-                "
-            >
-                ›
-            </span>
-
-        </a>
-
-
-        <!-- ================================================== -->
-        <!-- CERRAR SESIÓN -->
-        <!-- ================================================== -->
-
-        <form
-            method="post"
-            action="{% url 'logout' %}"
-        >
-
-            {% csrf_token %}
-
-            <button
-                type="submit"
-                class="
-                    group
-
-                    w-full
-
-                    flex
-                    items-center
-                    justify-between
-
-                    bg-white
-
-                    border
-                    border-gray-200
-
-                    rounded-2xl
-
-                    p-5
-
-                    text-left
-
-                    hover:border-red-300
-                    hover:bg-red-50
-                    hover:shadow-sm
-
-                    active:scale-[0.99]
-
-                    transition
-                "
-            >
-
-                <div class="flex items-center gap-4">
-
-                    <div
-                        class="
-                            w-12
-                            h-12
-
-                            shrink-0
-
-                            flex
-                            items-center
-                            justify-center
-
-                            bg-red-100
-                            text-red-700
-
-                            rounded-xl
-
-                            text-2xl
-                        "
-                    >
-                        🚪
-                    </div>
-
-
-                    <div>
-
-                        <div
-                            class="
-                                font-bold
-                                text-red-700
-                            "
-                        >
-                            Cerrar sesión
-                        </div>
-
-                        <div
-                            class="
-                                text-sm
-                                text-gray-500
-                                mt-1
-                            "
-                        >
-                            Salir del usuario actual
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <span
-                    class="
-                        text-gray-300
-                        group-hover:text-red-500
-                        text-2xl
-                        transition
-                    "
-                >
-                    ›
-                </span>
-
-            </button>
-
-        </form>
-
-    </div>
-
-
-    <!-- ESPACIO PARA NAVEGACIÓN INFERIOR -->
-
-    <div class="h-28"></div>
-
+<div class="mx-auto max-w-3xl px-4 pb-28">
+  <header class="mb-7">
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Más opciones</h1>
+    <p class="mt-2 flex items-center gap-2 text-sm text-slate-500">
+      <span aria-hidden="true">🏪</span> {{ sucursal_activa.nombre }}
+    </p>
+  </header>
+
+  <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">Operación del día</h2>
+  <div class="space-y-3">
+    <a href="{% url 'ventas:cierre_diario_flow' %}" class="group flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-emerald-400 hover:shadow-md active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
+      <div class="flex min-w-0 items-center gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-2xl" aria-hidden="true">📋</span>
+        <span class="min-w-0"><span class="block font-semibold text-slate-900">Cierre diario</span><span class="mt-1 block text-sm text-slate-500">Caja, inventario y reporte final</span></span>
+      </div>
+      <span class="text-2xl text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-600" aria-hidden="true">›</span>
+    </a>
+
+    <a href="{% url 'ventas:pos_resumen_dia' %}" class="group flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-400 hover:shadow-md active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+      <div class="flex min-w-0 items-center gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-2xl" aria-hidden="true">📊</span>
+        <span class="min-w-0"><span class="block font-semibold text-slate-900">Resumen del día</span><span class="mt-1 block text-sm text-slate-500">Ventas, transacciones y ticket promedio</span></span>
+      </div>
+      <span class="text-2xl text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600" aria-hidden="true">›</span>
+    </a>
+
+    <a href="{% url 'inventario:preparacion_list' %}" class="group flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-violet-400 hover:shadow-md active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">
+      <div class="flex min-w-0 items-center gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-2xl" aria-hidden="true">🧁</span>
+        <span class="min-w-0"><span class="block font-semibold text-slate-900">Preparar productos</span><span class="mt-1 block text-sm text-slate-500">Registrar producción y consumo de insumos</span></span>
+      </div>
+      <span class="text-2xl text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-violet-600" aria-hidden="true">›</span>
+    </a>
+
+
+    <a href="{% url 'inventario:recepcion_list' %}" class="group flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-violet-400 hover:shadow-md active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">
+      <div class="flex min-w-0 items-center gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-2xl" aria-hidden="true">🧁</span>
+        <span class="min-w-0"><span class="block font-semibold text-slate-900">Recibir Productos</span><span class="mt-1 block text-sm text-slate-500">Registrar llegada de productos</span></span>
+      </div>
+      <span class="text-2xl text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-violet-600" aria-hidden="true">›</span>
+    </a>
+  </div>
+
+  <h2 class="mb-3 mt-8 text-xs font-bold uppercase tracking-wider text-slate-400">Sucursal y usuario</h2>
+  <div class="space-y-3">
+    <a href="{% url 'sucursales:confirmar_cambio_sucursal' %}" class="group flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-amber-400 hover:shadow-md active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
+      <div class="flex min-w-0 items-center gap-4">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-2xl" aria-hidden="true">🏪</span>
+        <span class="min-w-0"><span class="block font-semibold text-slate-900">Cambiar sucursal</span><span class="mt-1 block text-sm text-slate-500">Actual: {{ sucursal_activa.nombre }}</span></span>
+      </div>
+      <span class="text-2xl text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-amber-600" aria-hidden="true">›</span>
+    </a>
+
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="group flex min-h-20 w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-red-300 hover:bg-red-50 hover:shadow-md active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+        <span class="flex min-w-0 items-center gap-4">
+          <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-2xl" aria-hidden="true">🚪</span>
+          <span class="min-w-0"><span class="block font-semibold text-red-700">Cerrar sesión</span><span class="mt-1 block text-sm text-slate-500">Salir del usuario actual</span></span>
+        </span>
+        <span class="text-2xl text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-red-600" aria-hidden="true">›</span>
+      </button>
+    </form>
+  </div>
 </div>
-
-
 {% include "ventas/pos/_nav_pos.html" %}
-
 {% endblock %}

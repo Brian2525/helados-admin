@@ -1,0 +1,174 @@
+
+{% extends "core/base_pos.html" %}
+
+{% block title %}Reporte de cierre diario{% endblock %}
+
+{% block content %}
+
+<style>
+    /* En pantalla ocultamos el ticket */
+    #ticket-cierre {
+        display: none;
+    }
+
+    @media print {
+        @page {
+            size: 58mm auto;
+            margin: 0;
+        }
+
+        /* Ocultar todo excepto el ticket */
+        body * {
+            visibility: hidden !important;
+        }
+
+        #ticket-cierre {
+            display: block !important;
+            visibility: visible !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 48mm;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            font: 10px monospace;
+            color: black;
+            background: white;
+            box-shadow: none;
+        }
+
+        #ticket-cierre * {
+            visibility: visible !important;
+        }
+
+        #ticket-cierre .flex {
+            display: flex;
+        }
+    }
+</style>
+
+<!-- VISTA PARA PANTALLA -->
+<div class="max-w-4xl mx-auto px-4 py-6 print:hidden">
+
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                Resumen del cierre diario
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">
+                {{ sucursal.nombre }} |
+                {{ fecha|date:"d/m/Y" }}
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'ventas:pos_nueva_venta' %}"
+               class="px-4 py-3 bg-white border border-gray-300
+                      text-gray-700 font-semibold rounded-xl
+                      hover:bg-gray-50 transition">
+                ← Volver al POS
+            </a>
+
+            <button type="button"
+                    onclick="window.print()"
+                    class="px-4 py-3 bg-emerald-600 text-white
+                           font-semibold rounded-xl
+                           hover:bg-emerald-700 transition">
+                🖨 Imprimir ticket
+            </button>
+        </div>
+    </div>
+
+    <!-- RESUMEN DE CAJA -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+
+        <div class="bg-white border rounded-xl p-4">
+            <p class="text-sm text-gray-500">Ventas totales</p>
+            <p class="text-xl font-bold mt-2">
+                ${{ total_ventas }}
+            </p>
+        </div>
+
+        <div class="bg-white border rounded-xl p-4">
+            <p class="text-sm text-gray-500">Efectivo</p>
+            <p class="text-xl font-bold mt-2">
+                ${{ cierre_caja.efectivo|default:"0.00" }}
+            </p>
+        </div>
+
+        <div class="bg-white border rounded-xl p-4">
+            <p class="text-sm text-gray-500">Tarjeta</p>
+            <p class="text-xl font-bold mt-2">
+                ${{ cierre_caja.tarjeta|default:"0.00" }}
+            </p>
+        </div>
+
+        <div class="bg-white border rounded-xl p-4">
+            <p class="text-sm text-gray-500">Diferencia de caja</p>
+            <p class="text-xl font-bold mt-2">
+                {% if cierre_caja and cierre_caja.diferencia_efectivo != None %}
+                    ${{ cierre_caja.diferencia_efectivo }}
+                {% else %}
+                    Pendiente
+                {% endif %}
+            </p>
+        </div>
+
+    </div>
+
+    <!-- DIFERENCIAS DE INVENTARIO -->
+    <div class="bg-white border rounded-xl p-5 mb-6">
+
+        <h2 class="text-lg font-bold text-gray-900 mb-4">
+            Diferencias de inventario
+        </h2>
+
+        {% if not inventario_registrado %}
+            <p class="text-amber-700">
+                Inventario pendiente.
+            </p>
+        {% else %}
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b text-gray-500">
+                            <th class="text-left py-3">Producto</th>
+                            <th class="text-right">Teórico</th>
+                            <th class="text-right">Físico</th>
+                            <th class="text-right">Diferencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inventarios %}
+                        <tr class="border-b">
+                            <td class="py-3">{{ item.variante }}</td>
+                            <td class="text-right">
+                                {{ item.cantidad_teorica|default_if_none:"—" }}
+                            </td>
+                            <td class="text-right">{{ item.cantidad }}</td>
+                            <td class="text-right font-semibold">
+                                {{ item.diferencia|default_if_none:"—" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {% endif %}
+    </div>
+
+    <a href="{% url 'ventas:cierre_diario_flow' %}"
+       class="inline-flex items-center rounded-xl border
+              border-gray-300 bg-white px-5 py-3
+              font-semibold text-gray-700 hover:bg-gray-50">
+        ← Volver al cierre diario
+    </a>
+</div>
+
+<!-- VERSIÓN EXCLUSIVA PARA IMPRESIÓN -->
+{% include "ventas/reportes/cierre_diario_ticket_58mm.html" %}
+
+{% endblock %}

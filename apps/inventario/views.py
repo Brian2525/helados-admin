@@ -40,6 +40,7 @@ from .forms import (
 )
 from .models import Producto, VarianteProducto, InventarioDiario, Receta
 from apps.sucursales.models import Sucursal
+from apps.ventas.models import CierreDiario
 from apps.core.mixins import (
     SucursalQuerysetMixin,
     SucursalFormMixin,
@@ -680,9 +681,7 @@ class InventarioDiarioDetailView(SucursalPermissionMixin, LoginRequiredMixin, Vi
         )
 
 
-class InventarioDiarioUpdateView(
-    ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, View
-):
+class InventarioDiarioUpdateView(ModulePermissionMixin, SucursalQuerysetMixin, LoginRequiredMixin, View):
 
     module_permission = "administracion"
 
@@ -1185,6 +1184,30 @@ class CierreInventarioView(
     def post(self, request, *args, **kwargs):
 
         fecha = self.get_fecha()
+
+
+        cierre_finalizado = CierreDiario.objects.filter(
+            sucursal=request.sucursal_activa,
+            fecha=fecha,
+            estado__in=[
+                CierreDiario.Estado.COMPLETADO,
+                CierreDiario.Estado.REVISADO,
+            ],
+        ).exists()
+
+        if cierre_finalizado:
+            messages.warning(
+                request,
+                "El cierre diario ya fue finalizado. "
+                "No puedes modificar el inventario."
+            )
+
+            return redirect("ventas:cierre_diario_flow")
+
+
+
+
+
 
         existencias = self.get_existencias()
 
