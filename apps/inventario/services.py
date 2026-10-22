@@ -37,9 +37,6 @@ def consumo_teorico_periodo(
             ),
             venta__estado=Venta.EstadoVenta.CONFIRMADA,
 
-            # Tiene receta activa
-            variante__receta__activa=True,
-
   
         )
         .select_related(
@@ -64,27 +61,49 @@ def consumo_teorico_periodo(
 
     for detalle_venta in detalles_venta:
 
-        receta = detalle_venta.variante.receta
+        variante = detalle_venta.variante
 
-        if receta.momento_consumo == Receta.MomentoConsumo.VENTA:
+        # Obtener receta si existe
+        try:
+            receta = variante.receta
+        except Receta.DoesNotExist:
+            receta = None
 
-            for receta_detalle in receta.detalles.all():
+        # ==========================================
+        # PRODUCTO CON RECETA ACTIVA
+        # ==========================================
 
-                cantidad_consumida = (
-                    detalle_venta.cantidad
-                    * receta_detalle.cantidad
-                )
+        if receta and receta.activa:
 
-                insumo = receta_detalle.insumo
+            if receta.momento_consumo == Receta.MomentoConsumo.VENTA:
 
-                consumos[insumo.id]["variante"] = insumo
-                consumos[insumo.id]["cantidad"] += cantidad_consumida
+                for receta_detalle in receta.detalles.all():
 
-        elif receta.momento_consumo == Receta.MomentoConsumo.PREPARACION:
+                    cantidad_consumida = (
+                        detalle_venta.cantidad
+                        * receta_detalle.cantidad
+                    )
 
-            variante = detalle_venta.variante
+                    insumo = receta_detalle.insumo
+
+                    consumos[insumo.id]["variante"] = insumo
+
+                    consumos[insumo.id]["cantidad"] += cantidad_consumida
+
+            elif receta.momento_consumo == Receta.MomentoConsumo.PREPARACION:
+
+                consumos[variante.id]["variante"] = variante
+
+                consumos[variante.id]["cantidad"] += detalle_venta.cantidad
+
+        # ==========================================
+        # PRODUCTO SIN RECETA
+        # ==========================================
+
+        elif receta is None and variante.producto.controlar_inventario:
 
             consumos[variante.id]["variante"] = variante
+
             consumos[variante.id]["cantidad"] += detalle_venta.cantidad
 
     resultado = list(

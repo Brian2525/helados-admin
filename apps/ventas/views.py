@@ -1310,7 +1310,7 @@ class POSTransaccionesView(
             }
         )
 
-
+#Vista de botón de mas (Pantalla de acciones de POS)
 class POSMasView(LoginRequiredMixin,SucursalActivaMixin,SucursalPermissionMixin,View):
 
     template_name = "ventas/pos/mas.html"
@@ -1361,6 +1361,9 @@ class POSResumenDiaView(LoginRequiredMixin,SucursalActivaMixin,SucursalPermissio
             }
         )
 
+
+
+#Pantallas de cierre de caja 
 
 class CierreCajaView(
     LoginRequiredMixin,
