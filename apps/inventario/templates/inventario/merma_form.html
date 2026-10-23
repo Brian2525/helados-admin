@@ -1,4 +1,4 @@
-{% extends "core/base_dashboard.html" %}
+{% extends "core/base_pos.html" %}
 
 {% block title %}
 Merma - {{ variante.nombre }}
@@ -15,6 +15,13 @@ Registrar merma
     <!-- REGRESAR + SUCURSAL -->
 
     <div class="flex items-center justify-between gap-4 mb-6">
+
+            <button type="button"
+                            onclick="history.back()"
+                            aria-label="Volver"
+                            class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl">
+                        &larr;
+            </button>
 
         <a
             href="{% url 'inventario:merma_list' %}"
