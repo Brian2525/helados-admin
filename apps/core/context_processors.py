@@ -170,6 +170,13 @@ def sidebar_menu(request):
                    "titulo": "Recibir mercancia ",
                     "url": reverse("inventario:recepcion_list"), 
                 },
+                
+                {  "titulo": "Merma o perdida de inventario",
+                     "url": reverse("inventario:merma_list"),
+                },
+
+
+
                 {
                    "titulo": "Cierre inventario",
                     "url": reverse("inventario:cierre_inventario"), 

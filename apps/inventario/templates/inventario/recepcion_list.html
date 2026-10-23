@@ -1,4 +1,4 @@
-{% extends "core/base_dashboard.html" %}
+{% extends "core/base_pos.html" %}
 
 {% block title %}
 Recibir mercancía
@@ -200,5 +200,28 @@ Recibir mercancía
     {% endif %}
 
 </div>
+
+
+ <div class="flex justify-center mt-4">
+                        <a
+                                        href="{% url 'ventas:pos_mas' %}"
+                                        class="
+                                            inline-flex
+                                            items-center
+                                            justify-center
+                                            bg-gray-600
+                                            hover:bg-gray-700
+                                            active:bg-gray-800
+                                            text-white
+                                            font-semibold
+                                            text-lg
+                                            px-8 py-4
+                                            rounded-xl
+                                        "
+                                    >
+                                    Cancelar y  regresar al POS
+                                    </a>
+
+            </div>
 
 {% endblock %}

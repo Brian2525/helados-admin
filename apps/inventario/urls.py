@@ -23,6 +23,8 @@ from .views import (
     MermaCreateView,
     CierreInventarioView,
     CierreInventarioCompletadoView,
+    InventarioMenuView,
+  
 )
 
 app_name = "inventario"
@@ -98,5 +100,8 @@ urlpatterns = [
     path("cierre/",CierreInventarioView.as_view(),name="cierre_inventario",),
 
     path("cierre/completado/",CierreInventarioCompletadoView.as_view(),name="cierre_inventario_completado",),
+
+    path("pos/",InventarioMenuView.as_view(),name="pos_inventario_menu",
+),
 
 ]

@@ -1310,3 +1310,13 @@ class CierreInventarioCompletadoView(LoginRequiredMixin,SucursalPermissionMixin,
         context["inventarios"] = inventarios
 
         return context
+
+
+
+class InventarioMenuView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    TemplateView,
+):
+    template_name = "inventario/pos/inventario_menu.html"

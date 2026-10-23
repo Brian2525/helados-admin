@@ -328,6 +328,7 @@ Cierre de inventario
                     Verifica el conteo antes de guardar.
                 </p>
 
+                
 
                 <button
                     type="submit"
@@ -350,6 +351,28 @@ Cierre de inventario
         </div>
 
     </form>
+
+            <div class="flex justify-center mt-4">
+                <a
+                                href="{% url 'ventas:pos_nueva_venta' %}"
+                                class="
+                                    inline-flex
+                                    items-center
+                                    justify-center
+                                    bg-gray-600
+                                    hover:bg-gray-700
+                                    active:bg-gray-800
+                                    text-white
+                                    font-semibold
+                                    text-lg
+                                    px-8 py-4
+                                    rounded-xl
+                                "
+                            >
+                            Cancelar y  regresar al POS
+                            </a>
+
+            </div>
 
 </div>
 
