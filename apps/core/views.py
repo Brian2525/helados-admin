@@ -13,6 +13,11 @@ def inicio(request):
 
     perfil = user.perfil
 
+    if perfil.administracion:
+        return redirect(
+            "administracion:dashboard"
+        )
+
     if perfil.ventas:
         return redirect(
             "ventas:pos_nueva_venta"
