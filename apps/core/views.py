@@ -15,7 +15,7 @@ def inicio(request):
 
     if perfil.administracion:
         return redirect(
-            "administracion:dashboard"
+            "dashboard:home"
         )
 
     if perfil.ventas:
