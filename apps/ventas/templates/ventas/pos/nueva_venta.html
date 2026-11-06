@@ -1,1135 +1,497 @@
 {% extends 'core/base_pos.html' %}
 
-{% block title %}
-Nueva venta
-{% endblock %}
-
-{% block page_title %}
-Punto de venta
-{% endblock %}
+{% block title %}Nueva venta{% endblock %}
+{% block page_title %}Punto de venta{% endblock %}
 
 {% block content %}
-
 <form method="post" id="venta-form">
     {% csrf_token %}
 
-    <div class="grid grid-cols-[minmax(0,1fr)_340px] gap-4 items-start">
-
-        <!-- ===================================================== -->
+    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-4 items-start">
         <!-- PRODUCTOS -->
-        <!-- ===================================================== -->
-
-        <section>
-
-
-            <div class="mb-6">
-
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-    <div class=" flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 ">
-
-    <div>
-
-        <h1 class="text-2xl font-bold text-gray-900">
-            Nueva venta
-        </h1>
-
-        <p class="text-sm text-gray-500 mt-1">
-            Toca un producto para agregarlo a la venta
-        </p>
-
-    </div>
-
-
-    <div class="flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-4 py-3">
-        <div>
-
-            <div
-                class="text-xs uppercase tracking-wide text-gray-400 font-medium " >
-                Sucursal activa
-            </div>
-
-            <div class=" flex items-center  gap-2 font-bold text-gray-900 mt-1 " >
-
-                <span>🏪</span>
-
-                {{ sucursal_activa.nombre }}
-
-                <span class="text-gray-400">
-                    🔒
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <a
-            href="{% url 'sucursales:confirmar_cambio_sucursal' %}"
-            class="text-sm font-medium text-blue-600 hover:text-blue-800border-l border-gray-200 pl-4   "> Cambiar
-             </a>
-
-    </div>
-
-</div>
-
-
-    
-
-    </div>
-
-</div>
-
+        <section class="min-w-0">
+            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Nueva venta</h1>
+                    <p class="text-sm text-gray-500 mt-1">Toca un producto para agregarlo a la venta</p>
+                </div>
+                <div class="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-4 py-3">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-400 font-medium">Sucursal activa</div>
+                        <div class="flex items-center gap-2 font-bold text-gray-900 mt-1">
+                            <span aria-hidden="true">🏪</span>
+                            {{ sucursal_activa.nombre }}
+                            <span class="text-gray-400" aria-label="Sucursal bloqueada">🔒</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'sucursales:confirmar_cambio_sucursal' %}"
+                       class="text-sm font-medium text-blue-600 hover:text-blue-800 border-l border-gray-200 pl-4">
+                        Cambiar
+                    </a>
+                </div>
+            </header>
 
             <!-- MOSAICO DE PRODUCTOS -->
-
-            <div
-                class="
-                    grid
-                    grid-cols-2
-                    sm:grid-cols-3
-                    md:grid-cols-5
-                    lg:grid-cols-6
-                    2xl:grid-cols-7
-                    gap-3
-                "
-            >
-
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7 gap-3">
                 {% for producto in productos %}
-
-                    <button
-                        type="button"
-                        class="
-                            bg-white
-                            border border-gray-200
-                            rounded-2xl
-                            overflow-hidden
-                            shadow-sm
-
-                            hover:shadow-md
-                            hover:border-blue-400
-
-                            active:scale-95
-
-                            transition
-                            text-left
-                            touch-manipulation
-                        "
-                        onclick="abrirProducto({{ producto.id }})"
-                    >
-
-                        <!-- IMAGEN -->
-
+                    <button type="button"
+                            class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-400 active:scale-95 transition text-left touch-manipulation"
+                            onclick="abrirProducto({{ producto.id }})">
                         <div class="aspect-square bg-gray-100 overflow-hidden">
-
                             {% if producto.imagen %}
-
-                                <img
-                                    src="{{ producto.imagen.url }}"
-                                    alt="{{ producto.nombre }}"
-                                    class="
-                                        w-full
-                                        h-full
-                                        object-cover
-                                    "
-                                >
-
+                                <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}"
+                                     class="w-full h-full object-cover">
                             {% else %}
-
-                                <div
-                                    class="
-                                        w-full
-                                        h-full
-                                        flex
-                                        items-center
-                                        justify-center
-                                        text-5xl
-                                    "
-                                >
-                                    🍦
-                                </div>
-
+                                <div class="w-full h-full flex items-center justify-center text-5xl" aria-hidden="true">🍦</div>
                             {% endif %}
-
                         </div>
-
-
-                        <!-- INFORMACIÓN -->
-
                         <div class="p-4">
-
-                            <div
-                                class="
-                                    text-lg
-                                    font-bold
-                                    text-gray-900
-                                    leading-tight
-                                "
-                            >
-                                {{ producto.nombre }}
-                            </div>
-
-
+                            <div class="text-lg font-bold text-gray-900 leading-tight">{{ producto.nombre }}</div>
                             <div class="text-sm text-gray-500 mt-2">
-
-                                {% if producto.variantes_pos|length == 1 %}
-
-                                    1 opción
-
-                                {% else %}
-
-                                    {{ producto.variantes_pos|length }}
-                                    opciones
-
-                                {% endif %}
-
+                                {{ producto.variantes_pos|length }}
+                                {% if producto.variantes_pos|length == 1 %}opción{% else %}opciones{% endif %}
                             </div>
-
                         </div>
-
                     </button>
-
                 {% empty %}
-
-                    <div
-                        class="
-                            col-span-full
-                            bg-white
-                            border border-gray-200
-                            rounded-2xl
-                            p-10
-                            text-center
-                            text-gray-500
-                        "
-                    >
+                    <div class="col-span-full bg-white border border-gray-200 rounded-2xl p-10 text-center text-gray-500">
                         No hay productos disponibles.
                     </div>
-
                 {% endfor %}
-
             </div>
-
         </section>
 
-
-        <!-- ===================================================== -->
         <!-- CARRITO -->
-        <!-- ===================================================== -->
-
-        <aside>
-
-            <div
-                class="
-                    bg-white
-                    border border-gray-200
-                    rounded-2xl
-                    shadow-sm
-                    overflow-hidden
-
-                    xl:sticky
-                    xl:top-6
-                "
-            >
-
-                <!-- HEADER -->
-
-                <div class="px-5 py-4 border-b border-gray-200">
-
-                    <div class="flex items-center justify-between">
-
-                        <div>
-
-                            <h2 class="text-xl font-bold text-gray-900">
-                                Tu venta
-                            </h2>
-
-                            <p
-                                id="cantidad-productos"
-                                class="text-sm text-gray-500 mt-1"
-                            >
-                                0 productos
-                            </p>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            id="limpiar-carrito"
-                            class="
-                                text-sm
-                                font-medium
-                                text-red-500
-                                hover:text-red-700
-
-                                px-3
-                                py-2
-                            "
-                        >
-                            Limpiar
-                        </button>
-
+        <aside class="min-w-0">
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden xl:sticky xl:top-6">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Tu venta</h2>
+                        <p id="cantidad-productos" class="text-sm text-gray-500 mt-1">0 productos</p>
                     </div>
-
+                    <button type="button" id="limpiar-carrito"
+                            class="text-sm font-medium text-red-500 hover:text-red-700 px-3 py-2">
+                        Limpiar
+                    </button>
                 </div>
 
+                <div id="carrito" class="p-4 space-y-3 min-h-[320px] max-h-[55vh] overflow-y-auto"></div>
 
-                <!-- ITEMS -->
-
-                <div
-                    id="carrito"
-                    class="
-                        p-4
-                        space-y-3
-                        min-h-[320px]
-                        max-h-[55vh]
-                        overflow-y-auto
-                    "
-                >
-                </div>
-
-
-                <!-- TOTAL -->
-
+                <!-- TOTALES, PROMOCIONES Y COBRO -->
                 <div class="border-t border-gray-200 p-5">
-
-                    <div class="flex items-center justify-between mb-5">
-
-                        <span class="text-gray-500 text-lg">
-                            Total
-                        </span>
-
-                        <span
-                            id="total"
-                            class="
-                                text-3xl
-                                font-bold
-                                text-gray-900
-                            "
-                        >
-                            $0.00
-                        </span>
-
+                    <div class="flex justify-between mb-3 text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="subtotal-venta" class="font-semibold">$0.00</span>
                     </div>
 
+                    <div id="promociones-container" class="hidden bg-green-50 rounded-xl p-3 mb-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span aria-hidden="true">🏷️</span>
+                            <span class="font-bold text-sm text-green-800">Promociones aplicadas</span>
+                        </div>
+                        <div id="lista-promociones" class="space-y-2"></div>
+                    </div>
 
-                    <button
-                        type="submit"
-                        id="btn-cobrar"
-                        disabled
-                        class="
-                            w-full
+                    <div id="fila-descuento" class="hidden flex justify-between text-green-700 mb-3">
+                        <span>Descuento</span>
+                        <span id="descuento-venta" class="font-semibold">-$0.00</span>
+                    </div>
 
-                            bg-green-600
-                            hover:bg-green-700
+                    <div id="estado-promociones" class="hidden text-sm text-gray-500 mb-3" role="status" aria-live="polite"></div>
 
-                            disabled:bg-gray-300
-                            disabled:cursor-not-allowed
+                    <div class="flex items-center justify-between border-t border-gray-200 pt-4 mb-5">
+                        <span class="text-gray-500 text-lg">Total</span>
+                        <span id="total" class="text-3xl font-bold text-gray-900">$0.00</span>
+                    </div>
 
-                            text-white
-
-                            text-xl
-                            font-bold
-
-                            py-4
-
-                            rounded-xl
-
-                            transition
-                            touch-manipulation
-                        "
-                    >
+                    <button type="submit" id="btn-cobrar" disabled
+                            class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xl font-bold py-4 rounded-xl transition touch-manipulation">
                         Cobrar
                     </button>
-
                 </div>
-
             </div>
-
         </aside>
-
     </div>
-
 </form>
 
-
-
-<!-- ========================================================= -->
 <!-- MODAL DE VARIANTES -->
-<!-- ========================================================= -->
-
-<div
-    id="modal-variantes"
-    class="
-        fixed
-        inset-0
-        z-50
-
-        hidden
-
-        items-center
-        justify-center
-
-        bg-black/50
-
-        p-4
-    "
->
-
-    <div
-        class="
-            bg-white
-            rounded-3xl
-            shadow-2xl
-
-            w-full
-            max-w-2xl
-
-            max-h-[90vh]
-            overflow-y-auto
-        "
-    >
-
-        <!-- MODAL HEADER -->
-
-        <div
-            class="
-                flex
-                items-center
-                justify-between
-
-                px-6
-                py-5
-
-                border-b
-                border-gray-200
-            "
-        >
-
+<div id="modal-variantes" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+     role="dialog" aria-modal="true" aria-labelledby="modal-producto-nombre">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200">
             <div>
-
-                <h2
-                    id="modal-producto-nombre"
-                    class="
-                        text-2xl
-                        font-bold
-                        text-gray-900
-                    "
-                >
-                </h2>
-
-                <p class="text-sm text-gray-500 mt-1">
-                    Selecciona una opción
-                </p>
-
+                <h2 id="modal-producto-nombre" class="text-2xl font-bold text-gray-900"></h2>
+                <p class="text-sm text-gray-500 mt-1">Selecciona una opción</p>
             </div>
-
-
-            <button
-                type="button"
-                onclick="cerrarModal()"
-                class="
-                    w-12
-                    h-12
-
-                    flex
-                    items-center
-                    justify-center
-
-                    bg-gray-100
-                    hover:bg-gray-200
-
-                    rounded-full
-
-                    text-2xl
-                    text-gray-600
-
-                    touch-manipulation
-                "
-            >
-                ×
-            </button>
-
+            <button type="button" onclick="cerrarModal()"
+                    class="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-2xl text-gray-600 touch-manipulation"
+                    aria-label="Cerrar opciones">×</button>
         </div>
-
-
-        <!-- VARIANTES -->
-
-        <div
-            id="modal-opciones"
-            class="
-                grid
-                grid-cols-1
-                sm:grid-cols-2
-                md:grid-cols-3
-
-                gap-4
-
-                p-6
-            "
-        >
-        </div>
-
+        <div id="modal-opciones" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-6"></div>
     </div>
-
 </div>
 
-
-
-
-<!-- ========================================================= -->
-<!-- DATOS PRODUCTOS / VARIANTES -->
-<!-- ========================================================= -->
-
+<!-- DATOS DE PRODUCTOS / VARIANTES -->
 <script>
-
 const productosPOS = {
-
     {% for producto in productos %}
-
-        "{{ producto.id }}": {
-
-            nombre: "{{ producto.nombre|escapejs }}",
-
-            variantes: [
-
-                {% for variante in producto.variantes_pos %}
-
-                    {
-                        id: "{{ variante.id }}",
-                        nombre: "{{ variante.nombre|escapejs }}",
-                        precio: "{{ variante.precio_venta }}"
-                    },
-
-                {% endfor %}
-
-            ]
-
-        },
-
+    "{{ producto.id }}": {
+        nombre: "{{ producto.nombre|escapejs }}",
+        variantes: [
+            {% for variante in producto.variantes_pos %}
+            {
+                id: "{{ variante.id }}",
+                nombre: "{{ variante.nombre|escapejs }}",
+                precio: "{{ variante.precio_venta }}"
+            },
+            {% endfor %}
+        ]
+    },
     {% endfor %}
-
 };
-
 </script>
 
-
-
-<!-- ========================================================= -->
-<!-- POS JAVASCRIPT -->
-<!-- ========================================================= -->
-
+<!-- POS + PROMOCIONES: TODO DENTRO DEL MISMO ÁMBITO -->
 <script>
-
 document.addEventListener("DOMContentLoaded", function () {
-
     const carrito = {};
-
-
-    const carritoContainer =
-        document.getElementById("carrito");
-
-    const totalElement =
-        document.getElementById("total");
-
-    const cantidadProductos =
-        document.getElementById("cantidad-productos");
-
-    const btnCobrar =
-        document.getElementById("btn-cobrar");
-
-    const modal =
-        document.getElementById("modal-variantes");
-
-    const modalNombre =
-        document.getElementById("modal-producto-nombre");
-
-    const modalOpciones =
-        document.getElementById("modal-opciones");
-
-
-    // =====================================================
-    // ABRIR PRODUCTO
-    // =====================================================
-
-    window.abrirProducto = function (productoId) {
-
-        const producto =
-            productosPOS[String(productoId)];
-
-        if (!producto) {
-            return;
-        }
-
-
-        // -----------------------------------------
-        // UNA SOLA VARIANTE
-        // -----------------------------------------
-
-        if (producto.variantes.length === 1) {
-
-            const variante =
-                producto.variantes[0];
-
-            agregarVariante(
-                variante.id,
-                producto.nombre,
-                variante.nombre,
-                variante.precio
-            );
-
-            return;
-        }
-
-
-        // -----------------------------------------
-        // VARIAS VARIANTES
-        // -----------------------------------------
-
-        modalNombre.textContent =
-            producto.nombre;
-
-        modalOpciones.innerHTML = "";
-
-
-        producto.variantes.forEach(function (variante) {
-
-            const boton =
-                document.createElement("button");
-
-            boton.type = "button";
-
-            boton.className = `
-                min-h-[120px]
-                border
-                border-gray-200
-                rounded-2xl
-                p-5
-                text-left
-
-                bg-white
-
-                hover:border-blue-500
-                hover:bg-blue-50
-
-                active:scale-95
-
-                transition
-                touch-manipulation
-            `;
-
-
-            boton.innerHTML = `
-
-                <div
-                    class="
-                        font-bold
-                        text-lg
-                        text-gray-900
-                    "
-                >
-                    ${variante.nombre}
-                </div>
-
-                <div
-                    class="
-                        text-blue-600
-                        font-bold
-                        text-2xl
-                        mt-4
-                    "
-                >
-                    $${parseFloat(variante.precio).toFixed(2)}
-                </div>
-
-            `;
-
-
-            boton.addEventListener(
-                "click",
-                function () {
-
-                    agregarVariante(
-                        variante.id,
-                        producto.nombre,
-                        variante.nombre,
-                        variante.precio
-                    );
-
-                    cerrarModal();
-
-                }
-            );
-
-
-            modalOpciones.appendChild(boton);
-
-        });
-
-
-        modal.classList.remove("hidden");
-
-        modal.classList.add("flex");
-
-    };
-
-
-    // =====================================================
-    // CERRAR MODAL
-    // =====================================================
-
-    window.cerrarModal = function () {
-
-        modal.classList.add("hidden");
-
-        modal.classList.remove("flex");
-
-    };
-
-
-    // Cerrar tocando fuera
-
-    modal.addEventListener(
-        "click",
-        function (event) {
-
-            if (event.target === modal) {
-                cerrarModal();
-            }
-
-        }
-    );
-
-
-    // ESC
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (event.key === "Escape") {
-                cerrarModal();
-            }
-
-        }
-    );
-
-
-    // =====================================================
-    // AGREGAR VARIANTE
-    // =====================================================
-
-    function agregarVariante(
-        id,
-        productoNombre,
-        varianteNombre,
-        precio
-    ) {
-
-        precio = parseFloat(precio);
-
-
-        if (carrito[id]) {
-
-            carrito[id].cantidad++;
-
-        } else {
-
-            carrito[id] = {
-
-                id: id,
-
-                producto: productoNombre,
-
-                variante: varianteNombre,
-
-                precio: precio,
-
-                cantidad: 1
-
-            };
-
-        }
-
-
-        renderCarrito();
-
+    const carritoContainer = document.getElementById("carrito");
+    const totalElement = document.getElementById("total");
+    const subtotalElement = document.getElementById("subtotal-venta");
+    const descuentoElement = document.getElementById("descuento-venta");
+    const filaDescuento = document.getElementById("fila-descuento");
+    const promocionesContainer = document.getElementById("promociones-container");
+    const listaPromociones = document.getElementById("lista-promociones");
+    const estadoPromociones = document.getElementById("estado-promociones");
+    const cantidadProductos = document.getElementById("cantidad-productos");
+    const btnCobrar = document.getElementById("btn-cobrar");
+    const ventaForm = document.getElementById("venta-form");
+    const modal = document.getElementById("modal-variantes");
+    const modalNombre = document.getElementById("modal-producto-nombre");
+    const modalOpciones = document.getElementById("modal-opciones");
+    const urlPromociones = "{% url 'ventas:pos_calcular_promociones' %}";
+
+    let revisionCarrito = 0;
+    let controladorPromociones = null;
+    let calculandoPromociones = false;
+    let totalValidado = false;
+
+    function formatoMoneda(valor) {
+        return "$" + Number(valor).toFixed(2);
     }
 
+    function mostrarEstadoPromociones(mensaje, esError = false) {
+        estadoPromociones.textContent = mensaje;
+        estadoPromociones.classList.remove("hidden");
+        estadoPromociones.classList.toggle("text-red-600", esError);
+        estadoPromociones.classList.toggle("text-gray-500", !esError);
+    }
 
-    // =====================================================
-    // RENDER CARRITO
-    // =====================================================
+    function limpiarPromocionesVisibles() {
+        listaPromociones.replaceChildren();
+        promocionesContainer.classList.add("hidden");
+        filaDescuento.classList.add("hidden");
+        descuentoElement.textContent = "-$0.00";
+    }
 
-    function renderCarrito() {
+    function mostrarTotales(calculo) {
+        subtotalElement.textContent = formatoMoneda(calculo.subtotal);
+        descuentoElement.textContent = "-" + formatoMoneda(calculo.descuento);
+        totalElement.textContent = formatoMoneda(calculo.total);
 
-        carritoContainer.innerHTML = "";
+        filaDescuento.classList.toggle("hidden", !(Number(calculo.descuento) > 0));
+        listaPromociones.replaceChildren();
+        const promociones = calculo.promociones || [];
+        promocionesContainer.classList.toggle("hidden", promociones.length === 0);
 
+        promociones.forEach(function (promo) {
+            const fila = document.createElement("div");
+            fila.className = "flex justify-between items-start gap-3 text-sm";
 
-        let total = 0;
+            const informacion = document.createElement("div");
+            informacion.className = "min-w-0";
+            const nombre = document.createElement("div");
+            nombre.className = "font-semibold text-green-800";
+            nombre.textContent = promo.nombre;
+            informacion.appendChild(nombre);
 
-        let cantidadTotal = 0;
+            if (Number(promo.cantidad_aplicaciones) > 1) {
+                const aplicaciones = document.createElement("div");
+                aplicaciones.className = "text-xs text-green-600 mt-1";
+                aplicaciones.textContent =
+                    `${promo.cantidad_aplicaciones} × ${formatoMoneda(promo.descuento_por_aplicacion)}`;
+                informacion.appendChild(aplicaciones);
+            }
 
+            const descuento = document.createElement("span");
+            descuento.className = "font-bold text-green-700 whitespace-nowrap";
+            descuento.textContent = "-" + formatoMoneda(promo.descuento);
 
-        const items =
-            Object.values(carrito);
+            fila.appendChild(informacion);
+            fila.appendChild(descuento);
+            listaPromociones.appendChild(fila);
+        });
 
+        btnCobrar.textContent = "Cobrar " + formatoMoneda(calculo.total);
+    }
 
-        // -----------------------------------------
-        // CARRITO VACÍO
-        // -----------------------------------------
+    async function actualizarPromociones() {
+        const revision = ++revisionCarrito;
+        const items = Object.values(carrito);
+
+        if (controladorPromociones) controladorPromociones.abort();
+        controladorPromociones = null;
+        totalValidado = false;
+        btnCobrar.disabled = true;
 
         if (items.length === 0) {
-
-            carritoContainer.innerHTML = `
-
-                <div
-                    class="
-                        flex
-                        flex-col
-                        items-center
-                        justify-center
-
-                        text-center
-                        text-gray-400
-
-                        py-16
-                    "
-                >
-
-                    <div class="text-5xl mb-4">
-                        🛒
-                    </div>
-
-                    <div class="font-medium text-gray-500">
-                        Venta vacía
-                    </div>
-
-                    <div class="text-sm mt-1">
-                        Toca un producto para agregarlo
-                    </div>
-
-                </div>
-
-            `;
-
+            calculandoPromociones = false;
+            mostrarTotales({subtotal: 0, descuento: 0, total: 0, promociones: []});
+            estadoPromociones.classList.add("hidden");
+            btnCobrar.textContent = "Cobrar";
+            return;
         }
 
-
-        // -----------------------------------------
-        // ITEMS
-        // -----------------------------------------
-
-        items.forEach(function (item) {
-
-            const subtotal =
-                item.precio * item.cantidad;
-
-
-            total += subtotal;
-
-            cantidadTotal += item.cantidad;
-
-
-            const row =
-                document.createElement("div");
-
-
-            row.className =
-                "bg-gray-50 border border-gray-100 rounded-xl p-4";
-
-
-            row.innerHTML = `
-
-                <div
-                    class="
-                        flex
-                        justify-between
-                        gap-3
-                    "
-                >
-
-                    <div class="min-w-0">
-
-                        <div
-                            class="
-                                font-bold
-                                text-gray-900
-                            "
-                        >
-                            ${item.producto}
-                        </div>
-
-                        <div
-                            class="
-                                text-sm
-                                text-gray-500
-                                mt-1
-                            "
-                        >
-                            ${item.variante}
-                        </div>
-
-                        <div
-                            class="
-                                text-sm
-                                text-gray-400
-                                mt-1
-                            "
-                        >
-                            $${item.precio.toFixed(2)} c/u
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="
-                            font-bold
-                            text-lg
-                            whitespace-nowrap
-                        "
-                    >
-                        $${subtotal.toFixed(2)}
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="
-                        flex
-                        items-center
-                        justify-between
-                        mt-4
-                    "
-                >
-
-                    <div
-                        class="
-                            flex
-                            items-center
-                            gap-2
-                        "
-                    >
-
-                        <button
-                            type="button"
-                            onclick="cambiarCantidad('${item.id}', -1)"
-                            class="
-                                w-12
-                                h-12
-
-                                rounded-xl
-
-                                bg-white
-
-                                border
-                                border-gray-300
-
-                                text-xl
-                                font-bold
-
-                                hover:bg-gray-100
-
-                                touch-manipulation
-                            "
-                        >
-                            −
-                        </button>
-
-
-                        <span
-                            class="
-                                w-12
-                                text-center
-
-                                text-xl
-                                font-bold
-                            "
-                        >
-                            ${item.cantidad}
-                        </span>
-
-
-                        <button
-                            type="button"
-                            onclick="cambiarCantidad('${item.id}', 1)"
-                            class="
-                                w-12
-                                h-12
-
-                                rounded-xl
-
-                                bg-blue-600
-                                hover:bg-blue-700
-
-                                text-white
-
-                                text-xl
-                                font-bold
-
-                                touch-manipulation
-                            "
-                        >
-                            +
-                        </button>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        onclick="eliminarProducto('${item.id}')"
-                        class="
-                            text-red-500
-                            hover:text-red-700
-
-                            text-sm
-                            font-medium
-
-                            px-3
-                            py-3
-                        "
-                    >
-                        Quitar
-                    </button>
-
-                </div>
-
-
-                <!--
-                    Este input conserva exactamente
-                    el formato esperado por tu POST Django:
-                    cantidad_<variante.id>
-                -->
-
-                <input
-                    type="hidden"
-                    name="cantidad_${item.id}"
-                    value="${item.cantidad}"
-                >
-
-            `;
-
-
-            carritoContainer.appendChild(row);
-
-        });
-
-
-        // -----------------------------------------
-        // TOTAL
-        // -----------------------------------------
-
-        totalElement.textContent =
-            "$" + total.toFixed(2);
-
-
-        cantidadProductos.textContent =
-            cantidadTotal === 1
-                ? "1 producto"
-                : `${cantidadTotal} productos`;
-
-
-        btnCobrar.disabled =
-            cantidadTotal === 0;
-
-
-        if (cantidadTotal > 0) {
-
-            btnCobrar.textContent =
-                `Cobrar $${total.toFixed(2)}`;
-
-        } else {
-
-            btnCobrar.textContent =
-                "Cobrar";
-
+        calculandoPromociones = true;
+        mostrarEstadoPromociones("Calculando promociones...");
+        btnCobrar.textContent = "Calculando...";
+
+        const datos = new FormData();
+        datos.append("csrfmiddlewaretoken",
+            ventaForm.querySelector('[name="csrfmiddlewaretoken"]').value);
+        items.forEach(item => datos.append(`cantidad_${item.id}`, item.cantidad));
+
+        const controlador = new AbortController();
+        controladorPromociones = controlador;
+
+        try {
+            const respuesta = await fetch(urlPromociones, {
+                method: "POST",
+                body: datos,
+                credentials: "same-origin",
+                signal: controlador.signal
+            });
+            if (!respuesta.ok) {
+                throw new Error(`Error HTTP ${respuesta.status} al calcular promociones`);
+            }
+            const calculo = await respuesta.json();
+            if (revision !== revisionCarrito) return;
+            if (!Number.isFinite(Number(calculo.total)) ||
+                !Number.isFinite(Number(calculo.subtotal)) ||
+                !Number.isFinite(Number(calculo.descuento))) {
+                throw new Error("Respuesta de totales inválida");
+            }
+            mostrarTotales(calculo);
+            estadoPromociones.classList.add("hidden");
+            totalValidado = true;
+            btnCobrar.disabled = false;
+        } catch (error) {
+            if (revision !== revisionCarrito || error.name === "AbortError") return;
+            console.error("Error de promociones POS:", error);
+            mostrarEstadoPromociones("No se pudo calcular el total. Revisa la conexión o intenta de nuevo.", true);
+            btnCobrar.textContent = "Reintentar cálculo";
+            btnCobrar.disabled = true;
+        } finally {
+            if (revision === revisionCarrito) {
+                calculandoPromociones = false;
+                controladorPromociones = null;
+            }
         }
-
     }
 
+    // =====================================================
+    // PRODUCTOS Y MODAL
+    // =====================================================
+    window.abrirProducto = function (productoId) {
+        const producto = productosPOS[String(productoId)];
+        if (!producto || !producto.variantes.length) return;
+
+        if (producto.variantes.length === 1) {
+            const variante = producto.variantes[0];
+            agregarVariante(variante.id, producto.nombre, variante.nombre, variante.precio);
+            return;
+        }
+
+        modalNombre.textContent = producto.nombre;
+        modalOpciones.replaceChildren();
+
+        producto.variantes.forEach(function (variante) {
+            const boton = document.createElement("button");
+            boton.type = "button";
+            boton.className = "min-h-[120px] border border-gray-200 rounded-2xl p-5 text-left bg-white hover:border-blue-500 hover:bg-blue-50 active:scale-95 transition touch-manipulation";
+
+            const nombre = document.createElement("div");
+            nombre.className = "font-bold text-lg text-gray-900";
+            nombre.textContent = variante.nombre;
+            const precio = document.createElement("div");
+            precio.className = "text-blue-600 font-bold text-2xl mt-4";
+            precio.textContent = formatoMoneda(variante.precio);
+
+            boton.appendChild(nombre);
+            boton.appendChild(precio);
+            boton.addEventListener("click", function () {
+                agregarVariante(variante.id, producto.nombre, variante.nombre, variante.precio);
+                cerrarModal();
+            });
+            modalOpciones.appendChild(boton);
+        });
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    };
+
+    window.cerrarModal = function () {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    };
+
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) cerrarModal();
+    });
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") cerrarModal();
+    });
+
+    function agregarVariante(id, productoNombre, varianteNombre, precio) {
+        id = String(id);
+        precio = Number(precio);
+        if (!Number.isFinite(precio)) return;
+        if (carrito[id]) {
+            carrito[id].cantidad += 1;
+        } else {
+            carrito[id] = {
+                id: id,
+                producto: productoNombre,
+                variante: varianteNombre,
+                precio: precio,
+                cantidad: 1
+            };
+        }
+        renderCarrito();
+    }
 
     // =====================================================
-    // CAMBIAR CANTIDAD
+    // CARRITO
     // =====================================================
+    function renderCarrito() {
+        carritoContainer.replaceChildren();
+        const items = Object.values(carrito);
+        let subtotalProvisional = 0;
+        let cantidadTotal = 0;
 
-    window.cambiarCantidad =
-        function (id, cambio) {
+        if (items.length === 0) {
+            const vacio = document.createElement("div");
+            vacio.className = "flex flex-col items-center justify-center text-center text-gray-400 py-16";
+            vacio.innerHTML = '<div class="text-5xl mb-4">🛒</div><div class="font-medium text-gray-500">Venta vacía</div><div class="text-sm mt-1">Toca un producto para agregarlo</div>';
+            carritoContainer.appendChild(vacio);
+        }
 
-            if (!carrito[id]) {
-                return;
-            }
+        items.forEach(function (item) {
+            const subtotal = item.precio * item.cantidad;
+            subtotalProvisional += subtotal;
+            cantidadTotal += item.cantidad;
 
+            const row = document.createElement("div");
+            row.className = "bg-gray-50 border border-gray-100 rounded-xl p-4";
 
-            carrito[id].cantidad += cambio;
+            const arriba = document.createElement("div");
+            arriba.className = "flex justify-between gap-3";
+            const descripcion = document.createElement("div");
+            descripcion.className = "min-w-0";
+            const producto = document.createElement("div");
+            producto.className = "font-bold text-gray-900";
+            producto.textContent = item.producto;
+            const variante = document.createElement("div");
+            variante.className = "text-sm text-gray-500 mt-1";
+            variante.textContent = item.variante;
+            const precioUnitario = document.createElement("div");
+            precioUnitario.className = "text-sm text-gray-400 mt-1";
+            precioUnitario.textContent = formatoMoneda(item.precio) + " c/u";
+            descripcion.append(producto, variante, precioUnitario);
+            const importe = document.createElement("div");
+            importe.className = "font-bold text-lg whitespace-nowrap";
+            importe.textContent = formatoMoneda(subtotal);
+            arriba.append(descripcion, importe);
 
+            const abajo = document.createElement("div");
+            abajo.className = "flex items-center justify-between mt-4";
+            const controles = document.createElement("div");
+            controles.className = "flex items-center gap-2";
 
-            if (carrito[id].cantidad <= 0) {
+            const menos = document.createElement("button");
+            menos.type = "button";
+            menos.className = "w-12 h-12 rounded-xl bg-white border border-gray-300 text-xl font-bold hover:bg-gray-100 touch-manipulation";
+            menos.textContent = "−";
+            menos.setAttribute("aria-label", "Reducir cantidad de " + item.producto);
+            menos.addEventListener("click", () => cambiarCantidad(item.id, -1));
 
-                delete carrito[id];
+            const cantidad = document.createElement("span");
+            cantidad.className = "w-12 text-center text-xl font-bold";
+            cantidad.textContent = item.cantidad;
 
-            }
+            const mas = document.createElement("button");
+            mas.type = "button";
+            mas.className = "w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold touch-manipulation";
+            mas.textContent = "+";
+            mas.setAttribute("aria-label", "Aumentar cantidad de " + item.producto);
+            mas.addEventListener("click", () => cambiarCantidad(item.id, 1));
+            controles.append(menos, cantidad, mas);
 
+            const quitar = document.createElement("button");
+            quitar.type = "button";
+            quitar.className = "text-red-500 hover:text-red-700 text-sm font-medium px-3 py-3";
+            quitar.textContent = "Quitar";
+            quitar.addEventListener("click", () => eliminarProducto(item.id));
+            abajo.append(controles, quitar);
 
-            renderCarrito();
+            // Mantener el formato POST esperado por POSNuevaVentaView.
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = `cantidad_${item.id}`;
+            input.value = item.cantidad;
 
-        };
+            row.append(arriba, abajo, input);
+            carritoContainer.appendChild(row);
+        });
 
+        cantidadProductos.textContent = cantidadTotal === 1
+            ? "1 producto" : `${cantidadTotal} productos`;
 
-    // =====================================================
-    // ELIMINAR
-    // =====================================================
+        // Evitar mostrar un total viejo con descuentos de otro carrito.
+        subtotalElement.textContent = formatoMoneda(subtotalProvisional);
+        totalElement.textContent = formatoMoneda(subtotalProvisional);
+        limpiarPromocionesVisibles();
+        actualizarPromociones();
+    }
 
-    window.eliminarProducto =
-        function (id) {
+    window.cambiarCantidad = function (id, cambio) {
+        if (!carrito[id]) return;
+        carrito[id].cantidad += cambio;
+        if (carrito[id].cantidad <= 0) delete carrito[id];
+        renderCarrito();
+    };
 
-            delete carrito[id];
+    window.eliminarProducto = function (id) {
+        delete carrito[id];
+        renderCarrito();
+    };
 
-            renderCarrito();
+    document.getElementById("limpiar-carrito").addEventListener("click", function () {
+        Object.keys(carrito).forEach(key => delete carrito[key]);
+        renderCarrito();
+    });
 
-        };
-
-
-    // =====================================================
-    // LIMPIAR
-    // =====================================================
-
-    document
-        .getElementById("limpiar-carrito")
-        .addEventListener(
-            "click",
-            function () {
-
-                Object
-                    .keys(carrito)
-                    .forEach(
-                        function (key) {
-
-                            delete carrito[key];
-
-                        }
-                    );
-
-
-                renderCarrito();
-
-            }
-        );
-
-
-    // =====================================================
-    // PRIMER RENDER
-    // =====================================================
+    // No avanzar a Cobro si la vista previa aún no está validada.
+    ventaForm.addEventListener("submit", function (event) {
+        if (calculandoPromociones || !totalValidado || btnCobrar.disabled) {
+            event.preventDefault();
+        }
+    });
 
     renderCarrito();
-
 });
-
 </script>
 
-
 <div class="h-24"></div>
-
 {% include "ventas/pos/_nav_pos.html" %}
 {% endblock %}

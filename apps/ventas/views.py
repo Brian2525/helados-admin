@@ -16,6 +16,8 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.core.exceptions import ValidationError
 from datetime import date
+from django.http import JsonResponse
+
 
 
 
@@ -30,7 +32,7 @@ from apps.inventario.models import InventarioDiario
 from django.utils import timezone
 from apps.inventario.models import VarianteProducto, Producto
 from .forms import POSCobroForm
-from .services import reporte_ventas_periodo, resumen_ventas_dia, generar_venta_diaria, aplicar_promociones_venta
+from .services import reporte_ventas_periodo, resumen_ventas_dia, generar_venta_diaria, aplicar_promociones_venta, calcular_promociones_carrito
 
 
 
@@ -745,8 +747,10 @@ class POSCobroView(
         descuento = (
             resultado_promociones[
                 "descuento_total"
-            ]
-        )
+            ])
+
+            
+        
 
         total = subtotal - descuento
 
@@ -768,6 +772,7 @@ class POSCobroView(
                 ]
             ),
         }
+
 
 
     # ==========================================================
@@ -1360,6 +1365,132 @@ class POSResumenDiaView(LoginRequiredMixin,SucursalActivaMixin,SucursalPermissio
                 "pos_seccion": "mas",
             }
         )
+
+
+
+
+
+
+
+class POSCalcularPromocionesView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+
+    def post(self, request, *args, **kwargs):
+
+        cantidades_carrito = {}
+        subtotal = Decimal("0.00")
+
+        # 1. Leer las variantes enviadas por el carrito
+        cantidades_recibidas = {}
+
+        for campo, valor in request.POST.items():
+
+            if not campo.startswith("cantidad_"):
+                continue
+
+            variante_id_str = campo.removeprefix("cantidad_")
+
+            if not variante_id_str.isdigit():
+                return JsonResponse(
+                    {"error": "Variante inválida."},
+                    status=400,
+                )
+
+            try:
+                cantidad = Decimal(valor)
+            except (InvalidOperation, TypeError, ValueError):
+                return JsonResponse(
+                    {"error": "Cantidad inválida."},
+                    status=400,
+                )
+
+            if not cantidad.is_finite() or cantidad <= 0:
+                return JsonResponse(
+                    {"error": "Cantidad inválida."},
+                    status=400,
+                )
+
+            variante_id = int(variante_id_str)
+            cantidades_recibidas[variante_id] = cantidad
+
+        # 2. Consultar precios reales en la BD
+        variantes = VarianteProducto.objects.filter(
+            id__in=cantidades_recibidas.keys(),
+            activo=True,
+            producto__activo=True,
+        )
+
+        variantes = list(variantes)
+
+        if len(variantes) != len(cantidades_recibidas):
+            return JsonResponse(
+                {"error": "Hay productos no disponibles."},
+                status=400,
+            )
+
+        for variante in variantes:
+
+            cantidad = cantidades_recibidas[variante.id]
+
+            cantidades_carrito[variante.id] = cantidad
+
+            subtotal += cantidad * variante.precio_venta
+
+        # 3. Utilizar el motor de promociones EXISTENTE
+        resultado = calcular_promociones_carrito(
+            cantidades_carrito=cantidades_carrito,
+            fecha=timezone.localdate(),
+        )
+
+        descuento = resultado["descuento_total"]
+
+        total = max(
+            subtotal - descuento,
+            Decimal("0.00"),
+        )
+
+        # 4. Preparar respuesta JSON
+        promociones = []
+
+        for promo in resultado["promociones"]:
+
+            promociones.append({
+                "nombre": promo["nombre"],
+                "tipo": promo["tipo"],
+                "cantidad_aplicaciones": promo[
+                    "cantidad_aplicaciones"
+                ],
+                "descuento_por_aplicacion": str(
+                    promo["descuento_por_aplicacion"]
+                ),
+                "descuento": str(promo["descuento"]),
+            })
+
+        return JsonResponse({
+            "subtotal": str(subtotal),
+            "descuento": str(descuento),
+            "total": str(total),
+            "promociones": promociones,
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

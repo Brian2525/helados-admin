@@ -29,11 +29,117 @@
 
     <!-- Operaciones -->
     <section>
-        <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+       
+
+
+        {% if request.user.is_superuser %}
+
+<h2 class="mb-3 mt-8 text-xs font-bold uppercase tracking-wider text-slate-400">
+    Supervisión de inventario
+</h2>
+
+<div class="space-y-3">
+
+    <a
+        href="{% url 'inventario:pos_alertas_inventario' %}"
+        class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:bg-slate-50"
+    >
+        <span class="text-2xl">⚠️</span>
+
+        <div class="flex-1">
+            <p class="font-bold text-slate-900">
+                Alertas de inventario
+            </p>
+            <p class="text-sm text-slate-500">
+                Revisar faltantes y sobrantes
+            </p>
+        </div>
+
+        <span class="text-slate-400">›</span>
+    </a>
+
+    <a
+        href="{% url 'inventario:pos_conciliacion_diaria' %}"
+        class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:bg-slate-50"
+    >
+        <span class="text-2xl">📊</span>
+
+        <div class="flex-1">
+            <p class="font-bold text-slate-900">
+                Conciliación de inventario
+            </p>
+            <p class="text-sm text-slate-500">
+                Consultar todos los cierres
+            </p>
+        </div>
+
+        <span class="text-slate-400">›</span>
+    </a>
+
+    <a
+            href="{% url 'inventario:pos_inventario_inicial' %}"
+            class="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm hover:bg-gray-50"
+        >
+            <span class="text-3xl">📋</span>
+
+            <div class="flex-1">
+                <div class="font-bold text-gray-900">
+                    Inventario inicial
+                </div>
+
+                <p class="text-sm text-gray-500">
+                    Autorizar existencias iniciales
+                </p>
+            </div>
+
+            <span class="text-gray-400">›</span>
+        </a>
+       
+            <a
+                href="{% url 'inventario:pos_conciliacion_diaria' %}"
+                class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:bg-slate-50"
+            >
+                <span class="text-3xl">📊</span>
+
+                <div class="flex-1">
+                    <p class="font-bold text-slate-900">
+                        Conciliación de inventario
+                    </p>
+
+                    <p class="mt-1 text-sm text-slate-500">
+                        Revisar faltantes, sobrantes y conteos
+                    </p>
+                </div>
+
+                <span class="text-slate-400">›</span>
+            </a>
+
+
+        <a href="{% url 'inventario:pos_alertas_inventario' %}"class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:bg-slate-50">
+        <span class="text-2xl">⚠️</span>
+
+        <div class="flex-1">
+            <p class="font-bold text-slate-900">
+                Alertas de inventario
+            </p>
+
+            <p class="mt-1 text-sm text-slate-500">
+                Revisar faltantes, sobrantes y cierres omitidos
+            </p>
+        </div>
+
+    <span class="text-slate-400">›</span>
+    </a>
+
+</div>
+
+{% endif %}
+ <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
             Operaciones de inventario
         </h2>
 
         <div class="space-y-3">
+
 
             <!-- Preparaciones -->
             <a href="{% url 'inventario:preparacion_list' %}"
@@ -91,6 +197,34 @@
                 </span>
                 <span class="text-2xl text-slate-300">›</span>
             </a>
+
+
+                    <!-- MOVIMIENTOS DE INVENTARIO -->
+        <a
+            href="{% url 'inventario:pos_movimiento_list' %}"
+            class="flex items-center gap-4 bg-white
+                border border-gray-200 rounded-2xl
+                px-5 py-4 shadow-sm
+                hover:border-blue-400 hover:bg-blue-50
+                transition"
+        >
+            <div class="w-12 h-12 rounded-xl bg-blue-100
+                        flex items-center justify-center text-2xl">
+                📦
+            </div>
+
+            <div class="flex-1">
+                <div class="font-bold text-gray-900">
+                    Movimientos de inventario
+                </div>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Consultar movimientos y registrar ajustes
+                </p>
+            </div>
+
+            <span class="text-gray-400 text-xl">›</span>
+        </a>
 
         </div>
     </section>

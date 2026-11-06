@@ -478,3 +478,85 @@ class InventarioDiario(models.Model):
             f"{self.variante} - "
             f"{self.fecha}"
         )
+
+
+class InventarioInicialAutorizado(models.Model):
+
+    class Estado(models.TextChoices):
+        BORRADOR = "borrador", "Borrador"
+        AUTORIZADO = "autorizado", "Autorizado"
+
+    sucursal = models.ForeignKey(
+        "sucursales.Sucursal",
+        on_delete=models.PROTECT,
+        related_name="inventarios_iniciales_autorizados",
+    )
+
+    fecha_corte = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    estado = models.CharField(
+        max_length=20,
+        choices=Estado.choices,
+        default=Estado.BORRADOR,
+    )
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+    )
+
+    observaciones = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-fecha_corte", "-id"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sucursal"],
+                name="uniq_inventario_inicial_sucursal",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.sucursal} - {self.estado}"
+
+
+class InventarioInicialDetalle(models.Model):
+
+    inventario = models.ForeignKey(
+        InventarioInicialAutorizado,
+        on_delete=models.PROTECT,
+        related_name="detalles",
+    )
+
+    variante = models.ForeignKey(
+        "inventario.VarianteProducto",
+        on_delete=models.PROTECT,
+    )
+
+    cantidad = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        default=0,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["inventario", "variante"],
+                name="unique_inventario_inicial_detalle",
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+
+        if self.cantidad is not None and self.cantidad < 0:
+            raise ValidationError(
+                "La existencia inicial no puede ser negativa."
+            )

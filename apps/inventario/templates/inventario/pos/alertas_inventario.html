@@ -1,0 +1,244 @@
+
+{% extends "core/base_pos.html" %}
+
+{% block title %}Alertas de inventario{% endblock %}
+{% block page_title %}Alertas de inventario{% endblock %}
+
+{% block content %}
+
+<div class="mx-auto max-w-5xl px-4 pb-28">
+
+    <header class="mb-6">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">⚠️</span>
+
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">
+                    Alertas de inventario
+                </h1>
+
+                <p class="text-sm text-slate-500">
+                    Supervisión de todas las sucursales
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- FILTRO POR FECHA -->
+    <form method="get"
+          class="mb-6 rounded-2xl border border-slate-200 bg-white p-4">
+
+        <label for="fecha"
+               class="mb-2 block text-sm font-semibold text-slate-700">
+            Fecha de cierre
+        </label>
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+
+            <input
+                type="date"
+                id="fecha"
+                name="fecha"
+                value="{{ fecha|date:'Y-m-d' }}"
+                max="{{ fecha_hoy|date:'Y-m-d' }}"
+                required
+                class="rounded-xl border border-slate-300 p-3"
+            >
+
+            <button
+                type="submit"
+                class="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+            >
+                Consultar
+            </button>
+
+        </div>
+    </form>
+
+    {% if aviso %}
+
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            {{ aviso }}
+        </div>
+
+    {% else %}
+
+        <!-- RESUMEN -->
+        <section class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                <p class="text-sm text-slate-500">
+                    Total alertas
+                </p>
+                <p class="mt-2 text-3xl font-bold text-slate-900">
+                    {{ resumen.total_alertas }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                <p class="text-sm text-slate-500">
+                    Faltantes
+                </p>
+                <p class="mt-2 text-3xl font-bold text-red-600">
+                    {{ resumen.faltantes }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                <p class="text-sm text-slate-500">
+                    Sobrantes
+                </p>
+                <p class="mt-2 text-3xl font-bold text-blue-600">
+                    {{ resumen.sobrantes }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                <p class="text-sm text-slate-500">
+                    Sin cierre
+                </p>
+                <p class="mt-2 text-3xl font-bold text-amber-600">
+                    {{ resumen.sin_cierre }}
+                </p>
+            </div>
+
+        </section>
+
+        <!-- LISTADO -->
+        <section>
+
+            <div class="mb-4">
+                <h2 class="text-lg font-bold text-slate-900">
+                    Incidencias detectadas
+                </h2>
+                <p class="text-sm text-slate-500">
+                    Sólo aparecen productos o sucursales
+                    que requieren atención.
+                </p>
+            </div>
+
+            <div class="space-y-3">
+
+                {% for alerta in alertas %}
+
+                <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+
+                    <div class="flex items-start justify-between gap-3">
+
+                        <div class="min-w-0 flex-1">
+
+                            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                {{ alerta.sucursal.nombre }}
+                            </p>
+
+                            <h3 class="mt-1 font-bold text-slate-900">
+                                {% if alerta.variante %}
+                                    {{ alerta.variante.producto.nombre }}
+                                    — {{ alerta.variante.nombre }}
+                                {% else %}
+                                    Inventario de sucursal
+                                {% endif %}
+                            </h3>
+
+                        </div>
+
+                        {% if alerta.tipo == "faltante" %}
+                            <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">
+                                Faltante
+                            </span>
+                        {% elif alerta.tipo == "sobrante" %}
+                            <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                                Sobrante
+                            </span>
+                        {% elif alerta.tipo == "sin_cierre" %}
+                            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                                Sin cierre
+                            </span>
+                        {% elif alerta.tipo == "sin_conteo" %}
+                            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                                Sin conteo
+                            </span>
+                        {% elif alerta.tipo == "sin_teorico" %}
+                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                                Sin referencia
+                            </span>
+                        {% else %}
+                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                                Sin inicial
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    <p class="mt-2 text-sm text-slate-500">
+                        {{ alerta.descripcion }}
+                    </p>
+
+                    {% if alerta.diferencia != None %}
+
+                        <div class="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3">
+
+                            <div>
+                                <p class="text-xs text-slate-500">Teórico</p>
+                                <p class="font-bold">
+                                    {{ alerta.teorico|floatformat:4 }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-xs text-slate-500">Físico</p>
+                                <p class="font-bold">
+                                    {{ alerta.fisico|floatformat:4 }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-xs text-slate-500">Diferencia</p>
+
+                                <p class="font-bold
+                                    {% if alerta.tipo == 'faltante' %}
+                                        text-red-600
+                                    {% else %}
+                                        text-blue-600
+                                    {% endif %}
+                                ">
+                                    {% if alerta.diferencia > 0 %}+{% endif %}{{ alerta.diferencia|floatformat:4 }}
+                                </p>
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </article>
+
+                {% empty %}
+
+                    <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+
+                        <div class="mb-3 text-4xl">✅</div>
+
+                        <h3 class="text-lg font-bold text-slate-900">
+                            No se encontraron incidencias
+                        </h3>
+
+                        <p class="mt-2 text-sm text-slate-500">
+                            No hay alertas detectadas para
+                            la fecha seleccionada.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+</div>
+
+{% include "ventas/pos/_nav_pos.html" %}
+
+{% endblock %}

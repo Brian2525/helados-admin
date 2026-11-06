@@ -24,6 +24,11 @@ from .views import (
     CierreInventarioView,
     CierreInventarioCompletadoView,
     InventarioMenuView,
+    MovimientoInventarioPOSListView,
+    MovimientoInventarioPOSCreateView,
+    InventarioInicialPOSView,
+    ConciliacionInventarioPOSView,
+    AlertasInventarioPOSView,
   
 )
 
@@ -46,35 +51,15 @@ urlpatterns = [
 
     path("productos/<int:producto_id>/variantes/",VarianteProductoListView.as_view(),name="variante_list",),
 
-    path(
-        "productos/<int:producto_id>/variantes/nueva/",
-        VarianteProductoCreateView.as_view(),
-        name="variante_create",
-    ),
+    path("productos/<int:producto_id>/variantes/nueva/",VarianteProductoCreateView.as_view(),name="variante_create",),
 
-    path(
-        "productos/<int:producto_id>/variantes/<int:pk>/editar/",
-        VarianteProductoUpdateView.as_view(),
-        name="variante_update",
-    ),
+    path("productos/<int:producto_id>/variantes/<int:pk>/editar/",VarianteProductoUpdateView.as_view(),name="variante_update",),
 
-    path(
-        "productos/<int:producto_id>/variantes/<int:pk>/eliminar/",
-        VarianteProductoDeleteView.as_view(),
-        name="variante_delete",
-    ),
+    path("productos/<int:producto_id>/variantes/<int:pk>/eliminar/",VarianteProductoDeleteView.as_view(),name="variante_delete",),
 
-    path(
-        "inventario-diario/",
-        InventarioDiarioView.as_view(),
-        name="inventario_diario",
-    ),
+    path("inventario-diario/",InventarioDiarioView.as_view(),name="inventario_diario",),
 
-    path(
-        "inventario-diario/historico/",
-        InventarioDiarioListView.as_view(),
-        name="inventario_list"
-    ),
+    path("inventario-diario/historico/",InventarioDiarioListView.as_view(),name="inventario_list"),
 
     path("inventario-diario/""<int:sucursal_id>/<str:fecha>/",InventarioDiarioDetailView.as_view(),name="inventario_detail"),
 
@@ -101,7 +86,22 @@ urlpatterns = [
 
     path("cierre/completado/",CierreInventarioCompletadoView.as_view(),name="cierre_inventario_completado",),
 
-    path("pos/",InventarioMenuView.as_view(),name="pos_inventario_menu",
-),
+    path("pos/",InventarioMenuView.as_view(),name="pos_inventario_menu",),
+
+
+    #Movimientos de inventario POS
+
+    path("pos/movimientos/",MovimientoInventarioPOSListView.as_view(),name="pos_movimiento_list",),
+
+    path("pos/movimientos/nuevo/",MovimientoInventarioPOSCreateView.as_view(),name="pos_movimiento_create",),
+
+
+    path("pos/inventario-inicial/",InventarioInicialPOSView.as_view(),name="pos_inventario_inicial",),
+
+    path("pos/conciliacion/",ConciliacionInventarioPOSView.as_view(),name="pos_conciliacion_diaria",),
+
+    path("pos/alertas/",AlertasInventarioPOSView.as_view(),name="pos_alertas_inventario",),
+
+         
 
 ]

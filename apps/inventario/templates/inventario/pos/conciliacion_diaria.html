@@ -1,0 +1,273 @@
+
+{% extends "core/base_pos.html" %}
+
+{% block title %}Conciliación de inventario{% endblock %}
+{% block page_title %}Conciliación{% endblock %}
+
+{% block content %}
+
+<div class="mx-auto max-w-6xl px-4 pb-28">
+
+    <!-- ENCABEZADO -->
+    <header class="mb-6">
+
+        <div class="flex items-center gap-3 mb-3">
+            <span class="text-3xl">📋</span>
+
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">
+                    Conciliación de inventario
+                </h1>
+
+                <p class="text-sm text-slate-500">
+                    Compara existencias teóricas contra físicas
+                </p>
+            </div>
+        </div>
+
+        <div class="rounded-xl bg-slate-100 p-4">
+            <p class="text-xs uppercase font-semibold text-slate-500">
+                Sucursal
+            </p>
+
+            <p class="font-bold text-slate-900">
+                {{ sucursal_activa.nombre }}
+            </p>
+        </div>
+
+    </header>
+
+    <!-- FILTRO -->
+    <form method="get"
+          class="mb-6 rounded-2xl border border-slate-200 bg-white p-4">
+
+        <label for="fecha"
+               class="block text-sm font-semibold text-slate-700 mb-2">
+            Fecha de conciliación
+        </label>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+
+            <input
+                type="date"
+                id="fecha"
+                name="fecha"
+                value="{{ fecha|date:'Y-m-d' }}"
+                max="{{ fecha_hoy|date:'Y-m-d' }}"
+                required
+                class="w-full sm:w-64 rounded-xl border border-slate-300 p-3"
+            >
+
+            <button
+                type="submit"
+                class="rounded-xl bg-slate-900 px-6 py-3 font-bold text-white hover:bg-slate-800"
+            >
+                Consultar inventario
+            </button>
+
+        </div>
+
+    </form>
+
+    {% if aviso %}
+        <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p class="text-sm text-amber-900">
+                {{ aviso }}
+            </p>
+        </div>
+    {% endif %}
+
+    {% if conciliacion %}
+
+        <!-- RESUMEN -->
+        <section class="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+                <p class="text-sm text-slate-500">Correctos</p>
+                <p class="mt-2 text-3xl font-bold text-emerald-600">
+                    {{ conciliacion.resumen.correctos }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+                <p class="text-sm text-slate-500">Faltantes</p>
+                <p class="mt-2 text-3xl font-bold text-red-600">
+                    {{ conciliacion.resumen.faltantes }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+                <p class="text-sm text-slate-500">Sobrantes</p>
+                <p class="mt-2 text-3xl font-bold text-blue-600">
+                    {{ conciliacion.resumen.sobrantes }}
+                </p>
+            </div>
+
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+                <p class="text-sm text-slate-500">Sin conteo</p>
+                <p class="mt-2 text-3xl font-bold text-amber-600">
+                    {{ conciliacion.resumen.sin_conteo }}
+                </p>
+            </div>
+
+        </section>
+
+        <!-- INFORMACIÓN -->
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">
+                    Detalle por producto
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    {{ conciliacion.resumen.total }}
+                    variantes controladas
+                </p>
+            </div>
+
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                Solo consulta
+            </span>
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+
+            <table class="w-full min-w-[760px] text-sm">
+
+                <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="p-4 text-left">Producto</th>
+                        <th class="p-4 text-right">Inicial</th>
+                        <th class="p-4 text-right">Movimientos</th>
+                        <th class="p-4 text-right">Consumo</th>
+                        <th class="p-4 text-right">Teórico</th>
+                        <th class="p-4 text-right">Físico</th>
+                        <th class="p-4 text-right">Diferencia</th>
+                        <th class="p-4 text-center">Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-slate-100">
+
+                    {% for item in conciliacion.detalles %}
+
+                    <tr class="hover:bg-slate-50">
+
+                        <td class="p-4">
+                            <p class="font-semibold text-slate-900">
+                                {{ item.variante.producto.nombre }}
+                            </p>
+
+                            <p class="text-xs text-slate-500">
+                                {{ item.variante.nombre }}
+                            </p>
+                        </td>
+
+                        <td class="p-4 text-right tabular-nums">
+                            {{ item.inventario_inicial|floatformat:4|default_if_none:"—" }}
+                        </td>
+
+                        <td class="p-4 text-right tabular-nums">
+                            {{ item.movimientos_netos|floatformat:4 }}
+                        </td>
+
+                        <td class="p-4 text-right tabular-nums">
+                            {{ item.consumo_teorico|floatformat:4 }}
+                        </td>
+
+                        <td class="p-4 text-right font-bold tabular-nums">
+                            {{ item.cantidad_teorica|floatformat:4|default_if_none:"—" }}
+                        </td>
+
+                        <td class="p-4 text-right tabular-nums">
+                            {{ item.cantidad_fisica|floatformat:4|default_if_none:"—" }}
+                        </td>
+
+                        <td class="p-4 text-right font-bold tabular-nums">
+
+                            {% if item.diferencia != None %}
+                                {% if item.estado == "faltante" %}
+                                    <span class="text-red-600">
+                                        {{ item.diferencia|floatformat:4 }}
+                                    </span>
+                                {% elif item.estado == "sobrante" %}
+                                    <span class="text-blue-600">
+                                        +{{ item.diferencia|floatformat:4 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-emerald-600">
+                                        0.0000
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                —
+                            {% endif %}
+
+                        </td>
+
+                        <td class="p-4 text-center">
+
+                            {% if item.estado == "correcto" %}
+                                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                                    Correcto
+                                </span>
+
+                            {% elif item.estado == "faltante" %}
+                                <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">
+                                    Faltante
+                                </span>
+
+                            {% elif item.estado == "sobrante" %}
+                                <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                                    Sobrante
+                                </span>
+
+                            {% elif item.estado == "sin_conteo" %}
+                                <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                                    Sin conteo
+                                </span>
+
+                            {% else %}
+                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                                    Sin inicial
+                                </span>
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="8"
+                            class="p-10 text-center text-slate-500">
+                            No hay variantes para consultar.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="mt-4 rounded-xl bg-slate-50 p-4">
+            <p class="text-sm text-slate-600">
+                <strong>Nota:</strong> Esta consulta no modifica el
+                inventario. Las diferencias se revisarán antes de
+                autorizar cualquier ajuste.
+            </p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% include "ventas/pos/_nav_pos.html" %}
+
+{% endblock %}

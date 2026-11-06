@@ -1,6 +1,10 @@
 from django import forms
 from apps.core.forms import TailwindModelForm
 from django.forms import modelformset_factory, formset_factory
+from django.core.exceptions import ValidationError
+from decimal import Decimal
+
+
 
 
 from apps.sucursales.models import Sucursal
@@ -390,3 +394,162 @@ class MermaForm(forms.Form):
             )
 
         return cleaned_data
+
+
+
+
+
+
+
+
+class MovimientoInventarioPOSForm(forms.ModelForm):
+
+    TIPOS_MANUALES = [
+        (
+            MovimientoInventario.TipoMovimiento.AJUSTE_ENTRADA,
+            "Ajuste de entrada (+)",
+        ),
+        (
+            MovimientoInventario.TipoMovimiento.AJUSTE_SALIDA,
+            "Ajuste de salida (-)",
+        ),
+        (
+            MovimientoInventario.TipoMovimiento.MERMA,
+            "Merma (-)",
+        ),
+    ]
+
+    tipo = forms.ChoiceField(
+        choices=[("", "Selecciona un movimiento")] + TIPOS_MANUALES,
+        widget=forms.Select(attrs={
+            "class": "w-full rounded-xl border border-gray-300 p-3",
+        }),
+    )
+
+    class Meta:
+        model = MovimientoInventario
+
+        fields = [
+            "tipo",
+            "variante",
+            "cantidad",
+            "motivo_merma",
+            "observaciones",
+        ]
+
+        widgets = {
+            "variante": forms.Select(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3",
+            }),
+            "cantidad": forms.NumberInput(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3",
+                "min": "0.0001",
+                "step": "0.0001",
+                "placeholder": "0.0000",
+            }),
+            "motivo_merma": forms.Select(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3",
+            }),
+            "observaciones": forms.Textarea(attrs={
+                "class": "w-full rounded-xl border border-gray-300 p-3",
+                "rows": 3,
+                "placeholder": "Describe el motivo del movimiento",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["variante"].queryset = (
+            VarianteProducto.objects
+            .filter(
+                activo=True,
+                producto__activo=True,
+            )
+            .select_related("producto")
+            .order_by("producto__nombre", "nombre")
+        )
+
+        self.fields["variante"].empty_label = (
+            "Selecciona un producto"
+        )
+
+        self.fields["motivo_merma"].required = False
+
+        # Exigimos una justificación para los ajustes y mermas.
+        self.fields["observaciones"].required = True
+
+    def clean_tipo(self):
+        tipo = self.cleaned_data["tipo"]
+
+        tipos_permitidos = {
+            valor for valor, _ in self.TIPOS_MANUALES
+        }
+
+        if tipo not in tipos_permitidos:
+            raise ValidationError(
+                "Este tipo de movimiento no está permitido."
+            )
+
+        return tipo
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        tipo = cleaned_data.get("tipo")
+        motivo_merma = cleaned_data.get("motivo_merma")
+
+        if tipo == MovimientoInventario.TipoMovimiento.MERMA:
+            if not motivo_merma:
+                self.add_error(
+                    "motivo_merma",
+                    "Selecciona el motivo de la merma.",
+                )
+        else:
+            cleaned_data["motivo_merma"] = None
+
+        return cleaned_data
+
+
+
+
+class InventarioInicialAutorizacionForm(forms.Form):
+    """Un campo obligatorio por variante; cero es un valor válido."""
+
+    confirmar_corte = forms.BooleanField(
+        required=True,
+        label="Confirmo que la sucursal está sin ventas ni operaciones pendientes y que las cantidades corresponden al momento de autorizar.",
+        error_messages={
+            "required": "Debes confirmar el corte antes de autorizar."
+        },
+    )
+
+    def __init__(self, *args, variantes, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.variantes = list(variantes)
+        self.filas = []
+
+        for variante in self.variantes:
+            field_name = f"cantidad_{variante.pk}"
+            self.fields[field_name] = forms.DecimalField(
+                label="Cantidad física",
+                required=True,
+                min_value=Decimal("0"),
+                max_digits=12,
+                decimal_places=4,
+                widget=forms.NumberInput(attrs={
+                    "min": "0",
+                    "step": "0.0001",
+                    "inputmode": "decimal",
+                    "placeholder": "0.0000",
+                    "class": "w-full rounded-xl border border-gray-300 px-3 py-3 text-lg font-semibold focus:border-blue-500 focus:ring-blue-500",
+                }),
+                error_messages={
+                    "required": "Captura la cantidad, aunque sea cero.",
+                    "invalid": "Introduce una cantidad numérica válida.",
+                },
+            )
+            self.filas.append({
+                "variante": variante,
+                "campo": self[field_name],
+            })

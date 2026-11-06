@@ -1,0 +1,109 @@
+{% extends "core/base_pos.html" %}
+
+{% block title %}Inventario inicial autorizado{% endblock %}
+{% block page_title %}Inventario inicial{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 pb-28">
+    <header class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Inventario inicial autorizado</h1>
+        <p class="mt-2 text-sm text-gray-500">Establece una única referencia inicial verificada para la sucursal.</p>
+        <div class="mt-4 rounded-xl border border-gray-200 bg-white p-4">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Sucursal activa</p>
+            <p class="mt-1 font-bold text-gray-900">🏪 {{ sucursal_activa.nombre }} 🔒</p>
+        </div>
+    </header>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-4 rounded-xl border border-gray-200 bg-white p-4 text-sm" role="status">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if autorizacion %}
+        <section class="rounded-2xl border border-green-200 bg-green-50 p-6">
+            <h2 class="text-xl font-bold text-green-900">✓ Inventario inicial autorizado</h2>
+            <p class="mt-3 text-sm text-green-900">Fecha de corte: <strong>{{ autorizacion.fecha_corte|date:"d/m/Y H:i:s" }}</strong></p>
+            <p class="mt-1 text-sm text-green-900">Autorizado por: <strong>{{ autorizacion.usuario.get_username }}</strong></p>
+            <p class="mt-3 text-sm text-green-800">El saldo inicial queda cerrado. Las diferencias posteriores deben corregirse con movimientos autorizados.</p>
+        </section>
+    {% elif hay_movimientos_iniciales_anteriores %}
+        <section class="rounded-2xl border border-amber-300 bg-amber-50 p-6" role="alert">
+            <h2 class="font-bold text-amber-900">Se requiere revisión de datos anteriores</h2>
+            <p class="mt-2 text-sm text-amber-800">Existen movimientos antiguos de tipo «Inventario inicial». No autorices un corte nuevo hasta decidir cómo migrarlos o conciliarlos.</p>
+        </section>
+    {% else %}
+        <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <strong>Antes de autorizar:</strong> detén las ventas, recepciones, preparaciones, mermas y traslados de esta sucursal; termina los registros pendientes y comprueba las existencias físicas. El momento de corte será la fecha y hora del servidor al guardar.
+        </div>
+
+        <form method="post" id="form-inventario-inicial">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-200 px-5 py-4">
+                    <h2 class="font-bold text-gray-900">Existencias verificadas</h2>
+                    <p class="mt-1 text-sm text-gray-500">Captura cada variante. Escribe 0 si no tienes existencias.</p>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    {% for fila in filas %}
+                        <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="min-w-0 flex-1">
+                                <p class="font-semibold text-gray-900">{{ fila.variante.producto.nombre }}</p>
+                                <p class="text-sm text-gray-500">{{ fila.variante.nombre }}</p>
+                            </div>
+                            <div class="w-full sm:w-48">
+                                <label class="mb-1 block text-sm font-medium text-gray-700" for="{{ fila.campo.id_for_label }}">Cantidad</label>
+                                {{ fila.campo }}
+                                {% for error in fila.campo.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="p-8 text-center text-gray-500">No hay variantes activas bajo control de inventario.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-5">
+                <div class="flex items-start gap-3">
+                    {{ form.confirmar_corte }}
+                    <div>
+                        <label for="{{ form.confirmar_corte.id_for_label }}" class="text-sm font-semibold text-gray-800">{{ form.confirmar_corte.label }}</label>
+                        {% for error in form.confirmar_corte.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" id="btn-autorizar" {% if not filas %}disabled{% endif %}
+                        class="mt-5 w-full rounded-xl bg-green-600 px-5 py-4 text-lg font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300">
+                    Autorizar inventario inicial
+                </button>
+            </div>
+        </form>
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("form-inventario-inicial");
+            const boton = document.getElementById("btn-autorizar");
+            if (!form) return;
+            form.addEventListener("submit", function (event) {
+                if (!form.checkValidity()) return;
+                if (!window.confirm("Esta operación establece el saldo inicial y no debe repetirse. ¿Confirmas las cantidades y el cierre de operaciones?")) {
+                    event.preventDefault();
+                    return;
+                }
+                boton.disabled = true;
+                boton.textContent = "Autorizando...";
+            });
+        });
+        </script>
+    {% endif %}
+</div>
+{% include "ventas/pos/_nav_pos.html" %}
+{% endblock %}

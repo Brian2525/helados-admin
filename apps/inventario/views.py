@@ -9,7 +9,16 @@ from django.db import transaction
 from django.db.models import Count
 from datetime import datetime, timedelta
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from django.core.exceptions import PermissionDenied
+from apps.inventario.services_conciliacion import (
+    calcular_conciliacion_diaria,
+)
+
+from apps.inventario.services_alertas import (
+    obtener_alertas_inventario,
+)
+
 
 
 from django.shortcuts import get_object_or_404, redirect, render
@@ -37,8 +46,10 @@ from .forms import (
     RecepcionMercanciaForm,
     MermaForm,
     CierreInventarioFormSet,
+    MovimientoInventarioPOSForm,
+    InventarioInicialAutorizacionForm,
 )
-from .models import Producto, VarianteProducto, InventarioDiario, Receta
+from .models import Producto, VarianteProducto, InventarioDiario, Receta, MovimientoInventario, InventarioInicialAutorizado, InventarioInicialDetalle
 from apps.sucursales.models import Sucursal
 from apps.ventas.models import CierreDiario
 from apps.core.mixins import (
@@ -1320,3 +1331,613 @@ class InventarioMenuView(
     TemplateView,
 ):
     template_name = "inventario/pos/inventario_menu.html"
+
+
+
+
+
+
+class MovimientoInventarioPOSListView(
+    LoginRequiredMixin,
+    ModulePermissionMixin,
+    SucursalActivaMixin,
+    SucursalPermissionMixin,
+    View,
+):
+    permission_required = "inventario.view_movimientoinventario"
+    raise_exception = True
+
+    template_name = "inventario/pos/movimiento_list.html"
+
+    def get(self, request):
+        sucursal = request.sucursal_activa
+
+        movimientos = (
+            MovimientoInventario.objects
+            .filter(sucursal=sucursal)
+            .select_related(
+                "variante",
+                "variante__producto",
+                "usuario",
+            )
+            .order_by("-fecha_hora", "-id")[:50]
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "movimientos": movimientos,
+                "sucursal_activa": sucursal,
+                "pos_seccion": "mas",
+            },
+        )
+
+
+class MovimientoInventarioPOSCreateView(
+    LoginRequiredMixin,
+    ModulePermissionMixin,
+    SucursalActivaMixin,
+    SucursalPermissionMixin,
+    View,
+):
+    permission_required = "inventario.add_movimientoinventario"
+    raise_exception = True
+
+    template_name = "inventario/pos/movimiento_form.html"
+
+    def get(self, request):
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": MovimientoInventarioPOSForm(),
+                "sucursal_activa": request.sucursal_activa,
+                "pos_seccion": "mas",
+            },
+        )
+
+    @transaction.atomic
+    def post(self, request):
+
+        form = MovimientoInventarioPOSForm(request.POST)
+
+        if form.is_valid():
+
+            movimiento = form.save(commit=False)
+
+            # No confiar en sucursal ni usuario del navegador.
+            movimiento.sucursal = request.sucursal_activa
+            movimiento.usuario = request.user
+
+            # Restricción adicional del lado del servidor.
+            tipos_permitidos = {
+                MovimientoInventario.TipoMovimiento.AJUSTE_ENTRADA,
+                MovimientoInventario.TipoMovimiento.AJUSTE_SALIDA,
+                MovimientoInventario.TipoMovimiento.MERMA,
+            }
+
+            if movimiento.tipo not in tipos_permitidos:
+                form.add_error(
+                    "tipo",
+                    "Movimiento no permitido.",
+                )
+            else:
+                movimiento.full_clean()
+                movimiento.save()
+
+                messages.success(
+                    request,
+                    "Movimiento de inventario registrado correctamente.",
+                )
+
+                return redirect(
+                    "inventario:pos_movimiento_list"
+                )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": form,
+                "sucursal_activa": request.sucursal_activa,
+                "pos_seccion": "mas",
+            },
+            status=400,
+        )
+
+
+
+
+class InventarioInicialPOSView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+
+    template_name = "inventario/pos/inventario_inicial.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # Primera versión: sólo superusuario.
+        if not request.user.is_superuser:
+            raise PermissionDenied(
+                "Sólo administración puede autorizar el inventario inicial."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_variantes(self):
+        return (
+            VarianteProducto.objects
+            .filter(
+                activo=True,
+                producto__activo=True,
+                producto__controlar_inventario=True,
+            )
+            .select_related("producto")
+            .order_by(
+                "producto__nombre",
+                "nombre",
+            )
+        )
+
+    def inicializado(self, sucursal):
+        return MovimientoInventario.objects.filter(
+            sucursal=sucursal,
+            tipo=MovimientoInventario.TipoMovimiento.INVENTARIO_INICIAL,
+        ).exists()
+
+    def get(self, request):
+
+        sucursal = request.sucursal_activa
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "sucursal_activa": sucursal,
+                "variantes": self.get_variantes(),
+                "inicializado": self.inicializado(sucursal),
+                "pos_seccion": "mas",
+            },
+        )
+
+    def post(self, request):
+
+        sucursal = request.sucursal_activa
+        variantes = list(self.get_variantes())
+
+        cantidades = {}
+        errores = {}
+
+        # Validar todas las variantes antes de guardar.
+        for variante in variantes:
+
+            campo = f"cantidad_{variante.id}"
+            valor = request.POST.get(campo, "").strip()
+
+            if not valor:
+                errores[variante.id] = "Captura la cantidad."
+                continue
+
+            try:
+                cantidad = Decimal(valor)
+            except (InvalidOperation, ValueError):
+                errores[variante.id] = "Cantidad inválida."
+                continue
+
+            if not cantidad.is_finite() or cantidad < 0:
+                errores[variante.id] = (
+                    "La cantidad debe ser cero o mayor."
+                )
+                continue
+
+            if cantidad.as_tuple().exponent < -4:
+                errores[variante.id] = (
+                    "Máximo cuatro decimales."
+                )
+                continue
+
+            if cantidad >= Decimal("100000000"):
+                errores[variante.id] = (
+                    "Cantidad fuera del rango permitido."
+                )
+                continue
+
+            cantidades[variante.id] = cantidad
+
+        if not variantes:
+            messages.error(
+                request,
+                "No hay variantes con control de inventario."
+            )
+
+        elif errores:
+            messages.error(
+                request,
+                "Revisa las cantidades antes de autorizar."
+            )
+
+        else:
+            with transaction.atomic():
+
+                # Serializa inicializaciones concurrentes
+                # de esta sucursal.
+                Sucursal.objects.select_for_update().get(
+                    pk=sucursal.pk
+                )
+
+                # Sólo una inicialización inicial por sucursal.
+                if self.inicializado(sucursal):
+                    messages.error(
+                        request,
+                        "Esta sucursal ya tiene inventario inicial."
+                    )
+                else:
+                    fecha_corte = timezone.now()
+
+                    movimientos = [
+                        MovimientoInventario(
+                            sucursal=sucursal,
+                            variante=variante,
+                            tipo=(
+                                MovimientoInventario
+                                .TipoMovimiento
+                                .INVENTARIO_INICIAL
+                            ),
+                            cantidad=cantidades[variante.id],
+                            fecha_hora=fecha_corte,
+                            usuario=request.user,
+                            observaciones=(
+                                "Inventario inicial autorizado "
+                                f"por {request.user.get_username()}."
+                            ),
+                        )
+                        for variante in variantes
+                    ]
+
+                    # El modelo exige cantidad > 0.
+                    # Las existencias cero quedan representadas
+                    # por la ausencia de un movimiento inicial
+                    # para esa variante, pero la sucursal debe
+                    # quedar inicializada por lo menos con uno.
+                    movimientos = [
+                        m for m in movimientos
+                        if m.cantidad > 0
+                    ]
+
+                    if not movimientos:
+                        messages.error(
+                            request,
+                            "No se puede inicializar con todas "
+                            "las cantidades en cero usando "
+                            "este esquema."
+                        )
+                    else:
+                        for movimiento in movimientos:
+                            movimiento.full_clean()
+
+                        MovimientoInventario.objects.bulk_create(
+                            movimientos
+                        )
+
+                        messages.success(
+                            request,
+                            "Inventario inicial autorizado "
+                            "correctamente."
+                        )
+
+                        return redirect(
+                            "inventario:pos_inventario_inicial"
+                        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "sucursal_activa": sucursal,
+                "variantes": variantes,
+                "inicializado": self.inicializado(sucursal),
+                "errores": errores,
+                "valores": request.POST,
+                "pos_seccion": "mas",
+            },
+            status=400,
+        )
+
+
+
+class InventarioInicialPOSView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+    template_name = "inventario/pos/inventario_inicial.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.is_superuser:
+            raise PermissionDenied("Sólo un superusuario puede autorizar el inventario inicial.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_variantes(self):
+        return list(
+            VarianteProducto.objects.filter(
+                activo=True,
+                producto__activo=True,
+                producto__controlar_inventario=True,
+            )
+            .select_related("producto")
+            .order_by("producto__nombre", "nombre", "id")
+        )
+
+    def get_autorizacion(self, sucursal):
+        return (
+            InventarioInicialAutorizado.objects.filter(
+                sucursal=sucursal,
+                estado=InventarioInicialAutorizado.Estado.AUTORIZADO,
+            )
+            .select_related("usuario")
+            .first()
+        )
+
+    def hay_movimientos_iniciales_anteriores(self, sucursal):
+        # Evitar coexistencia con la versión provisional que creaba
+        # movimientos INVENTARIO_INICIAL como saldos iniciales.
+        return MovimientoInventario.objects.filter(
+            sucursal=sucursal,
+            tipo=MovimientoInventario.TipoMovimiento.INVENTARIO_INICIAL,
+        ).exists()
+
+    def get(self, request, *args, **kwargs):
+        sucursal = request.sucursal_activa
+        autorizacion = self.get_autorizacion(sucursal)
+        variantes = self.get_variantes()
+        form = InventarioInicialAutorizacionForm(variantes=variantes)
+        return render(request, self.template_name, {
+            "form": form,
+            "filas": form.filas,
+            "autorizacion": autorizacion,
+            "hay_movimientos_iniciales_anteriores": self.hay_movimientos_iniciales_anteriores(sucursal),
+            "sucursal_activa": sucursal,
+            "pos_seccion": "mas",
+        })
+
+    def post(self, request, *args, **kwargs):
+        sucursal = request.sucursal_activa
+        variantes = self.get_variantes()
+        form = InventarioInicialAutorizacionForm(request.POST, variantes=variantes)
+        autorizacion = self.get_autorizacion(sucursal)
+        hay_movimientos = self.hay_movimientos_iniciales_anteriores(sucursal)
+
+        if not variantes:
+            form.add_error(None, "No hay variantes activas bajo control de inventario.")
+        if autorizacion:
+            form.add_error(None, "Esta sucursal ya tiene un inventario inicial autorizado.")
+        if hay_movimientos:
+            form.add_error(None, "Hay movimientos de inventario inicial antiguos. Revisa la migración antes de autorizar.")
+
+        if form.is_valid() and variantes and not autorizacion and not hay_movimientos:
+            with transaction.atomic():
+                # Serializa autorizaciones concurrentes de la misma sucursal.
+                Sucursal.objects.select_for_update().get(pk=sucursal.pk)
+
+                if InventarioInicialAutorizado.objects.filter(sucursal=sucursal).exists():
+                    messages.error(request, "Ya existe una inicialización para esta sucursal.")
+                    return redirect("inventario:pos_inventario_inicial")
+                if self.hay_movimientos_iniciales_anteriores(sucursal):
+                    messages.error(request, "Se detectaron movimientos iniciales anteriores.")
+                    return redirect("inventario:pos_inventario_inicial")
+
+                corte = InventarioInicialAutorizado.objects.create(
+                    sucursal=sucursal,
+                    usuario=request.user,
+                    estado=InventarioInicialAutorizado.Estado.AUTORIZADO,
+                    fecha_corte=timezone.now(),
+                    observaciones="Corte inicial autorizado desde el POS.",
+                )
+
+                detalles = [
+                    InventarioInicialDetalle(
+                        inventario=corte,
+                        variante=variante,
+                        cantidad=form.cleaned_data[f"cantidad_{variante.pk}"],
+                    )
+                    for variante in variantes
+                ]
+
+                # bulk_create no ejecuta full_clean: validar antes de guardar.
+                for detalle in detalles:
+                    detalle.full_clean()
+                InventarioInicialDetalle.objects.bulk_create(detalles)
+
+            messages.success(request, "Inventario inicial autorizado correctamente.")
+            return redirect("inventario:pos_inventario_inicial")
+
+        return render(request, self.template_name, {
+            "form": form,
+            "filas": form.filas,
+            "autorizacion": autorizacion,
+            "hay_movimientos_iniciales_anteriores": hay_movimientos,
+            "sucursal_activa": sucursal,
+            "pos_seccion": "mas",
+        }, status=400)
+
+
+
+
+class ConciliacionInventarioPOSView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+
+    template_name = "inventario/pos/conciliacion_diaria.html"
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+            raise PermissionDenied(
+                "No tienes permiso para revisar conciliaciones."
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+
+        sucursal = request.sucursal_activa
+
+        # Por defecto mostrar ayer, porque hoy
+        # todavía puede haber ventas y movimientos.
+        fecha_default = (
+            timezone.localdate()
+            - timezone.timedelta(days=1)
+        )
+
+        fecha_texto = request.GET.get(
+            "fecha",
+            fecha_default.isoformat()
+        )
+
+        try:
+            fecha = date.fromisoformat(fecha_texto)
+        except (ValueError, TypeError):
+            fecha = fecha_default
+
+        fecha_hoy = timezone.localdate()
+
+        # No permitir fechas futuras.
+        if fecha > fecha_hoy:
+            fecha = fecha_hoy
+
+        corte = (
+            InventarioInicialAutorizado.objects
+            .filter(
+                sucursal=sucursal,
+                estado=(
+                    InventarioInicialAutorizado
+                    .Estado.AUTORIZADO
+                ),
+            )
+            .order_by("-fecha_corte", "-id")
+            .first()
+        )
+
+        conciliacion = None
+        aviso = None
+
+        if corte is None:
+            aviso = (
+                "Esta sucursal no tiene un inventario "
+                "inicial autorizado."
+            )
+
+        elif corte.fecha_corte is None:
+            aviso = (
+                "El corte autorizado no tiene fecha válida."
+            )
+
+        else:
+            fecha_corte_local = (
+                timezone.localtime(corte.fecha_corte).date()
+            )
+
+            if fecha < fecha_corte_local:
+                aviso = (
+                    "La fecha seleccionada es anterior "
+                    "al inventario inicial autorizado."
+                )
+            else:
+                conciliacion = calcular_conciliacion_diaria(
+                    sucursal=sucursal,
+                    fecha=fecha,
+                )
+
+                if fecha == fecha_hoy:
+                    aviso = (
+                        "Estás consultando el día actual. "
+                        "Las diferencias son provisionales "
+                        "mientras existan ventas o movimientos."
+                    )
+
+                elif fecha == fecha_corte_local:
+                    aviso = (
+                        "Esta fecha contiene el corte inicial. "
+                        "Los conteos físicos anteriores al corte "
+                        "no deben compararse como cierre del día."
+                    )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "sucursal_activa": sucursal,
+                "fecha": fecha,
+                "fecha_hoy": fecha_hoy,
+                "corte": corte,
+                "conciliacion": conciliacion,
+                "aviso": aviso,
+                "pos_seccion": "mas",
+            },
+        )
+    
+
+
+
+
+class AlertasInventarioPOSView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    View,
+):
+
+    template_name = (
+        "inventario/pos/alertas_inventario.html"
+    )
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+            raise PermissionDenied(
+                "No tienes permiso para consultar alertas."
+            )
+
+        return super().dispatch(
+            request, *args, **kwargs
+        )
+
+    def get(self, request):
+
+        fecha_default = (
+            timezone.localdate()
+            - timedelta(days=1)
+        )
+
+        fecha_texto = request.GET.get(
+            "fecha",
+            fecha_default.isoformat(),
+        )
+
+        try:
+            fecha = date.fromisoformat(fecha_texto)
+        except (TypeError, ValueError):
+            fecha = fecha_default
+
+        resultado = obtener_alertas_inventario(
+            fecha=fecha
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "fecha": fecha,
+                "fecha_hoy": timezone.localdate(),
+                "alertas": resultado["alertas"],
+                "resumen": resultado["resumen"],
+                "aviso": resultado["aviso"],
+                "pos_seccion": "mas",
+            },
+        )
