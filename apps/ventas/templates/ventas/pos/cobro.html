@@ -764,10 +764,7 @@ Cobro
         );
 
 
-    const personalizado =
-        document.getElementById(
-            "monto-personalizado"
-        );
+    
 
 
     const btnContinuar =
@@ -878,32 +875,15 @@ Cobro
 
     function pagoExacto(boton) {
 
-        marcarBoton(boton);
+    marcarBoton(boton);
 
-        inputFormaPago.value =
-            "efectivo";
+    inputFormaPago.value = "efectivo";
+    inputMonto.value = total.toFixed(2);
 
-        inputMonto.value =
-            total.toFixed(2);
+    // Ya no necesitamos ocultar monto-personalizado
+    // porque ahora existe otra pantalla.
 
-        personalizado.classList.add(
-            "hidden"
-        );
-
-        resultado.classList.remove(
-            "hidden"
-        );
-
-        resultado.className =
-            "mt-4 rounded-xl p-4 " +
-            "bg-green-50 text-green-700 " +
-            "font-semibold";
-
-        resultado.innerHTML =
-            "✓ Pago exacto · Sin cambio";
-
-        activarCobro();
-
+    activarCobro();
     }
 
 
@@ -949,33 +929,16 @@ Cobro
     // TARJETA / OTRO
     // =========================================================
 
-    function seleccionarMetodo(
-        metodo,
-        boton
-    ) {
+    function seleccionarMetodo(metodo, boton) {
 
-        marcarBoton(boton);
+    marcarBoton(boton);
 
-        inputFormaPago.value =
-            metodo;
+    inputFormaPago.value = metodo;
 
-        personalizado.classList.add(
-            "hidden"
-        );
+    // Tarjeta y Otro no necesitan monto recibido.
+    inputMonto.value = "";
 
-        resultado.classList.add(
-            "hidden"
-        );
-
-        /*
-        Para tarjeta y "otro" el monto recibido
-        se establece realmente en el servidor.
-        */
-
-        inputMonto.value = "";
-
-        activarCobro();
-
+    activarCobro();
     }
 
 

@@ -2,6 +2,20 @@
 deploy.sh
 deploy.sh.save
 
+
+# Entornos virtuales de Python
+.venv/
+.venv310/
+venv/
+env/
+
+# Dependencias locales
+requirements-local.txt
+
+# Archivos temporales de Python
+__pycache__/
+*.pyc
+
 # Python
 __pycache__/
 *.py[cod]
