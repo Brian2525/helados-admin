@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Producto, VarianteProducto, InventarioDiario, Receta, RecetaDetalle, MovimientoInventario
+from .models import Producto, VarianteProducto, InventarioDiario, Receta, RecetaDetalle, MovimientoInventario, InventarioInicialDetalle
 
 # Register your models here.
 class ProductoAdmin(admin.ModelAdmin):
@@ -96,10 +96,18 @@ class MovimientoInventarioAdmin(admin.ModelAdmin):
     
 
 
+class InventarioInicialDetalleAdmin(admin.ModelAdmin):
+    list_display = ("inventario", "variante", "cantidad")
+    search_fields = ("sucursal__nombre", "variante__nombre")
+
+
+
 admin.site.register(Producto, ProductoAdmin)
 admin.site.register(Receta, RecetaAdmin)
 admin.site.register(RecetaDetalle)
 admin.site.register(MovimientoInventario, MovimientoInventarioAdmin)
+admin.site.register(InventarioInicialDetalle, InventarioInicialDetalleAdmin)
+
 
 
 admin.site.register(VarianteProducto, VarianteProductoAdmin)
