@@ -4,21 +4,46 @@
 {% block page_title %}Punto de venta{% endblock %}
 
 {% block content %}
+<style>
+/* Layout compacto: carrito junto al catálogo en iPad horizontal. */
+.pos-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.pos-productos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pos-producto-nombre { font-size: 0.85rem; line-height: 1.2; overflow-wrap: anywhere; }
+.pos-carrito-lista { min-height: 130px; max-height: min(42vh, 340px); overflow-y: auto; }
+.pos-carrito-panel { position: relative; }
+@media (min-width: 600px) {
+    .pos-productos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 720px) {
+    .pos-layout { grid-template-columns: minmax(0, 1fr) minmax(260px, 29%); }
+    .pos-productos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pos-carrito-panel { position: sticky; top: 12px; }
+}
+@media (min-width: 980px) {
+    .pos-productos { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (min-width: 1350px) {
+    .pos-productos { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+@media (max-height: 750px) and (min-width: 720px) {
+    .pos-carrito-lista { max-height: 34vh; min-height: 100px; }
+}
+</style>
 <form method="post" id="venta-form">
     {% csrf_token %}
 
-    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-4 items-start">
+    <div class="pos-layout">
         <!-- PRODUCTOS -->
         <section class="min-w-0">
-            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <header class="flex flex-wrap items-center justify-between gap-2 mb-3">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Nueva venta</h1>
-                    <p class="text-sm text-gray-500 mt-1">Toca un producto para agregarlo a la venta</p>
+                    <h1 class="text-xl font-bold text-gray-900">Nueva venta</h1>
+                    <p class="text-xs text-gray-500 mt-0.5">Toca un producto para agregarlo a la venta</p>
                 </div>
-                <div class="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-4 py-3">
+                <div class="flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
                     <div>
                         <div class="text-xs uppercase tracking-wide text-gray-400 font-medium">Sucursal activa</div>
-                        <div class="flex items-center gap-2 font-bold text-gray-900 mt-1">
+                        <div class="flex items-center gap-1 text-sm font-bold text-gray-900 mt-0.5">
                             <span aria-hidden="true">🏪</span>
                             {{ sucursal_activa.nombre }}
                             <span class="text-gray-400" aria-label="Sucursal bloqueada">🔒</span>
@@ -32,10 +57,10 @@
             </header>
 
             <!-- MOSAICO DE PRODUCTOS -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-7 gap-3">
+            <div class="pos-productos">
                 {% for producto in productos %}
                     <button type="button"
-                            class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-400 active:scale-95 transition text-left touch-manipulation"
+                            class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-400 active:scale-95 transition text-left touch-manipulation"
                             onclick="abrirProducto({{ producto.id }})">
                         <div class="aspect-square bg-gray-100 overflow-hidden">
                             {% if producto.imagen %}
@@ -45,9 +70,9 @@
                                 <div class="w-full h-full flex items-center justify-center text-5xl" aria-hidden="true">🍦</div>
                             {% endif %}
                         </div>
-                        <div class="p-4">
-                            <div class="text-lg font-bold text-gray-900 leading-tight">{{ producto.nombre }}</div>
-                            <div class="text-sm text-gray-500 mt-2">
+                        <div class="p-2.5">
+                            <div class="pos-producto-nombre font-bold text-gray-900">{{ producto.nombre }}</div>
+                            <div class="text-xs text-gray-500 mt-1">
                                 {{ producto.variantes_pos|length }}
                                 {% if producto.variantes_pos|length == 1 %}opción{% else %}opciones{% endif %}
                             </div>
@@ -63,28 +88,28 @@
 
         <!-- CARRITO -->
         <aside class="min-w-0">
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden xl:sticky xl:top-6">
-                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div class="pos-carrito-panel bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-3 py-2.5 border-b border-gray-200 flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">Tu venta</h2>
-                        <p id="cantidad-productos" class="text-sm text-gray-500 mt-1">0 productos</p>
+                        <h2 class="text-lg font-bold text-gray-900">Tu venta</h2>
+                        <p id="cantidad-productos" class="text-xs text-gray-500 mt-0.5">0 productos</p>
                     </div>
                     <button type="button" id="limpiar-carrito"
-                            class="text-sm font-medium text-red-500 hover:text-red-700 px-3 py-2">
+                            class="text-xs font-medium text-red-500 hover:text-red-700 px-2 py-2">
                         Limpiar
                     </button>
                 </div>
 
-                <div id="carrito" class="p-4 space-y-3 min-h-[320px] max-h-[55vh] overflow-y-auto"></div>
+                <div id="carrito" class="pos-carrito-lista p-2.5 space-y-2"></div>
 
                 <!-- TOTALES, PROMOCIONES Y COBRO -->
-                <div class="border-t border-gray-200 p-5">
-                    <div class="flex justify-between mb-3 text-gray-600">
+                <div class="border-t border-gray-200 p-3">
+                    <div class="flex justify-between mb-2 text-sm text-gray-600">
                         <span>Subtotal</span>
                         <span id="subtotal-venta" class="font-semibold">$0.00</span>
                     </div>
 
-                    <div id="promociones-container" class="hidden bg-green-50 rounded-xl p-3 mb-3">
+                    <div id="promociones-container" class="hidden bg-green-50 rounded-lg p-2 mb-2">
                         <div class="flex items-center gap-2 mb-2">
                             <span aria-hidden="true">🏷️</span>
                             <span class="font-bold text-sm text-green-800">Promociones aplicadas</span>
@@ -92,20 +117,20 @@
                         <div id="lista-promociones" class="space-y-2"></div>
                     </div>
 
-                    <div id="fila-descuento" class="hidden flex justify-between text-green-700 mb-3">
+                    <div id="fila-descuento" class="hidden flex justify-between text-sm text-green-700 mb-2">
                         <span>Descuento</span>
                         <span id="descuento-venta" class="font-semibold">-$0.00</span>
                     </div>
 
-                    <div id="estado-promociones" class="hidden text-sm text-gray-500 mb-3" role="status" aria-live="polite"></div>
+                    <div id="estado-promociones" class="hidden text-xs text-gray-500 mb-2" role="status" aria-live="polite"></div>
 
-                    <div class="flex items-center justify-between border-t border-gray-200 pt-4 mb-5">
-                        <span class="text-gray-500 text-lg">Total</span>
-                        <span id="total" class="text-3xl font-bold text-gray-900">$0.00</span>
+                    <div class="flex items-center justify-between border-t border-gray-200 pt-2.5 mb-3">
+                        <span class="text-gray-500 text-sm">Total</span>
+                        <span id="total" class="text-2xl font-bold text-gray-900">$0.00</span>
                     </div>
 
                     <button type="submit" id="btn-cobrar" disabled
-                            class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xl font-bold py-4 rounded-xl transition touch-manipulation">
+                            class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-base font-bold py-3 rounded-lg transition touch-manipulation">
                         Cobrar
                     </button>
                 </div>
@@ -117,17 +142,17 @@
 <!-- MODAL DE VARIANTES -->
 <div id="modal-variantes" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
      role="dialog" aria-modal="true" aria-labelledby="modal-producto-nombre">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
             <div>
                 <h2 id="modal-producto-nombre" class="text-2xl font-bold text-gray-900"></h2>
-                <p class="text-sm text-gray-500 mt-1">Selecciona una opción</p>
+                <p class="text-xs text-gray-500 mt-0.5">Selecciona una opción</p>
             </div>
             <button type="button" onclick="cerrarModal()"
-                    class="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-2xl text-gray-600 touch-manipulation"
+                    class="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-2xl text-gray-600 touch-manipulation"
                     aria-label="Cerrar opciones">×</button>
         </div>
-        <div id="modal-opciones" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-6"></div>
+        <div id="modal-opciones" class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3"></div>
     </div>
 </div>
 
@@ -318,13 +343,13 @@ document.addEventListener("DOMContentLoaded", function () {
         producto.variantes.forEach(function (variante) {
             const boton = document.createElement("button");
             boton.type = "button";
-            boton.className = "min-h-[120px] border border-gray-200 rounded-2xl p-5 text-left bg-white hover:border-blue-500 hover:bg-blue-50 active:scale-95 transition touch-manipulation";
+            boton.className = "min-h-[82px] border border-gray-200 rounded-xl p-3 text-left bg-white hover:border-blue-500 hover:bg-blue-50 active:scale-95 transition touch-manipulation";
 
             const nombre = document.createElement("div");
-            nombre.className = "font-bold text-lg text-gray-900";
+            nombre.className = "font-bold text-sm text-gray-900";
             nombre.textContent = variante.nombre;
             const precio = document.createElement("div");
-            precio.className = "text-blue-600 font-bold text-2xl mt-4";
+            precio.className = "text-blue-600 font-bold text-lg mt-2";
             precio.textContent = formatoMoneda(variante.precio);
 
             boton.appendChild(nombre);
@@ -381,7 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (items.length === 0) {
             const vacio = document.createElement("div");
-            vacio.className = "flex flex-col items-center justify-center text-center text-gray-400 py-16";
+            vacio.className = "flex flex-col items-center justify-center text-center text-gray-400 py-7";
             vacio.innerHTML = '<div class="text-5xl mb-4">🛒</div><div class="font-medium text-gray-500">Venta vacía</div><div class="text-sm mt-1">Toca un producto para agregarlo</div>';
             carritoContainer.appendChild(vacio);
         }
@@ -392,46 +417,46 @@ document.addEventListener("DOMContentLoaded", function () {
             cantidadTotal += item.cantidad;
 
             const row = document.createElement("div");
-            row.className = "bg-gray-50 border border-gray-100 rounded-xl p-4";
+            row.className = "bg-gray-50 border border-gray-100 rounded-lg p-2.5";
 
             const arriba = document.createElement("div");
-            arriba.className = "flex justify-between gap-3";
+            arriba.className = "flex justify-between gap-2";
             const descripcion = document.createElement("div");
             descripcion.className = "min-w-0";
             const producto = document.createElement("div");
-            producto.className = "font-bold text-gray-900";
+            producto.className = "font-bold text-sm text-gray-900";
             producto.textContent = item.producto;
             const variante = document.createElement("div");
-            variante.className = "text-sm text-gray-500 mt-1";
+            variante.className = "text-xs text-gray-500 mt-0.5";
             variante.textContent = item.variante;
             const precioUnitario = document.createElement("div");
-            precioUnitario.className = "text-sm text-gray-400 mt-1";
+            precioUnitario.className = "text-xs text-gray-400 mt-0.5";
             precioUnitario.textContent = formatoMoneda(item.precio) + " c/u";
             descripcion.append(producto, variante, precioUnitario);
             const importe = document.createElement("div");
-            importe.className = "font-bold text-lg whitespace-nowrap";
+            importe.className = "font-bold text-sm whitespace-nowrap";
             importe.textContent = formatoMoneda(subtotal);
             arriba.append(descripcion, importe);
 
             const abajo = document.createElement("div");
-            abajo.className = "flex items-center justify-between mt-4";
+            abajo.className = "flex items-center justify-between mt-2";
             const controles = document.createElement("div");
-            controles.className = "flex items-center gap-2";
+            controles.className = "flex items-center gap-1";
 
             const menos = document.createElement("button");
             menos.type = "button";
-            menos.className = "w-12 h-12 rounded-xl bg-white border border-gray-300 text-xl font-bold hover:bg-gray-100 touch-manipulation";
+            menos.className = "w-9 h-9 rounded-lg bg-white border border-gray-300 text-lg font-bold hover:bg-gray-100 touch-manipulation";
             menos.textContent = "−";
             menos.setAttribute("aria-label", "Reducir cantidad de " + item.producto);
             menos.addEventListener("click", () => cambiarCantidad(item.id, -1));
 
             const cantidad = document.createElement("span");
-            cantidad.className = "w-12 text-center text-xl font-bold";
+            cantidad.className = "w-8 text-center text-base font-bold";
             cantidad.textContent = item.cantidad;
 
             const mas = document.createElement("button");
             mas.type = "button";
-            mas.className = "w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold touch-manipulation";
+            mas.className = "w-9 h-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold touch-manipulation";
             mas.textContent = "+";
             mas.setAttribute("aria-label", "Aumentar cantidad de " + item.producto);
             mas.addEventListener("click", () => cambiarCantidad(item.id, 1));
@@ -439,7 +464,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const quitar = document.createElement("button");
             quitar.type = "button";
-            quitar.className = "text-red-500 hover:text-red-700 text-sm font-medium px-3 py-3";
+            quitar.className = "text-red-500 hover:text-red-700 text-xs font-medium px-2 py-2";
             quitar.textContent = "Quitar";
             quitar.addEventListener("click", () => eliminarProducto(item.id));
             abajo.append(controles, quitar);
