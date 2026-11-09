@@ -14,7 +14,7 @@ requirements-local.txt
 
 # Archivos temporales de Python
 __pycache__/
-*.pyc
+*.py
 
 # Python
 __pycache__/
