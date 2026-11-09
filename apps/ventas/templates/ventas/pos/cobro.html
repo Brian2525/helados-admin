@@ -23,7 +23,7 @@ Cobro
     >
 
 
-    <div class="max-w-6xl mx-auto px-4 py-4">
+    <div id="pantalla-metodos" class="max-w-6xl mx-auto px-4 py-4">
 
         <!-- ====================================== -->
         <!-- HEADER -->
@@ -544,50 +544,11 @@ Cobro
                         <!-- MONTO PERSONALIZADO -->
                         <!-- ====================================== -->
 
-                        <div
-                            id="monto-personalizado"
-                            class="hidden mt-4"
-                        >
+                       
 
-                            <label
-                                for="id_monto_recibido"
-                                class="
-                                    block
-                                    text-sm
-                                    font-semibold
-                                    text-gray-700
-                                    mb-2
-                                "
-                            >
-                                Efectivo recibido
-                            </label>
+                          
 
-                            {{ form.monto_recibido }}
-
-                            {% if form.monto_recibido.errors %}
-
-                                <div class="mt-2 text-sm text-red-600">
-
-                                    {% for error in form.monto_recibido.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-
-                                </div>
-
-                            {% endif %}
-
-                        </div>
-
-
-                        <!-- ====================================== -->
-                        <!-- CAMBIO -->
-                        <!-- ====================================== -->
-
-                        <div
-                            id="resultado-cambio"
-                            class="hidden mt-4 rounded-xl p-4"
-                        ></div>
-
+                       
                     </div>
 
 
@@ -674,6 +635,97 @@ Cobro
 
     </div>
 
+    
+    <div id="pantalla-personalizado"
+        class="hidden min-h-[75vh] px-4 py-6">
+
+        <div class="mx-auto max-w-md">
+
+            <!-- Encabezado -->
+            <div class="flex items-center justify-between mb-8">
+                <button type="button"
+                        onclick="volverMetodos()"
+                        class="rounded-xl border px-4 py-3 font-semibold">
+                    ← Volver
+                </button>
+
+                <h1 class="text-xl font-bold">
+                    Cobro en efectivo
+                </h1>
+            </div>
+
+            <!-- Total de la venta -->
+            <div class="bg-gray-100 rounded-2xl p-6 text-center mb-8">
+                <p class="text-sm text-gray-500 uppercase">
+                    Total a cobrar
+                </p>
+                <p class="text-5xl font-bold mt-2">
+                    ${{ total|floatformat:2 }}
+                </p>
+            </div>
+
+            <!-- Monto recibido -->
+            <label class="block font-semibold mb-3">
+                Efectivo recibido
+            </label>
+
+            <div class="mb-5">
+                {{ form.monto_recibido }}
+
+                {% for error in form.monto_recibido.errors %}
+                    <p class="text-red-600 text-sm mt-2">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </div>
+
+            <!-- Botones rápidos -->
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <button type="button"
+                        onclick="montoRapido(100)"
+                        class="border rounded-xl p-4 font-bold">
+                    $100
+                </button>
+
+                <button type="button"
+                        onclick="montoRapido(200)"
+                        class="border rounded-xl p-4 font-bold">
+                    $200
+                </button>
+
+                <button type="button"
+                        onclick="montoRapido(500)"
+                        class="border rounded-xl p-4 font-bold">
+                    $500
+                </button>
+            </div>
+
+            <!-- Resultado -->
+            <div id="resultado-cambio"
+                class="hidden mb-6 rounded-2xl p-6 text-center">
+            </div>
+
+            <!-- Confirmación -->
+            <button type="submit"
+                    id="btn-cobrar-personalizado"
+                    disabled
+                    class="w-full bg-gray-900 text-white
+                        rounded-2xl p-5 text-xl font-bold
+                        disabled:bg-gray-300
+                        disabled:cursor-not-allowed">
+                Cobrar ${{ total|floatformat:2 }}
+            </button>
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+
 </form>
 
 
@@ -722,6 +774,16 @@ Cobro
         document.getElementById(
             "btn-continuar"
         );
+
+
+    const pantallaMetodos =
+    document.getElementById("pantalla-metodos");
+
+    const pantallaPersonalizado =
+        document.getElementById("pantalla-personalizado");
+
+    const btnCobrarPersonalizado =
+        document.getElementById("btn-cobrar-personalizado");
 
 
     // =========================================================
@@ -850,28 +912,38 @@ Cobro
     // =========================================================
 
     function pagoPersonalizado(boton) {
+    marcarBoton(boton);
 
-        marcarBoton(boton);
+    inputFormaPago.value = "efectivo";
+    inputMonto.value = "";
 
-        inputFormaPago.value =
-            "efectivo";
+    desactivarCobro();
+    btnCobrarPersonalizado.disabled = true;
 
-        personalizado.classList.remove(
-            "hidden"
-        );
+    resultado.classList.add("hidden");
 
-        inputMonto.value = "";
+    pantallaMetodos.classList.add("hidden");
+    pantallaPersonalizado.classList.remove("hidden");
 
-        resultado.classList.add(
-            "hidden"
-        );
+    inputMonto.focus();
+}
 
-        desactivarCobro();
+    function volverMetodos() {
+    pantallaPersonalizado.classList.add("hidden");
+    pantallaMetodos.classList.remove("hidden");
 
-        inputMonto.focus();
+    inputMonto.value = "";
+    resultado.classList.add("hidden");
 
-    }
+    desactivarCobro();
+    btnCobrarPersonalizado.disabled = true;
+}
 
+
+    function montoRapido(monto) {
+    inputMonto.value = monto.toFixed(2);
+    calcularCambio();
+}
 
     // =========================================================
     // TARJETA / OTRO
@@ -912,6 +984,9 @@ Cobro
     // =========================================================
 
     function calcularCambio() {
+        
+        // Al inicio de calcularCambio()
+        btnCobrarPersonalizado.disabled = true;
 
         if (
             inputFormaPago.value
@@ -980,6 +1055,8 @@ Cobro
 
 
         activarCobro();
+        btnCobrarPersonalizado.disabled = false;
+        
 
     }
 

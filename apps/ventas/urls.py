@@ -57,6 +57,9 @@ urlpatterns = [
     path("<int:pk>/editar/", VentaUpdateView.as_view(), name="venta_update"),
     path("<int:pk>/anular/", VentaAnularView.as_view(), name="venta_anular"),
 
+
+
+
     #POS 
     path("pos/", POSNuevaVentaView.as_view(), name="pos_nueva_venta"),
     path("pos/cobro/", POSCobroView.as_view(), name="pos_cobro"),
