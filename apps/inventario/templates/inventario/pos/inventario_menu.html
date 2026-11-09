@@ -32,11 +32,11 @@
        
 
 
-        {% if request.user.is_superuser %}
+        {% if request.user.is_superuser or request.user.perfil.inventario %}
 
-<h2 class="mb-3 mt-8 text-xs font-bold uppercase tracking-wider text-slate-400">
-    Supervisión de inventario
-</h2>
+    <h2 class="mb-3 mt-8 text-xs font-bold uppercase tracking-wider text-slate-400">
+        Supervisión de inventario
+    </h2>
 
 <div class="space-y-3">
 
@@ -131,6 +131,54 @@
     <span class="text-slate-400">›</span>
     </a>
 
+
+
+    <a href="{% url 'inventario:merma_list' %}"
+               class="flex min-h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-red-400 active:scale-[0.99]">
+
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-2xl">
+                    ⚠️
+                </span>
+
+                <span class="min-w-0 flex-1">
+                    <span class="block font-semibold text-slate-900">
+                        Registrar merma
+                    </span>
+                    <span class="mt-1 block text-sm text-slate-500">
+                        Productos dañados, rotos o caducados
+                    </span>
+                </span>
+                <span class="text-2xl text-slate-300">›</span>
+            </a>
+
+
+                    <!-- MOVIMIENTOS DE INVENTARIO -->
+        <a
+            href="{% url 'inventario:pos_movimiento_list' %}"
+            class="flex items-center gap-4 bg-white
+                border border-gray-200 rounded-2xl
+                px-5 py-4 shadow-sm
+                hover:border-blue-400 hover:bg-blue-50
+                transition"
+        >
+            <div class="w-12 h-12 rounded-xl bg-blue-100
+                        flex items-center justify-center text-2xl">
+                📦
+            </div>
+
+            <div class="flex-1">
+                <div class="font-bold text-gray-900">
+                    Movimientos de inventario
+                </div>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Consultar movimientos y registrar ajustes
+                </p>
+            </div>
+
+            <span class="text-gray-400 text-xl">›</span>
+        </a>
+
 </div>
 
 {% endif %}
@@ -180,51 +228,7 @@
             </a>
 
             <!-- Mermas -->
-            <a href="{% url 'inventario:merma_list' %}"
-               class="flex min-h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-red-400 active:scale-[0.99]">
-
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-2xl">
-                    ⚠️
-                </span>
-
-                <span class="min-w-0 flex-1">
-                    <span class="block font-semibold text-slate-900">
-                        Registrar merma
-                    </span>
-                    <span class="mt-1 block text-sm text-slate-500">
-                        Productos dañados, rotos o caducados
-                    </span>
-                </span>
-                <span class="text-2xl text-slate-300">›</span>
-            </a>
-
-
-                    <!-- MOVIMIENTOS DE INVENTARIO -->
-        <a
-            href="{% url 'inventario:pos_movimiento_list' %}"
-            class="flex items-center gap-4 bg-white
-                border border-gray-200 rounded-2xl
-                px-5 py-4 shadow-sm
-                hover:border-blue-400 hover:bg-blue-50
-                transition"
-        >
-            <div class="w-12 h-12 rounded-xl bg-blue-100
-                        flex items-center justify-center text-2xl">
-                📦
-            </div>
-
-            <div class="flex-1">
-                <div class="font-bold text-gray-900">
-                    Movimientos de inventario
-                </div>
-
-                <p class="text-sm text-gray-500 mt-1">
-                    Consultar movimientos y registrar ajustes
-                </p>
-            </div>
-
-            <span class="text-gray-400 text-xl">›</span>
-        </a>
+            
 
         </div>
     </section>

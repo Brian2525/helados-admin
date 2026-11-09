@@ -22,8 +22,9 @@ class PerfilUsuario(models.Model):
 
     finanzas = models.BooleanField(default=False)    # Gastos, cuentas por pagar, servicios
 
-    inventario = models.BooleanField(default=False)  # Inventario, compras, proveedores
+    inventario = models.BooleanField(default=False)  # Inventario, compras, proveedores, administracion de inventario
 
     nomina = models.BooleanField(default=False)
 
     administracion = models.BooleanField(default=False)
+

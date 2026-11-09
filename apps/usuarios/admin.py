@@ -18,4 +18,5 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
         "inventario",
         "administracion",
         "nomina",
+      
     )

@@ -1344,8 +1344,9 @@ class MovimientoInventarioPOSListView(
     SucursalPermissionMixin,
     View,
 ):
-    permission_required = "inventario.view_movimientoinventario"
-    raise_exception = True
+
+    module_permission = "inventario"
+   
 
     template_name = "inventario/pos/movimiento_list.html"
 
@@ -1374,6 +1375,10 @@ class MovimientoInventarioPOSListView(
         )
 
 
+
+
+
+
 class MovimientoInventarioPOSCreateView(
     LoginRequiredMixin,
     ModulePermissionMixin,
@@ -1381,9 +1386,9 @@ class MovimientoInventarioPOSCreateView(
     SucursalPermissionMixin,
     View,
 ):
-    permission_required = "inventario.add_movimientoinventario"
-    raise_exception = True
 
+    module_permission = "inventario"
+   
     template_name = "inventario/pos/movimiento_form.html"
 
     def get(self, request):
@@ -1776,15 +1781,7 @@ class ConciliacionInventarioPOSView(
 
     template_name = "inventario/pos/conciliacion_diaria.html"
 
-    def dispatch(self, request, *args, **kwargs):
-
-        if not request.user.is_superuser:
-            raise PermissionDenied(
-                "No tienes permiso para revisar conciliaciones."
-            )
-
-        return super().dispatch(request, *args, **kwargs)
-
+    
     def get(self, request):
 
         sucursal = request.sucursal_activa
@@ -1897,16 +1894,7 @@ class AlertasInventarioPOSView(
         "inventario/pos/alertas_inventario.html"
     )
 
-    def dispatch(self, request, *args, **kwargs):
-
-        if not request.user.is_superuser:
-            raise PermissionDenied(
-                "No tienes permiso para consultar alertas."
-            )
-
-        return super().dispatch(
-            request, *args, **kwargs
-        )
+    
 
     def get(self, request):
 

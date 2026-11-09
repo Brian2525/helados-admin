@@ -106,7 +106,7 @@ def sidebar_menu(request):
     
 
 
-    if request.user.is_superuser or perfil.administracion:
+    if request.user.is_superuser or perfil.inventario or perfil.ventas:
     
             menu.append({
     
@@ -139,7 +139,7 @@ def sidebar_menu(request):
     # Inventario
     # ============================
 
-    if request.user.is_superuser or perfil.inventario:
+    if request.user.is_superuser or perfil.inventario :
 
         menu.append({
 
