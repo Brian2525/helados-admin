@@ -17,12 +17,25 @@ Registrar merma
 
         <div>
 
-         <button type="button"
-                    onclick="history.back()"
-                    aria-label="Volver"
-                    class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl">
-                &larr;
-            </button>
+            <button type="button">
+                <a
+                href="{% url 'ventas:pos_mas' %}"
+                class="
+                    inline-flex
+                    items-center
+                    justify-center
+                    bg-gray-600
+                    hover:bg-gray-700
+                    active:bg-gray-300
+                    text-white
+                    font-semibold
+                        px-8 py-4
+                    rounded-xl
+                "
+            >
+                 regresar al POS
+            </a>
+             </button>
             <h1 class="text-2xl font-bold text-gray-900">
                 Registrar merma
             </h1>
