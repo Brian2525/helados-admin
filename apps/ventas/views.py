@@ -1441,10 +1441,21 @@ class POSCalcularPromocionesView(
             subtotal += cantidad * variante.precio_venta
 
         # 3. Utilizar el motor de promociones EXISTENTE
-        resultado = calcular_promociones_carrito(
-            cantidades_carrito=cantidades_carrito,
-            fecha=timezone.localdate(),
-        )
+        # 3. Obtener sucursal activa
+            sucursal = self.get_sucursal_activa()
+
+            if sucursal is None:
+                return JsonResponse(
+                    {"error": "No hay una sucursal activa seleccionada."},
+                    status=400,
+                )
+
+            # 4. Calcular promociones según la sucursal
+            resultado = calcular_promociones_carrito(
+                cantidades_carrito=cantidades_carrito,
+                fecha=timezone.localdate(),
+                sucursal=sucursal,
+            )
 
         descuento = resultado["descuento_total"]
 
