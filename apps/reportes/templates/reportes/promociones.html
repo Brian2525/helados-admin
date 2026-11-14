@@ -1,0 +1,286 @@
+{% extends "core/base_dashboard.html" %}
+
+{% block content %}
+
+<style>
+.promo-report {
+    max-width: 1400px;
+    margin: auto;
+    padding: 20px;
+    font-family: system-ui, sans-serif;
+}
+
+.promo-report h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.promo-filters {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.promo-filters label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.promo-filters input,
+.promo-filters select,
+.promo-filters button {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.promo-filters button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.promo-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.promo-kpi {
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.promo-kpi small {
+    display: block;
+    color: #6b7280;
+}
+
+.promo-kpi strong {
+    display: block;
+    font-size: 28px;
+    margin-top: 8px;
+}
+
+.promo-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 28px;
+}
+
+.promo-report table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.promo-report th,
+.promo-report td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.promo-report th {
+    background: #f9fafb;
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .promo-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .promo-kpis {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="promo-report">
+
+    <h1>Rendimiento de promociones</h1>
+
+    <!-- FILTROS -->
+    <form method="get" class="promo-filters">
+
+        <div>
+            <label>Fecha inicial</label>
+            <input
+                type="date"
+                name="fecha_inicio"
+                value="{{ fecha_inicio|date:'Y-m-d' }}"
+            >
+        </div>
+
+        <div>
+            <label>Fecha final</label>
+            <input
+                type="date"
+                name="fecha_fin"
+                value="{{ fecha_fin|date:'Y-m-d' }}"
+            >
+        </div>
+
+        <div>
+            <label>Sucursal</label>
+            <select name="sucursal">
+                <option value="">Todas</option>
+
+                {% for sucursal in sucursales %}
+                <option
+                    value="{{ sucursal.id }}"
+                    {% if sucursal_id == sucursal.id %}selected{% endif %}
+                >
+                    {{ sucursal.nombre }}
+                </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+        <div>
+            <label>Tipo</label>
+            <select name="tipo">
+                <option value="">Todos</option>
+
+                {% for valor, etiqueta in tipos %}
+                <option
+                    value="{{ valor }}"
+                    {% if tipo_seleccionado == valor %}selected{% endif %}
+                >
+                    {{ etiqueta }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>Promoción</label>
+            <select name="promocion">
+                <option value="">Todas</option>
+
+                {% for promo in promociones %}
+                <option
+                    value="{{ promo.id }}"
+                    {% if promocion_id == promo.id %}selected{% endif %}
+                >
+                    {{ promo.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <button type="submit">
+                Aplicar filtros
+            </button>
+        </div>
+
+    </form>
+
+    <!-- INDICADORES -->
+    <div class="promo-kpis">
+
+        <div class="promo-kpi">
+            <small>Tickets con promoción</small>
+            <strong>{{ resumen.tickets|default:0 }}</strong>
+        </div>
+
+        <div class="promo-kpi">
+            <small>Aplicaciones</small>
+            <strong>{{ resumen.aplicaciones|default:0 }}</strong>
+        </div>
+
+        <div class="promo-kpi">
+            <small>Descuentos otorgados</small>
+            <strong>
+                ${{ resumen.descuento|default:0|floatformat:2 }}
+            </strong>
+        </div>
+
+    </div>
+
+    <!-- PROMOCIONES -->
+    <h2>Resumen por promoción</h2>
+
+    <div class="promo-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Promoción</th>
+                    <th>Tipo</th>
+                    <th>Tickets</th>
+                    <th>Aplicaciones</th>
+                    <th>Descuento</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for promo in por_promocion %}
+                <tr>
+                    <td>{{ promo.nombre }}</td>
+                    <td>{{ promo.tipo }}</td>
+                    <td>{{ promo.tickets }}</td>
+                    <td>{{ promo.aplicaciones }}</td>
+                    <td>${{ promo.descuento|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        No hay promociones para los filtros seleccionados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SUCURSALES -->
+    <h2>Resumen por sucursal</h2>
+
+    <div class="promo-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sucursal</th>
+                    <th>Tickets</th>
+                    <th>Aplicaciones</th>
+                    <th>Descuento</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for sucursal in por_sucursal %}
+                <tr>
+                    <td>
+                        {{ sucursal.venta__sucursal__nombre }}
+                    </td>
+                    <td>{{ sucursal.tickets }}</td>
+                    <td>{{ sucursal.aplicaciones }}</td>
+                    <td>
+                        ${{ sucursal.descuento|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        No hay información disponible.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

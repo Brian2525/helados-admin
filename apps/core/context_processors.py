@@ -76,6 +76,38 @@ def sidebar_menu(request):
                 
             })
 
+
+    # ============================
+    # Reportes 
+    # ==========================
+    # 
+    # 
+    # 
+    # 
+    if request.user.is_superuser or perfil.administracion:
+
+        menu.append({
+            "titulo": "Reportes",
+            "icono": "📊",
+
+            "submenu": [
+                 
+                 {
+                    "titulo": "Mensual",
+                    "url": reverse("reportes:reporte_mensual_list"),
+                },
+
+                {
+                    "titulo": "Promociones",
+                    "url": reverse("reportes:reporte_promociones"),
+                },
+
+            ]
+
+        })
+        
+                
+
     if request.user.is_superuser or perfil.administracion:
 
         menu.append({

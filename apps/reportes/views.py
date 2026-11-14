@@ -2,20 +2,27 @@ from django.shortcuts import render
 # apps/reportes/views.py
 
 from django.contrib import messages
+from datetime import date
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, TemplateView
+from django.utils import timezone
+
+
 
 
 
 from apps.core.mixins import ModulePermissionMixin, SucursalPermissionMixin
 from apps.reportes.forms import ReporteMensualGenerarForm, ReporteMensualFiltroForm
 from apps.reportes.models import ReporteMensual
+from apps.promociones.models import Promocion
+from apps.sucursales.models import Sucursal 
 from apps.reportes.services.mensual import generar_reporte_mensual
+from apps.reportes.services.promociones import reporte_promociones 
 
 
 class ReporteMensualAccessMixin:
@@ -214,5 +221,105 @@ class ReporteMensualListView(LoginRequiredMixin,ModulePermissionMixin,ReporteMen
         context["filter_form"] = self.get_filter_form()
         return context
 
+
+
+
+class ReportePromocionesView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    TemplateView,
+):
+    template_name = "reportes/promociones.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        hoy = timezone.localdate()
+
+        def leer_fecha(nombre, predeterminada):
+            valor = self.request.GET.get(nombre)
+
+            if not valor:
+                return predeterminada
+
+            try:
+                return date.fromisoformat(valor)
+            except ValueError:
+                return predeterminada
+
+        fecha_inicio = leer_fecha(
+            "fecha_inicio",
+            hoy.replace(day=1),
+        )
+
+        fecha_fin = leer_fecha(
+            "fecha_fin",
+            hoy,
+        )
+
+        sucursales = (
+            self.get_sucursales_usuario()
+            .filter(activa=True)
+            .order_by("nombre")
+        )
+
+        sucursales_ids = list(
+            sucursales.values_list("id", flat=True)
+        )
+
+        def leer_id(nombre):
+            valor = self.request.GET.get(nombre, "")
+            return int(valor) if valor.isdigit() else None
+
+        sucursal_id = leer_id("sucursal")
+        promocion_id = leer_id("promocion")
+
+        tipo = self.request.GET.get("tipo", "")
+
+        tipos_validos = {
+            valor for valor, etiqueta
+            in Promocion.Tipo.choices
+        }
+
+        if tipo not in tipos_validos:
+            tipo = ""
+
+        # El filtro de sucursal nunca permite
+        # consultar una sucursal no autorizada.
+        if (
+            sucursal_id is not None
+            and sucursal_id not in sucursales_ids
+        ):
+            sucursal_id = None
+
+        resultado = reporte_promociones(
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            sucursal_id=sucursal_id,
+            promocion_id=promocion_id,
+            tipo=tipo or None,
+            sucursales_ids=sucursales_ids,
+        )
+
+        context.update({
+            "resumen": resultado["resumen"],
+            "por_promocion": resultado["por_promocion"],
+            "por_sucursal": resultado["por_sucursal"],
+
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+
+            "sucursales": sucursales,
+            "promociones": Promocion.objects.order_by(
+                "nombre"
+            ),
+            "tipos": Promocion.Tipo.choices,
+
+            "sucursal_id": sucursal_id,
+            "promocion_id": promocion_id,
+            "tipo_seleccionado": tipo,
+        })
+
+        return context
 
 

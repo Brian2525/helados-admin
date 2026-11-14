@@ -7,6 +7,7 @@ from apps.reportes.views import (
     ReporteMensualJSONView,
     ReporteMensualListView,
     ReporteMensualRegenerarView,
+    ReportePromocionesView,
 )
 
 app_name = "reportes"
@@ -33,4 +34,7 @@ urlpatterns = [
         ReporteMensualRegenerarView.as_view(),
         name="reporte_mensual_regenerar",
     ),
+
+    path(
+        "promociones/",ReportePromocionesView.as_view(), name="reporte_promociones", )
 ]
