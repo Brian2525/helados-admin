@@ -3,104 +3,308 @@
 {% block content %}
 
 <style>
+/* ======================================
+   CONTENEDOR GENERAL
+====================================== */
+
 .promo-report {
     max-width: 1400px;
-    margin: auto;
+    margin: 0 auto;
     padding: 20px;
+    color: #172033;
     font-family: system-ui, sans-serif;
+}
+
+.promo-report *,
+.promo-report *::before,
+.promo-report *::after {
+    box-sizing: border-box;
 }
 
 .promo-report h1 {
     font-size: 24px;
-    margin-bottom: 20px;
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: #172033;
 }
 
-.promo-filters {
+.promo-report h2 {
+    font-size: 18px;
+    font-weight: 650;
+    margin: 24px 0 12px;
+    color: #172033;
+}
+
+/* ======================================
+   PANEL DE FILTROS
+====================================== */
+
+.promo-report .promo-filters {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+    margin-bottom: 22px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: visible;
 }
 
-.promo-filters label {
-    display: block;
-    font-size: 12px;
-    margin-bottom: 5px;
-    font-weight: 600;
+.promo-report .promo-field {
+    position: relative;
+    min-width: 0;
 }
 
-.promo-filters input,
-.promo-filters select,
-.promo-filters button {
+.promo-report .promo-field > label {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #344054 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.promo-report .promo-control {
+    display: block !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    color: #172033 !important;
+    font-size: 14px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    -webkit-text-fill-color: #172033;
+}
+
+.promo-report .promo-control:focus {
+    outline: 2px solid #93c5fd;
+    outline-offset: 1px;
+}
+
+.promo-report select.promo-control option {
+    background: #fff;
+    color: #172033;
+}
+
+/* ======================================
+   DROPDOWN DE SUCURSALES
+====================================== */
+
+.promo-report .promo-branch-dropdown {
+    position: relative;
     width: 100%;
-    min-height: 42px;
-    padding: 8px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
 }
 
-.promo-filters button {
-    background: #2563eb;
-    color: white;
-    border: none;
+.promo-report .promo-branch-dropdown summary {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    background: #fff !important;
+    color: #172033 !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    list-style: none;
+}
+
+.promo-report .promo-branch-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.promo-report .promo-branch-dropdown summary::after {
+    content: "▾";
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.promo-report .promo-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    min-width: 230px;
+    max-height: 270px;
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 8px;
+    background: #fff !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.13);
+}
+
+.promo-report .promo-branch-option {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    border-radius: 6px;
+    color: #172033 !important;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.promo-report .promo-branch-option:hover {
+    background: #f1f5f9;
+}
+
+.promo-report .promo-branch-option input[type="checkbox"] {
+    display: inline-block !important;
+    width: 17px !important;
+    height: 17px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+    accent-color: #2563eb;
+    opacity: 1 !important;
+    visibility: visible !important;
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+}
+
+.promo-report .promo-branch-divider {
+    height: 1px;
+    margin: 6px 0;
+    background: #e2e8f0;
+}
+
+/* ======================================
+   BOTONES
+====================================== */
+
+.promo-report .promo-filter-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 10px;
+}
+
+.promo-report .promo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
     cursor: pointer;
 }
 
-.promo-kpis {
+.promo-report .promo-btn-primary {
+    background: #2563eb !important;
+    color: #fff !important;
+}
+
+.promo-report .promo-btn-secondary {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+}
+
+/* ======================================
+   INDICADORES
+====================================== */
+
+.promo-report .promo-kpis {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
     margin-bottom: 24px;
 }
 
-.promo-kpi {
-    background: #f3f4f6;
+.promo-report .promo-kpi {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 18px;
 }
 
-.promo-kpi small {
+.promo-report .promo-kpi small {
     display: block;
-    color: #6b7280;
+    font-size: 13px;
+    color: #64748b;
 }
 
-.promo-kpi strong {
+.promo-report .promo-kpi strong {
     display: block;
-    font-size: 28px;
     margin-top: 8px;
+    font-size: 27px;
+    color: #172033;
 }
 
-.promo-table-wrap {
+/* ======================================
+   TABLAS
+====================================== */
+
+.promo-report .promo-table-wrap {
     overflow-x: auto;
-    margin-bottom: 28px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
 }
 
-.promo-report table {
+.promo-report .promo-table {
     width: 100%;
     border-collapse: collapse;
+    color: #172033;
 }
 
-.promo-report th,
-.promo-report td {
-    padding: 12px;
+.promo-report .promo-table th,
+.promo-report .promo-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #e2e8f0;
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.promo-report th {
-    background: #f9fafb;
     font-size: 13px;
 }
 
+.promo-report .promo-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 650;
+}
+
+.promo-report .promo-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.promo-report .promo-num {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+/* ======================================
+   RESPONSIVE
+====================================== */
+
 @media (max-width: 900px) {
-    .promo-filters {
+    .promo-report .promo-filters {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 600px) {
-    .promo-kpis {
+    .promo-report {
+        padding: 12px;
+    }
+
+    .promo-report .promo-filters,
+    .promo-report .promo-kpis {
         grid-template-columns: 1fr;
+    }
+
+    .promo-report .promo-filter-actions {
+        flex-wrap: wrap;
     }
 }
 </style>
@@ -109,48 +313,90 @@
 
     <h1>Rendimiento de promociones</h1>
 
-    <!-- FILTROS -->
+    <!-- =====================================
+         FILTROS
+    ====================================== -->
+
     <form method="get" class="promo-filters">
 
-        <div>
-            <label>Fecha inicial</label>
+        <div class="promo-field">
+            <label for="fecha_inicio">Fecha inicial</label>
+
             <input
+                class="promo-control"
                 type="date"
+                id="fecha_inicio"
                 name="fecha_inicio"
                 value="{{ fecha_inicio|date:'Y-m-d' }}"
             >
         </div>
 
-        <div>
-            <label>Fecha final</label>
+        <div class="promo-field">
+            <label for="fecha_fin">Fecha final</label>
+
             <input
+                class="promo-control"
                 type="date"
+                id="fecha_fin"
                 name="fecha_fin"
                 value="{{ fecha_fin|date:'Y-m-d' }}"
             >
         </div>
 
-        <div>
-            <label>Sucursal</label>
-            <select name="sucursal">
-                <option value="">Todas</option>
+        <!-- SELECTOR MÚLTIPLE DE SUCURSALES -->
 
-                {% for sucursal in sucursales %}
-                <option
-                    value="{{ sucursal.id }}"
-                    {% if sucursal_id == sucursal.id %}selected{% endif %}
-                >
-                    {{ sucursal.nombre }}
-                </option>
-                {% endfor %}
+        <div class="promo-field">
+            <label>Sucursales</label>
 
-            </select>
+            <details
+                class="promo-branch-dropdown"
+                id="sucursalesDropdown"
+            >
+                <summary id="sucursalesResumen">
+                    Seleccionar sucursales
+                </summary>
+
+                <div class="promo-dropdown-menu">
+
+                    <label class="promo-branch-option">
+                        <input
+                            type="checkbox"
+                            id="sucursalesTodas"
+                            {% if todas_sucursales %}checked{% endif %}
+                        >
+                        <strong>Todas las sucursales</strong>
+                    </label>
+
+                    <div class="promo-branch-divider"></div>
+
+                    {% for sucursal in sucursales %}
+                    <label class="promo-branch-option">
+                        <input
+                            type="checkbox"
+                            name="sucursales"
+                            value="{{ sucursal.id }}"
+                            class="sucursal-checkbox"
+                            {% if sucursal.id in sucursales_seleccionadas %}
+                                checked
+                            {% endif %}
+                        >
+                        {{ sucursal.nombre }}
+                    </label>
+                    {% endfor %}
+
+                </div>
+            </details>
         </div>
 
-        <div>
-            <label>Tipo</label>
-            <select name="tipo">
-                <option value="">Todos</option>
+        <div class="promo-field">
+            <label for="tipo">Tipo de promoción</label>
+
+            <select
+                class="promo-control"
+                id="tipo"
+                name="tipo"
+            >
+                <option value="">Todos los tipos</option>
 
                 {% for valor, etiqueta in tipos %}
                 <option
@@ -163,10 +409,15 @@
             </select>
         </div>
 
-        <div>
-            <label>Promoción</label>
-            <select name="promocion">
-                <option value="">Todas</option>
+        <div class="promo-field">
+            <label for="promocion">Promoción</label>
+
+            <select
+                class="promo-control"
+                id="promocion"
+                name="promocion"
+            >
+                <option value="">Todas las promociones</option>
 
                 {% for promo in promociones %}
                 <option
@@ -179,15 +430,28 @@
             </select>
         </div>
 
-        <div>
-            <button type="submit">
+        <div class="promo-filter-actions">
+            <button
+                type="submit"
+                class="promo-btn promo-btn-primary"
+            >
                 Aplicar filtros
             </button>
+
+            <a
+                href="?"
+                class="promo-btn promo-btn-secondary"
+            >
+                Limpiar filtros
+            </a>
         </div>
 
     </form>
 
-    <!-- INDICADORES -->
+    <!-- =====================================
+         INDICADORES
+    ====================================== -->
+
     <div class="promo-kpis">
 
         <div class="promo-kpi">
@@ -209,18 +473,21 @@
 
     </div>
 
-    <!-- PROMOCIONES -->
+    <!-- =====================================
+         RESUMEN POR PROMOCIÓN
+    ====================================== -->
+
     <h2>Resumen por promoción</h2>
 
     <div class="promo-table-wrap">
-        <table>
+        <table class="promo-table">
             <thead>
                 <tr>
                     <th>Promoción</th>
                     <th>Tipo</th>
-                    <th>Tickets</th>
-                    <th>Aplicaciones</th>
-                    <th>Descuento</th>
+                    <th class="promo-num">Tickets</th>
+                    <th class="promo-num">Aplicaciones</th>
+                    <th class="promo-num">Descuento</th>
                 </tr>
             </thead>
 
@@ -229,14 +496,16 @@
                 <tr>
                     <td>{{ promo.nombre }}</td>
                     <td>{{ promo.tipo }}</td>
-                    <td>{{ promo.tickets }}</td>
-                    <td>{{ promo.aplicaciones }}</td>
-                    <td>${{ promo.descuento|floatformat:2 }}</td>
+                    <td class="promo-num">{{ promo.tickets }}</td>
+                    <td class="promo-num">{{ promo.aplicaciones }}</td>
+                    <td class="promo-num">
+                        ${{ promo.descuento|floatformat:2 }}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="5">
-                        No hay promociones para los filtros seleccionados.
+                        No hay promociones para estos filtros.
                     </td>
                 </tr>
                 {% endfor %}
@@ -244,36 +513,37 @@
         </table>
     </div>
 
-    <!-- SUCURSALES -->
+    <!-- =====================================
+         RESUMEN POR SUCURSAL
+    ====================================== -->
+
     <h2>Resumen por sucursal</h2>
 
     <div class="promo-table-wrap">
-        <table>
+        <table class="promo-table">
             <thead>
                 <tr>
                     <th>Sucursal</th>
-                    <th>Tickets</th>
-                    <th>Aplicaciones</th>
-                    <th>Descuento</th>
+                    <th class="promo-num">Tickets</th>
+                    <th class="promo-num">Aplicaciones</th>
+                    <th class="promo-num">Descuento</th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for sucursal in por_sucursal %}
                 <tr>
-                    <td>
-                        {{ sucursal.venta__sucursal__nombre }}
-                    </td>
-                    <td>{{ sucursal.tickets }}</td>
-                    <td>{{ sucursal.aplicaciones }}</td>
-                    <td>
+                    <td>{{ sucursal.venta__sucursal__nombre }}</td>
+                    <td class="promo-num">{{ sucursal.tickets }}</td>
+                    <td class="promo-num">{{ sucursal.aplicaciones }}</td>
+                    <td class="promo-num">
                         ${{ sucursal.descuento|floatformat:2 }}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="4">
-                        No hay información disponible.
+                        No hay registros para estas sucursales.
                     </td>
                 </tr>
                 {% endfor %}
@@ -282,5 +552,115 @@
     </div>
 
 </div>
+
+<!-- =====================================
+     COMPORTAMIENTO DEL SELECTOR MÚLTIPLE
+====================================== -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const dropdown = document.getElementById(
+        "sucursalesDropdown"
+    );
+
+    const resumen = document.getElementById(
+        "sucursalesResumen"
+    );
+
+    const todas = document.getElementById(
+        "sucursalesTodas"
+    );
+
+    const checkboxes = Array.from(
+        document.querySelectorAll(".sucursal-checkbox")
+    );
+
+    function actualizarResumen() {
+
+        const seleccionadas = checkboxes.filter(
+            checkbox => checkbox.checked
+        );
+
+        if (
+            todas.checked ||
+            seleccionadas.length === 0 ||
+            seleccionadas.length === checkboxes.length
+        ) {
+            resumen.textContent = "Todas las sucursales";
+            return;
+        }
+
+        if (seleccionadas.length === 1) {
+
+            const nombre = seleccionadas[0]
+                .closest("label")
+                .textContent
+                .trim();
+
+            resumen.textContent = nombre;
+            return;
+        }
+
+        resumen.textContent =
+            `${seleccionadas.length} sucursales seleccionadas`;
+    }
+
+    todas.addEventListener("change", function () {
+
+        if (todas.checked) {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        } else {
+            // Evitar un estado sin selección:
+            // equivale a todas.
+            todas.checked = true;
+        }
+
+        actualizarResumen();
+    });
+
+    checkboxes.forEach(checkbox => {
+
+        checkbox.addEventListener("change", function () {
+
+            const seleccionadas = checkboxes.filter(
+                item => item.checked
+            );
+
+            if (
+                seleccionadas.length === 0 ||
+                seleccionadas.length === checkboxes.length
+            ) {
+
+                todas.checked = true;
+
+                checkboxes.forEach(item => {
+                    item.checked = false;
+                });
+
+            } else {
+                todas.checked = false;
+            }
+
+            actualizarResumen();
+        });
+    });
+
+    document.addEventListener("click", function (event) {
+
+        if (
+            dropdown.open &&
+            !dropdown.contains(event.target)
+        ) {
+            dropdown.open = false;
+        }
+    });
+
+    actualizarResumen();
+
+});
+</script>
 
 {% endblock %}

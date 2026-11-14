@@ -223,7 +223,6 @@ class ReporteMensualListView(LoginRequiredMixin,ModulePermissionMixin,ReporteMen
 
 
 
-
 class ReportePromocionesView(
     LoginRequiredMixin,
     SucursalPermissionMixin,
@@ -257,48 +256,80 @@ class ReportePromocionesView(
             hoy,
         )
 
-        sucursales = (
+        # =====================================
+        # SUCURSALES PERMITIDAS
+        # =====================================
+
+        sucursales = list(
             self.get_sucursales_usuario()
             .filter(activa=True)
             .order_by("nombre")
         )
 
-        sucursales_ids = list(
-            sucursales.values_list("id", flat=True)
+        permitidas_ids = {
+            sucursal.id
+            for sucursal in sucursales
+        }
+
+        # =====================================
+        # SELECCIÓN MÚLTIPLE
+        # =====================================
+
+        recibidas = self.request.GET.getlist(
+            "sucursales"
         )
+
+        seleccionadas_ids = set()
+
+        for valor in recibidas:
+            if valor.isdigit():
+                sucursal_id = int(valor)
+
+                if sucursal_id in permitidas_ids:
+                    seleccionadas_ids.add(sucursal_id)
+
+        # Sin selección, mostrar todas
+        # las sucursales permitidas.
+        todas_sucursales = (
+            not seleccionadas_ids
+            or seleccionadas_ids == permitidas_ids
+        )
+
+        if todas_sucursales:
+            sucursales_filtro = permitidas_ids
+            seleccionadas_ids = set()
+        else:
+            sucursales_filtro = seleccionadas_ids
+
+        # =====================================
+        # OTROS FILTROS
+        # =====================================
 
         def leer_id(nombre):
             valor = self.request.GET.get(nombre, "")
             return int(valor) if valor.isdigit() else None
 
-        sucursal_id = leer_id("sucursal")
         promocion_id = leer_id("promocion")
-
         tipo = self.request.GET.get("tipo", "")
 
         tipos_validos = {
-            valor for valor, etiqueta
-            in Promocion.Tipo.choices
+            valor
+            for valor, etiqueta in Promocion.Tipo.choices
         }
 
         if tipo not in tipos_validos:
             tipo = ""
 
-        # El filtro de sucursal nunca permite
-        # consultar una sucursal no autorizada.
-        if (
-            sucursal_id is not None
-            and sucursal_id not in sucursales_ids
-        ):
-            sucursal_id = None
+        # =====================================
+        # GENERAR REPORTE
+        # =====================================
 
         resultado = reporte_promociones(
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
-            sucursal_id=sucursal_id,
+            sucursales_ids=list(sucursales_filtro),
             promocion_id=promocion_id,
             tipo=tipo or None,
-            sucursales_ids=sucursales_ids,
         )
 
         context.update({
@@ -310,16 +341,16 @@ class ReportePromocionesView(
             "fecha_fin": fecha_fin,
 
             "sucursales": sucursales,
+            "sucursales_seleccionadas": seleccionadas_ids,
+            "todas_sucursales": todas_sucursales,
+
             "promociones": Promocion.objects.order_by(
                 "nombre"
             ),
             "tipos": Promocion.Tipo.choices,
 
-            "sucursal_id": sucursal_id,
             "promocion_id": promocion_id,
             "tipo_seleccionado": tipo,
         })
 
         return context
-
-

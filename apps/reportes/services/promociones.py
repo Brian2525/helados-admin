@@ -1,19 +1,22 @@
 from django.db.models import Count, Sum
 from apps.ventas.models import VentaPromocion
 
-
 def reporte_promociones(
     fecha_inicio=None,
     fecha_fin=None,
-    sucursal_id=None,
+    sucursales_ids=None,
     promocion_id=None,
     tipo=None,
-    sucursales_ids=None,
 ):
-
     registros = VentaPromocion.objects.filter(
         venta__estado="confirmada"
     )
+
+    # Sucursales autorizadas y seleccionadas
+    if sucursales_ids is not None:
+        registros = registros.filter(
+            venta__sucursal_id__in=sucursales_ids
+        )
 
     if fecha_inicio:
         registros = registros.filter(
@@ -23,11 +26,6 @@ def reporte_promociones(
     if fecha_fin:
         registros = registros.filter(
             venta__fecha_hora__date__lte=fecha_fin
-        )
-
-    if sucursales_ids is not None:
-        registros = registros.filter(
-            venta__sucursal_id__in=sucursales_ids
         )
 
     if promocion_id:
