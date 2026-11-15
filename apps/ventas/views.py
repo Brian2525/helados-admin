@@ -17,6 +17,7 @@ from django.db.models import Prefetch
 from django.core.exceptions import ValidationError
 from datetime import date
 from django.http import JsonResponse
+from django.core.exceptions import PermissionDenied
 
 
 
@@ -643,6 +644,10 @@ class POSNuevaVentaView(LoginRequiredMixin, SucursalPermissionMixin,SucursalActi
             "ventas:pos_cobro"
         )
 
+
+
+
+
 class POSCobroView(
     LoginRequiredMixin,
     SucursalPermissionMixin,
@@ -659,6 +664,7 @@ class POSCobroView(
     # ==========================================================
 
     def calcular_totales_pos(self, pos_data):
+        
 
         from apps.promociones.services import (
             calcular_promociones_carrito,
@@ -733,16 +739,32 @@ class POSCobroView(
                 "subtotal": subtotal_item,
             })
 
-        # ==========================================
-        # PROMOCIONES
-        # ==========================================
+        # Obtener sucursal de la venta en proceso
+        sucursal_id = pos_data.get("sucursal_id")
 
-        resultado_promociones = (
-            calcular_promociones_carrito(
-                cantidades_carrito=cantidades_carrito,
-                fecha=timezone.localdate(),
+        sucursal = (
+            self.get_sucursales_usuario()
+            .filter(
+                id=sucursal_id,
+                activa=True,
             )
+            .first()
         )
+
+        if sucursal is None:
+            raise PermissionDenied(
+                "La sucursal de esta venta no está disponible."
+            )
+
+        # Calcular únicamente las promociones
+        # vigentes y elegibles para esta sucursal.
+        resultado_promociones = calcular_promociones_carrito(
+            cantidades_carrito=cantidades_carrito,
+            fecha=timezone.localdate(),
+            sucursal=sucursal,
+        )
+
+        descuento = resultado_promociones["descuento_total"]
 
         descuento = (
             resultado_promociones[
