@@ -1,11 +1,13 @@
 from collections import defaultdict
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import timedelta, datetime, time
 from django.utils import timezone
 from django.db import transaction
 from apps.ventas.models import VentaDetalle, Venta
 from apps.inventario.models import VarianteProducto, InventarioDiario, Receta, MovimientoInventario, InventarioInicialAutorizado
-from  django.core.exceptions    import ValidationError
+from  django.core.exceptions    import ValidationError, PermissionDenied
+from apps.sucursales.models import Sucursal
+
 
 
 CERO = Decimal("0.0000")
@@ -543,14 +545,38 @@ def consumo_teorico_desde_corte(
 
 
 
-def existencia_teorica_diaria(sucursal, fecha):
+def existencia_teorica_diaria(
+    sucursal,
+    fecha,
+    fecha_hora_fin=None,
+):
 
     resultado = []
-
     cero = Decimal("0.0000")
 
     # ==========================================
-    # 1. INVENTARIO INICIAL AUTORIZADO
+    # 1. FIN DEL PERIODO
+    # ==========================================
+
+    if fecha_hora_fin is None:
+
+        fecha_siguiente = fecha + timedelta(days=1)
+
+        fecha_hora_fin = timezone.make_aware(
+            datetime.combine(
+                fecha_siguiente,
+                time.min,
+            ),
+            timezone.get_current_timezone(),
+        )
+
+    elif timezone.is_naive(fecha_hora_fin):
+        raise ValueError(
+            "fecha_hora_fin debe incluir zona horaria."
+        )
+
+    # ==========================================
+    # 2. INVENTARIO INICIAL AUTORIZADO
     # ==========================================
 
     inventario_inicial = (
@@ -558,9 +584,9 @@ def existencia_teorica_diaria(sucursal, fecha):
         .filter(
             sucursal=sucursal,
             estado=(
-                InventarioInicialAutorizado
-                .Estado.AUTORIZADO
+                InventarioInicialAutorizado.Estado.AUTORIZADO
             ),
+            fecha_corte__lt=fecha_hora_fin,
         )
         .order_by("-fecha_corte", "-id")
         .first()
@@ -609,16 +635,7 @@ def existencia_teorica_diaria(sucursal, fecha):
     # ==========================================
     # 4. FIN DEL PERIODO SOLICITADO
     # ==========================================
-
-    fecha_siguiente = fecha + timedelta(days=1)
-
-    fecha_hora_fin = timezone.make_aware(
-        datetime.combine(
-            fecha_siguiente,
-            time.min,
-        ),
-        timezone.get_current_timezone(),
-    )
+    
 
     # Evitar consultar fechas anteriores al corte.
     if fecha_hora_fin <= fecha_corte:
@@ -741,3 +758,112 @@ def existencia_teorica_diaria(sucursal, fecha):
         })
 
     return resultado
+
+
+
+
+
+@transaction.atomic
+def realizar_recuento(
+    *,
+    sucursal_id,
+    variante_id,
+    cantidad_fisica,
+    usuario,
+    observaciones="",
+):
+
+    # 1. Validar permiso
+    if not usuario.has_perm(
+        "inventario.realizar_recuento_inventario"
+    ):
+        raise PermissionDenied(
+            "No tienes permiso para realizar recuentos."
+        )
+
+    # 2. Validar cantidad
+    try:
+        cantidad_fisica = Decimal(
+            str(cantidad_fisica)
+        )
+    except (InvalidOperation, ValueError):
+        raise ValidationError(
+            "La cantidad física no es válida."
+        )
+
+    if (
+        not cantidad_fisica.is_finite()
+        or cantidad_fisica < 0
+        or cantidad_fisica.as_tuple().exponent < -4
+    ):
+        raise ValidationError(
+            "Introduce una cantidad válida con máximo 4 decimales."
+        )
+
+    # 3. Bloquear sucursal durante el recuento
+    sucursal = Sucursal.objects.select_for_update().get(
+        pk=sucursal_id
+    )
+
+    variante = VarianteProducto.objects.get(
+        pk=variante_id
+    )
+
+    # 4. Calcular existencia en este instante
+    ahora = timezone.now()
+
+    existencias = existencia_teorica_diaria(
+        sucursal=sucursal,
+        fecha=timezone.localtime(ahora).date(),
+        fecha_hora_fin=ahora,
+    )
+
+    registro = next(
+        (
+            item for item in existencias
+            if item["variante"].id == variante.id
+        ),
+        None,
+    )
+
+    if (
+        registro is None
+        or registro["sin_inventario_inicial"]
+    ):
+        raise ValidationError(
+            "Esta variante no tiene inventario inicial autorizado."
+        )
+
+    cantidad_anterior = registro["cantidad_teorica"]
+
+    # 5. Diferencia entre sistema y físico
+    diferencia = cantidad_fisica - cantidad_anterior
+
+    if diferencia == 0:
+        return None
+
+    # 6. Determinar tipo de movimiento
+    tipo = (
+        MovimientoInventario.TipoMovimiento.AJUSTE_ENTRADA
+        if diferencia > 0
+        else MovimientoInventario.TipoMovimiento.AJUSTE_SALIDA
+    )
+
+    # 7. Guardar recuento como ajuste
+    movimiento = MovimientoInventario.objects.create(
+        sucursal=sucursal,
+        variante=variante,
+        fecha_hora=ahora,
+        tipo=tipo,
+        cantidad=abs(diferencia),
+        usuario=usuario,
+        observaciones=(
+            "[RECUENTO FÍSICO]\n"
+            f"Existencia anterior: {cantidad_anterior}\n"
+            f"Nueva existencia: {cantidad_fisica}\n"
+            f"Diferencia: {diferencia}\n"
+            f"Motivo: {observaciones}"
+        ),
+    )
+
+    return movimiento

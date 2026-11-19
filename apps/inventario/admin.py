@@ -23,6 +23,7 @@ class RecetaAdmin(admin.ModelAdmin):
     list_filter = ("activa",)
     
 
+
 class MovimientoInventarioAdmin(admin.ModelAdmin):
 
     list_display = (
@@ -32,76 +33,30 @@ class MovimientoInventarioAdmin(admin.ModelAdmin):
         "variante",
         "tipo",
         "cantidad",
-        "naturaleza",
         "usuario",
     )
 
     list_filter = (
         "sucursal",
         "tipo",
-        "motivo_merma",
         "fecha_hora",
     )
 
     search_fields = (
         "variante__nombre",
         "variante__producto__nombre",
-        "sucursal__nombre",
         "observaciones",
     )
 
     readonly_fields = (
-        "sucursal",
-        "variante",
-        "fecha_hora",
-        "tipo",
-        "cantidad",
-        "motivo_merma",
-        "usuario",
-        "venta",
-        "venta_detalle",
-        "observaciones",
         "created_at",
         "updated_at",
     )
 
-    list_select_related = (
-        "sucursal",
-        "variante__producto",
-        "usuario",
-    )
-
     ordering = ("-fecha_hora", "-id")
 
-    list_per_page = 30
-
-    def has_module_permission(self, request):
-        return request.user.is_superuser
-
-    def has_view_permission(self, request, obj=None):
-        return request.user.is_superuser
-
     def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
         return request.user.is_superuser
-
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-    @admin.display(description="Movimiento")
-    def naturaleza(self, obj):
-        if obj.es_entrada:
-            return "Entrada (+)"
-
-        if obj.es_salida:
-            return "Salida (-)"
-
-        return "Sin clasificar"
-
-    def has_add_permission(self, request):
-        return False
 
     def has_change_permission(self, request, obj=None):
         return False

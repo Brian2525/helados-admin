@@ -213,11 +213,18 @@ class MovimientoInventario(models.Model):
 
     class Meta:
         ordering = ["-fecha_hora", "-id"]
+        permissions = [
+                (
+                    "realizar_recuento_inventario",
+                    "Puede realizar recuentos de inventario"
+                ),
+                ]
         indexes = [
             models.Index(fields=["sucursal", "fecha_hora"]),
             models.Index(fields=["variante", "fecha_hora"]),
             models.Index(fields=["tipo", "fecha_hora"]),
         ]
+        
 
     def clean(self):
         if self.cantidad <= 0:

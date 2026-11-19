@@ -91,207 +91,258 @@ Preparar productos
     </div>
 
 
-    {% if recetas %}
+    
+{% if productos %}
 
-        <!-- MOSAICOS -->
-        <div
-            class="
-                grid
-                grid-cols-1
-                sm:grid-cols-2
-                lg:grid-cols-3
-                gap-5
-            "
-        >
+    <!-- MOSAICO DE PRODUCTOS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
-            {% for receta in recetas %}
+        {% for producto in productos %}
 
-                <a
-                    href="{% url 'inventario:preparacion_create' receta.variante_vendida.id %}"
-                    class="
-                        group
-                        relative
-                        bg-white
-                        border border-gray-200
-                        rounded-2xl
-                        p-6
-                        min-h-48
-                        shadow-sm
+            {% with total=producto.variantes_preparacion|length %}
 
-                        flex
-                        flex-col
-                        justify-between
+                {% if total == 1 %}
 
-                        hover:shadow-md
-                        hover:border-blue-300
-                        hover:-translate-y-0.5
-
-                        active:scale-[0.99]
-
-                        transition
-                        duration-150
-                    "
-                >
-
-                    <!-- PRODUCTO -->
-                    <div>
-
-                        <!-- ICONO -->
-                        <div
-                            class="
-                                w-14 h-14
-                                rounded-2xl
-                                bg-blue-50
-                                flex
-                                items-center
-                                justify-center
-                                text-2xl
-                                mb-5
-
-                                group-hover:bg-blue-100
-                                transition
-                            "
-                        >
-                            🍦
-                        </div>
-
-
-                        <!-- NOMBRE DEL PRODUCTO -->
-                        <p
-                            class="
-                                text-sm
-                                font-medium
-                                text-gray-500
-                                mb-1
-                            "
-                        >
-                            {{ receta.variante_vendida.producto.nombre }}
-                        </p>
-
-                        <!-- VARIANTE -->
-                        <h2
-                            class="
-                                text-xl
-                                font-bold
-                                text-gray-900
-                            "
-                        >
-                            {{ receta.variante_vendida.nombre }}
-                        </h2>
-
-                    </div>
-
-
-                    <!-- ACCIÓN -->
-                    <div
-                        class="
-                            flex
-                            items-center
-                            justify-between
-                            mt-6
-                            pt-4
-                            border-t
-                            border-gray-100
-                        "
+                    <!-- PRODUCTO CON UNA SOLA VARIANTE -->
+                    <a
+                        href="{% url 'inventario:preparacion_create' producto.variantes_preparacion.0.id %}"
+                        class="group relative bg-white border border-gray-200
+                               rounded-2xl p-6 min-h-48 shadow-sm
+                               flex flex-col justify-between
+                               hover:shadow-md hover:border-blue-300
+                               hover:-translate-y-0.5
+                               active:scale-[0.99] transition duration-150"
                     >
 
-                        <span
-                            class="
-                                text-blue-600
-                                font-semibold
-                            "
-                        >
-                            Preparar
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-blue-50
+                                        flex items-center justify-center
+                                        text-2xl mb-5">
+                                🍦
+                            </div>
+
+                            <p class="text-sm font-medium text-gray-500 mb-1">
+                                {{ producto.nombre }}
+                            </p>
+
+                            <h2 class="text-xl font-bold text-gray-900">
+                                {{ producto.variantes_preparacion.0.nombre }}
+                            </h2>
+                        </div>
+
+                        <div class="flex items-center justify-between
+                                    mt-6 pt-4 border-t border-gray-100">
+
+                            <span class="text-blue-600 font-semibold">
+                                Preparar
+                            </span>
+
+                            <span class="text-xl text-gray-400
+                                         group-hover:text-blue-600">
+                                →
+                            </span>
+                        </div>
+                    </a>
+
+                {% else %}
+
+                    <!-- PRODUCTO CON VARIAS VARIANTES -->
+                    <button
+                        type="button"
+                        data-producto="{{ producto.nombre }}"
+                        data-opciones="opciones-{{ producto.id }}"
+                        onclick="abrirPreparacion(this)"
+                        class="group relative bg-white border border-gray-200
+                               rounded-2xl p-6 min-h-48 shadow-sm
+                               flex flex-col justify-between text-left
+                               hover:shadow-md hover:border-blue-300
+                               hover:-translate-y-0.5
+                               active:scale-[0.99] transition duration-150"
+                    >
+
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-blue-50
+                                        flex items-center justify-center
+                                        text-2xl mb-5">
+                                🍦
+                            </div>
+
+                            <p class="text-sm font-medium text-gray-500 mb-1">
+                                {{ producto.nombre }}
+                            </p>
+
+                            <h2 class="text-xl font-bold text-gray-900">
+                                {{ total }} variantes disponibles
+                            </h2>
+                        </div>
+
+                        <div class="flex items-center justify-between
+                                    mt-6 pt-4 border-t border-gray-100">
+
+                            <span class="text-blue-600 font-semibold">
+                                Seleccionar variante
+                            </span>
+
+                            <span class="text-xl text-gray-400">→</span>
+                        </div>
+                    </button>
+
+                {% endif %}
+
+            {% endwith %}
+
+        {% endfor %}
+
+    </div>
+
+    <!-- VARIANTES DISPONIBLES, OCULTAS -->
+    <div class="hidden">
+
+        {% for producto in productos %}
+
+            <div id="opciones-{{ producto.id }}">
+
+                {% for variante in producto.variantes_preparacion %}
+
+                    <a
+                        href="{% url 'inventario:preparacion_create' variante.id %}"
+                        class="flex flex-col justify-between
+                               border border-gray-200 rounded-xl p-4
+                               hover:border-blue-400 hover:bg-blue-50
+                               min-h-24"
+                    >
+                        <span class="font-bold text-gray-900">
+                            {{ variante.nombre }}
                         </span>
 
-                        <span
-                            class="
-                                text-xl
-                                text-gray-400
-                                group-hover:text-blue-600
-                                group-hover:translate-x-1
-                                transition
-                            "
-                        >
-                            →
+                        <span class="text-blue-600 font-semibold mt-3">
+                            Preparar →
                         </span>
+                    </a>
 
-                    </div>
-
-                </a>
-
-            {% endfor %}
-
-        </div>
-
-
-        <!-- EXPLICACIÓN -->
-        <div
-            class="
-                mt-8
-                rounded-2xl
-                bg-blue-50
-                border
-                border-blue-100
-                p-5
-            "
-        >
-
-            <div class="flex gap-3">
-
-                <div class="text-xl">
-                    ℹ️
-                </div>
-
-                <div>
-
-                    <p class="font-semibold text-blue-900">
-                        ¿Qué sucede al registrar una preparación?
-                    </p>
-
-                    <p class="mt-1 text-sm text-blue-800">
-                        El sistema descontará automáticamente los
-                        ingredientes definidos en la receta y agregará
-                        las unidades preparadas al inventario.
-                    </p>
-
-                </div>
+                {% endfor %}
 
             </div>
 
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <div class="bg-white border border-gray-200
+                rounded-2xl p-10 text-center">
+
+        <div class="text-4xl mb-4">🍦</div>
+
+        <h2 class="text-lg font-bold text-gray-900">
+            No hay productos para preparar
+        </h2>
+
+        <p class="mt-2 text-gray-500">
+            No existen recetas activas de preparación.
+        </p>
+
+    </div>
+
+{% endif %}
+
+
+<!-- MODAL PARA ELEGIR VARIANTE -->
+<div
+    id="modal-preparacion"
+    class="fixed inset-0 z-50 hidden
+           items-center justify-center bg-black/50 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-preparacion-titulo"
+>
+
+    <div class="bg-white rounded-2xl shadow-xl
+                w-full max-w-xl max-h-[85vh] overflow-y-auto">
+
+        <div class="flex justify-between items-center
+                    p-4 border-b border-gray-200">
+
+            <h2
+                id="modal-preparacion-titulo"
+                class="text-xl font-bold text-gray-900"
+            ></h2>
+
+            <button
+                type="button"
+                onclick="cerrarPreparacion()"
+                class="text-2xl text-gray-500
+                       w-10 h-10 rounded-full bg-gray-100"
+                aria-label="Cerrar"
+            >
+                ×
+            </button>
+
         </div>
 
-
-    {% else %}
-
-        <!-- SIN PRODUCTOS -->
         <div
-            class="
-                bg-white
-                border
-                border-gray-200
-                rounded-2xl
-                p-10
-                text-center
-            "
-        >
+            id="modal-preparacion-opciones"
+            class="grid grid-cols-2 gap-3 p-4"
+        ></div>
 
-            <div class="text-4xl mb-4">
-                🍦
-            </div>
+    </div>
+</div>
 
-            <h2 class="text-lg font-bold text-gray-900">
-                No hay productos para preparar
-            </h2>
 
-            <p class="mt-2 text-gray-500">
-                No existen recetas activas configuradas
-                para consumirse durante la preparación.
-            </p>
+<script>
+(function () {
+    const modal = document.getElementById("modal-preparacion");
+    const titulo = document.getElementById("modal-preparacion-titulo");
+    const opciones = document.getElementById("modal-preparacion-opciones");
 
-        </div>
+    let botonAnterior = null;
 
-    {% endif %}
+    window.abrirPreparacion = function(boton) {
+        const origen = document.getElementById(
+            boton.dataset.opciones
+        );
+
+        if (!origen) return;
+
+        botonAnterior = boton;
+        titulo.textContent = boton.dataset.producto;
+
+        opciones.replaceChildren();
+
+        Array.from(origen.children).forEach(function(elemento) {
+            opciones.appendChild(elemento.cloneNode(true));
+        });
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        const primeraOpcion = opciones.querySelector("a");
+        if (primeraOpcion) primeraOpcion.focus();
+    };
+
+    window.cerrarPreparacion = function() {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+
+        if (botonAnterior) botonAnterior.focus();
+    };
+
+    modal.addEventListener("click", function(event) {
+        if (event.target === modal) cerrarPreparacion();
+    });
+
+    document.addEventListener("keydown", function(event) {
+        if (
+            event.key === "Escape" &&
+            !modal.classList.contains("hidden")
+        ) {
+            cerrarPreparacion();
+        }
+    });
+})();
+</script>
+
 
 
     <div class="flex justify-center mt-4">

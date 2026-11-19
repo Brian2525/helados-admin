@@ -15,6 +15,9 @@ from apps.inventario.services_conciliacion import (
     calcular_conciliacion_diaria,
 )
 
+from django.db.models import Prefetch
+
+
 from apps.inventario.services_alertas import (
     obtener_alertas_inventario,
 )
@@ -961,15 +964,40 @@ class PreparacionListView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["recetas"] = Receta.objects.filter(
-            activa=True,
-            momento_consumo=(Receta.MomentoConsumo.PREPARACION),
-            variante_vendida__activo=True,
-            variante_vendida__producto__activo=True,
-        ).select_related(
-            "variante_vendida",
-            "variante_vendida__producto",
+        # Obtener solamente las variantes que tienen
+        # recetas activas de preparación.
+        variantes_preparacion = (
+            VarianteProducto.objects
+            .filter(
+                activo=True,
+                producto__activo=True,
+                receta__activa=True,
+                receta__momento_consumo=(
+                    Receta.MomentoConsumo.PREPARACION
+                ),
+            )
+            .order_by("nombre")
         )
+
+        # Agrupar las variantes por producto.
+        productos = (
+            Producto.objects
+            .filter(
+                activo=True,
+                variantes_producto__in=variantes_preparacion,
+            )
+            .distinct()
+            .prefetch_related(
+                Prefetch(
+                    "variantes_producto",
+                    queryset=variantes_preparacion,
+                    to_attr="variantes_preparacion",
+                )
+            )
+            .order_by("nombre")
+        )
+
+        context["productos"] = productos
 
         return context
 
