@@ -1,10 +1,25 @@
 from django.contrib import admin
-from .models import Producto, VarianteProducto, InventarioDiario, Receta, RecetaDetalle, MovimientoInventario, InventarioInicialDetalle
+from .models import Producto, VarianteProducto, InventarioDiario, Receta, RecetaDetalle, MovimientoInventario, InventarioInicialDetalle, CategoriaProducto 
+
+
+
+
+@admin.register(CategoriaProducto)
+class CategoriaProductoAdmin(admin.ModelAdmin):
+    list_display = (
+        "nombre",
+        "activa",
+    )
+
+    search_fields = ("nombre",)
+    list_filter = ("activa",)
+
+
 
 # Register your models here.
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "descripcion", "registrar_venta_diaria", "activo", "tipo", "controlar_inventario")
-    list_filter = ("activo", "tipo")
+    list_display = ("nombre", "descripcion", "registrar_venta_diaria", "activo", "tipo", "controlar_inventario", "categoria")
+    list_filter = ("activo", "tipo", "categoria")
     search_fields = ("nombre", "descripcion")
 
 class VarianteProductoAdmin(admin.ModelAdmin):

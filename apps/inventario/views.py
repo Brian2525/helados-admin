@@ -15,6 +15,9 @@ from apps.inventario.services_conciliacion import (
     calcular_conciliacion_diaria,
 )
 
+from itertools import groupby
+
+
 from django.db.models import Prefetch
 
 
@@ -951,21 +954,19 @@ class PreparacionCreateView(
 
 
 
-
-
 class PreparacionListView(
     LoginRequiredMixin,
     SucursalPermissionMixin,
     SucursalActivaMixin,
     TemplateView,
 ):
+
     template_name = "inventario/preparacion_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Obtener solamente las variantes que tienen
-        # recetas activas de preparación.
+        # Variantes con recetas activas de preparación.
         variantes_preparacion = (
             VarianteProducto.objects
             .filter(
@@ -976,17 +977,19 @@ class PreparacionListView(
                     Receta.MomentoConsumo.PREPARACION
                 ),
             )
+            .distinct()
             .order_by("nombre")
         )
 
-        # Agrupar las variantes por producto.
-        productos = (
+        # Productos que tienen variantes preparables.
+        productos = list(
             Producto.objects
             .filter(
                 activo=True,
                 variantes_producto__in=variantes_preparacion,
             )
             .distinct()
+            .select_related("categoria")
             .prefetch_related(
                 Prefetch(
                     "variantes_producto",
@@ -994,36 +997,100 @@ class PreparacionListView(
                     to_attr="variantes_preparacion",
                 )
             )
-            .order_by("nombre")
+            .order_by(
+                "categoria__nombre",
+                "categoria_id",
+                "nombre",
+            )
         )
 
-        context["productos"] = productos
+        grupos = []
+
+        # Agrupar productos por categoría.
+        for categoria_id, elementos in groupby(
+            productos,
+            key=lambda p: p.categoria_id
+        ):
+            productos_grupo = list(elementos)
+
+            categoria = productos_grupo[0].categoria
+
+            grupos.append({
+                "categoria": categoria,
+                "nombre": (
+                    categoria.nombre
+                    if categoria
+                    else "Sin categoría"
+                ),
+                "productos": productos_grupo,
+                "total": len(productos_grupo),
+            })
+
+        context["grupos"] = grupos
 
         return context
 
 
-class RecepcionMercanciaListView(LoginRequiredMixin,SucursalPermissionMixin,SucursalActivaMixin,TemplateView,):
+
+class RecepcionMercanciaListView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    TemplateView,
+):
 
     template_name = "inventario/recepcion_list.html"
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
 
-        context["variantes"] = (
+        # Obtener variantes activas con control de inventario.
+        variantes = list(
             VarianteProducto.objects.filter(
                 activo=True,
                 producto__activo=True,
                 producto__controlar_inventario=True,
             )
-            .select_related("producto")
+            .select_related(
+                "producto",
+                "producto__categoria",
+            )
             .order_by(
+                "producto__categoria__nombre",
+                "producto__categoria_id",
                 "producto__nombre",
                 "nombre",
             )
         )
 
+        grupos = []
+
+        # Agrupar variantes por categoría del producto.
+        for categoria_id, elementos in groupby(
+            variantes,
+            key=lambda v: v.producto.categoria_id
+        ):
+
+            variantes_grupo = list(elementos)
+
+            categoria = variantes_grupo[0].producto.categoria
+
+            grupos.append({
+                "categoria": categoria,
+                "nombre": (
+                    categoria.nombre
+                    if categoria
+                    else "Sin categoría"
+                ),
+                "variantes": variantes_grupo,
+                "total": len(variantes_grupo),
+            })
+
+        context["grupos"] = grupos
+
         return context
+
+
 
 
 class RecepcionMercanciaCreateView(LoginRequiredMixin,SucursalPermissionMixin,SucursalActivaMixin,FormView,):
@@ -1069,6 +1136,7 @@ class RecepcionMercanciaCreateView(LoginRequiredMixin,SucursalPermissionMixin,Su
         return redirect("inventario:recepcion_list")
 
 
+
 class MermaListView(
     LoginRequiredMixin,
     SucursalPermissionMixin,
@@ -1079,21 +1147,49 @@ class MermaListView(
     template_name = "inventario/merma_list.html"
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
 
-        context["variantes"] = (
+        # Obtener variantes activas con control de inventario
+        variantes = list(
             VarianteProducto.objects.filter(
                 activo=True,
                 producto__activo=True,
                 producto__controlar_inventario=True,
             )
-            .select_related("producto")
+            .select_related(
+                "producto",
+                "producto__categoria",
+            )
             .order_by(
+                "producto__categoria__nombre",
+                "producto__categoria_id",
                 "producto__nombre",
                 "nombre",
             )
         )
+
+        grupos = []
+
+        # Agrupar por categoría de producto
+        for categoria_id, elementos in groupby(
+            variantes,
+            key=lambda v: v.producto.categoria_id
+        ):
+            variantes_grupo = list(elementos)
+            categoria = variantes_grupo[0].producto.categoria
+
+            grupos.append({
+                "categoria": categoria,
+                "nombre": (
+                    categoria.nombre
+                    if categoria
+                    else "Sin categoría"
+                ),
+                "variantes": variantes_grupo,
+                "total": len(variantes_grupo),
+            })
+
+        context["grupos"] = grupos
 
         return context
 

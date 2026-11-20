@@ -1,274 +1,295 @@
+
 {% extends "core/base_pos.html" %}
 
-{% block title %}
-Registrar merma
-{% endblock %}
-
-{% block page_title %}
-Registrar merma
-{% endblock %}
+{% block title %}Registrar merma{% endblock %}
+{% block page_title %}Registrar merma{% endblock %}
 
 {% block content %}
 
-<div class="max-w-6xl mx-auto">
+<div class="max-w-6xl mx-auto px-3 pb-6">
 
     <!-- ENCABEZADO -->
-    <div class="flex items-start justify-between gap-4 mb-8">
+    <div class="flex items-center justify-between gap-4 mb-5">
 
         <div>
 
-            <button type="button">
-                <a
-                href="{% url 'ventas:pos_mas' %}"
-                class="
-                    inline-flex
-                    items-center
-                    justify-center
-                    bg-gray-600
-                    hover:bg-gray-700
-                    active:bg-gray-300
-                    text-white
-                    font-semibold
-                        px-8 py-4
-                    rounded-xl
-                "
-            >
-                 regresar al POS
+            <a href="{% url 'ventas:pos_mas' %}"
+               class="inline-flex items-center gap-2
+                      bg-gray-600 hover:bg-gray-700
+                      text-white text-sm font-semibold
+                      px-4 py-2 rounded-lg mb-3">
+
+                ← Regresar al POS
+
             </a>
-             </button>
+
             <h1 class="text-2xl font-bold text-gray-900">
                 Registrar merma
             </h1>
 
-            <p class="mt-2 text-gray-500">
-                Selecciona el producto que se perdió, rompió
+            <p class="text-sm text-gray-500 mt-1">
+                Selecciona una categoría y después
+                el producto que se perdió, rompió
                 o ya no puede venderse.
             </p>
+
         </div>
 
-
         <!-- SUCURSAL -->
-        <div
-            class="
-                hidden sm:block
-                bg-gray-100
-                rounded-xl
-                px-4 py-3
-                text-right
-            "
-        >
-            <p class="text-xs text-gray-500 uppercase tracking-wide">
+        <div class="hidden sm:block bg-gray-100
+                    rounded-xl px-4 py-3 text-right shrink-0">
+
+            <p class="text-xs text-gray-500 uppercase">
                 Sucursal
             </p>
 
             <p class="font-semibold text-gray-900">
                 {{ request.sucursal_activa.nombre }}
             </p>
+
         </div>
 
     </div>
 
-
     <!-- SUCURSAL MÓVIL -->
-    <div
-        class="
-            sm:hidden
-            mb-6
-            bg-gray-100
-            rounded-xl
-            px-4 py-3
-        "
-    >
-        <p class="text-xs text-gray-500 uppercase tracking-wide">
+    <div class="sm:hidden mb-5 bg-gray-100
+                rounded-xl px-4 py-3">
+
+        <p class="text-xs text-gray-500 uppercase">
             Sucursal activa
         </p>
 
         <p class="font-semibold text-gray-900">
             {{ request.sucursal_activa.nombre }}
         </p>
+
     </div>
 
 
-    {% if variantes %}
+    {% if grupos %}
 
-        <!-- MOSAICOS -->
-        <div
-            class="
-                grid
-                grid-cols-2
-                md:grid-cols-3
-                lg:grid-cols-4
-                gap-4
-            "
-        >
+        <!-- CATEGORÍAS DESPLEGABLES -->
+        <div class="space-y-3">
 
-            {% for variante in variantes %}
+            {% for grupo in grupos %}
 
-                <a
-                    href="{% url 'inventario:merma_create' variante.id %}"
-                    class="
-                        group
-                        bg-white
-                        border border-gray-200
-                        rounded-2xl
-                        p-5
-                        min-h-44
-                        shadow-sm
+                <details
+                    class="group bg-white border
+                           border-gray-200 rounded-xl
+                           shadow-sm overflow-hidden">
 
-                        flex
-                        flex-col
-                        justify-between
+                    <!-- ENCABEZADO DE CATEGORÍA -->
+                    <summary
+                        class="flex items-center
+                               justify-between gap-3
+                               px-5 py-4 cursor-pointer
+                               hover:bg-red-50
+                               select-none list-none">
 
-                        hover:border-red-300
-                        hover:shadow-md
-                        hover:-translate-y-0.5
+                        <div class="flex items-center gap-4">
 
-                        active:scale-[0.98]
+                            <div class="w-12 h-12 rounded-xl
+                                        bg-red-100
+                                        flex items-center
+                                        justify-center
+                                        text-2xl shrink-0">
 
-                        transition
-                        duration-150
-                    "
-                >
+                                ⚠️
 
-                    <div>
+                            </div>
 
-                        <!-- ICONO -->
-                        <div
-                            class="
-                                w-12 h-12
-                                rounded-xl
-                                bg-red-50
-                                flex
-                                items-center
-                                justify-center
-                                text-2xl
-                                mb-4
+                            <div>
 
-                                group-hover:bg-red-100
-                                transition
-                            "
-                        >
-                            ⚠️
+                                <h2 class="text-lg font-bold
+                                           text-gray-900">
+
+                                    {{ grupo.nombre }}
+
+                                </h2>
+
+                                <p class="text-xs text-gray-500 mt-1">
+
+                                    {{ grupo.total }}
+                                    opciones disponibles
+
+                                </p>
+
+                            </div>
+
                         </div>
 
+                        <div class="flex items-center gap-3">
 
-                        <!-- PRODUCTO -->
-                        <p
-                            class="
-                                text-xs
-                                font-medium
-                                text-gray-500
-                            "
-                        >
-                            {{ variante.producto.nombre }}
-                        </p>
+                            <span class="text-sm text-red-600
+                                         font-semibold
+                                         hidden sm:block">
+
+                                Ver productos
+
+                            </span>
+
+                            <span class="text-gray-500 text-lg
+                                         transition-transform
+                                         duration-200
+                                         group-open:rotate-180">
+
+                                ▼
+
+                            </span>
+
+                        </div>
+
+                    </summary>
 
 
-                        <!-- VARIANTE -->
-                        <h2
-                            class="
-                                mt-1
-                                text-lg
-                                font-bold
-                                text-gray-900
-                            "
-                        >
-                            {{ variante.nombre }}
-                        </h2>
+                    <!-- VARIANTES DE LA CATEGORÍA -->
+                    <div class="border-t border-gray-100
+                                bg-gray-50 p-4">
+
+                        <div class="grid grid-cols-2
+                                    md:grid-cols-3
+                                    lg:grid-cols-4
+                                    gap-3">
+
+                            {% for variante in grupo.variantes %}
+
+                                <!-- TARJETA DE MERMA -->
+                                <a
+                                    href="{% url 'inventario:merma_create' variante.id %}"
+
+                                    class="group/item bg-white
+                                           border border-gray-200
+                                           rounded-xl p-4
+                                           min-h-36 shadow-sm
+
+                                           flex flex-col
+                                           justify-between
+
+                                           hover:border-red-400
+                                           hover:shadow-md
+
+                                           active:scale-[0.98]
+                                           transition duration-150">
+
+                                    <div>
+
+                                        <!-- ICONO -->
+                                        <div class="w-10 h-10
+                                                    rounded-xl
+                                                    bg-red-50
+                                                    flex items-center
+                                                    justify-center
+                                                    text-xl mb-3">
+
+                                            ⚠️
+
+                                        </div>
+
+                                        <!-- PRODUCTO -->
+                                        <p class="text-xs
+                                                  font-medium
+                                                  text-gray-500">
+
+                                            {{ variante.producto.nombre }}
+
+                                        </p>
+
+                                        <!-- VARIANTE -->
+                                        <h3 class="font-bold
+                                                   text-gray-900
+                                                   text-base
+                                                   leading-tight
+                                                   mt-1">
+
+                                            {{ variante.nombre }}
+
+                                        </h3>
+
+                                    </div>
+
+                                    <!-- ACCIÓN -->
+                                    <div class="flex items-center
+                                                justify-between
+                                                border-t
+                                                border-gray-100
+                                                pt-3 mt-4">
+
+                                        <span class="text-red-600
+                                                     text-sm
+                                                     font-semibold">
+
+                                            Registrar merma
+
+                                        </span>
+
+                                        <span class="text-red-500
+                                                     transition">
+
+                                            →
+
+                                        </span>
+
+                                    </div>
+
+                                </a>
+
+                            {% endfor %}
+
+                        </div>
 
                     </div>
 
-
-                    <!-- ACCIÓN -->
-                    <div
-                        class="
-                            flex
-                            items-center
-                            justify-between
-                            mt-5
-                            pt-4
-                            border-t
-                            border-gray-100
-                        "
-                    >
-
-                        <span class="font-semibold text-red-600">
-                            Registrar merma
-                        </span>
-
-                        <span
-                            class="
-                                text-gray-400
-                                group-hover:text-red-600
-                                group-hover:translate-x-1
-                                transition
-                            "
-                        >
-                            →
-                        </span>
-
-                    </div>
-
-                </a>
+                </details>
 
             {% endfor %}
 
         </div>
 
-
     {% else %}
 
-        <!-- VACÍO -->
-        <div
-            class="
-                bg-white
-                border border-gray-200
-                rounded-2xl
-                p-10
-                text-center
-            "
-        >
+        <!-- SIN PRODUCTOS -->
+        <div class="bg-white border border-gray-200
+                    rounded-xl p-10 text-center">
 
-            <div class="text-4xl">
+            <div class="text-4xl mb-4">
                 ⚠️
             </div>
 
-            <h2 class="mt-4 text-lg font-bold text-gray-900">
+            <h2 class="text-lg font-bold text-gray-900">
+
                 No hay productos disponibles
+
             </h2>
 
             <p class="mt-2 text-gray-500">
-                No existen productos activos con
-                control de inventario.
+
+                No existen productos activos
+                con control de inventario.
+
             </p>
 
         </div>
 
     {% endif %}
 
+
+    <!-- REGRESAR AL POS -->
+    <div class="flex justify-center mt-6">
+
+        <a href="{% url 'ventas:pos_mas' %}"
+           class="bg-gray-600
+                  hover:bg-gray-700
+                  active:bg-gray-800
+
+                  text-white font-semibold
+                  px-6 py-3 rounded-xl">
+
+            Cancelar y regresar al POS
+
+        </a>
+
+    </div>
+
 </div>
-
-
-        <div class="flex justify-center mt-4">
-                        <a
-                                        href="{% url 'ventas:pos_mas' %}"
-                                        class="
-                                            inline-flex
-                                            items-center
-                                            justify-center
-                                            bg-gray-600
-                                            hover:bg-gray-700
-                                            active:bg-gray-800
-                                            text-white
-                                            font-semibold
-                                            text-lg
-                                            px-8 py-4
-                                            rounded-xl
-                                        "
-                                    >
-                                    Cancelar y  regresar al POS
-                                    </a>
-
-            </div>
 
 {% endblock %}

@@ -251,6 +251,36 @@ class MovimientoInventario(models.Model):
 
 
 
+class CategoriaProducto(models.Model):
+    nombre = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    descripcion = models.TextField(
+        blank=True
+    )
+
+    activa = models.BooleanField(
+        default=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["nombre"]
+        verbose_name = "Categoría de producto"
+        verbose_name_plural = "Categorías de productos"
+
+    def __str__(self):
+        return self.nombre
+
 
 
 
@@ -288,6 +318,17 @@ class Producto(models.Model):
             "se incluyen en el conteo físico de inventario."
             )
         )
+
+    
+    categoria = models.ForeignKey(
+        CategoriaProducto,
+        on_delete=models.PROTECT,
+        related_name="productos",
+        null=True,
+        blank=True,
+        help_text="Categoría para organizar el producto."
+    )
+
 
 
     activo = models.BooleanField(
