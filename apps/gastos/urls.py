@@ -10,6 +10,8 @@ from .views import (
     GastoUpdateView,
     GastoDeleteView,
     CompromisosListView,
+    CajaChicaView, 
+    ReponerCajaChicaView,
 )
 
 app_name = "gastos"
@@ -68,6 +70,20 @@ urlpatterns = [
             CompromisosListView.as_view(),
             name="compromisos_pago"
         ),
+
+    path(
+        "caja-chica/",
+        CajaChicaView.as_view(),
+        name="caja_chica",
+    ),
+
+    path(
+        "caja-chica/reponer/",
+        ReponerCajaChicaView.as_view(),
+        name="caja_chica_reponer",
+    ),
+
+    
 
 
 ]

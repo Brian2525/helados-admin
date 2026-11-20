@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Gasto, CategoriaGasto
+from .models import Gasto, CategoriaGasto, CajaChica, MovimientoCajaChica
+
 
 
 class GastoAdmin(admin.ModelAdmin):
@@ -9,6 +10,9 @@ class GastoAdmin(admin.ModelAdmin):
 
 admin.site.register(CategoriaGasto)
 admin.site.register(Gasto, GastoAdmin)
+admin.site.register(CajaChica)
+admin.site.register(MovimientoCajaChica)
+
 
 
 

@@ -14,15 +14,39 @@ from apps.servicios.models import ServicioRecurrente, PagoServicio
 
 
 
-from .models import CategoriaGasto, Gasto
-from .forms import CategoriaGastoForm, GastoForm
+from .models import CategoriaGasto, Gasto, CajaChica, MovimientoCajaChica
+from .forms import CategoriaGastoForm, GastoForm, GastoCajaChicaForm
+from .services import registrar_gasto_caja_chica, ingresar_dinero_caja_chica
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.sucursales.models import Sucursal
 from apps.compras.models import CuentaPorPagar
 from apps.nomina.models import Empleado, Nomina
 
 from django.db.models import Sum
-from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,ModulePermissionMixin
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect, render
+from django.views import View
+from django.contrib import messages
+
+
+
+
+from apps.core.mixins import SucursalQuerysetMixin, SucursalFormMixin,SucursalPermissionMixin,ModulePermissionMixin, SucursalActivaMixin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  
@@ -394,3 +418,151 @@ class CompromisosListView(LoginRequiredMixin,SucursalPermissionMixin,TemplateVie
         context["sucursales"] = sucursales
 
         return context
+
+
+
+
+class CajaChicaView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+    template_name = "gastos/caja_chica.html"
+
+    def get_caja(self):
+        return CajaChica.objects.filter(
+            sucursal=self.request.sucursal_activa
+        ).first()
+
+    def get_contexto(self, form=None):
+        caja = self.get_caja()
+
+        movimientos = MovimientoCajaChica.objects.none()
+        total_gastos = 0
+
+        if caja:
+            movimientos = (
+                MovimientoCajaChica.objects.filter(
+                    caja_chica=caja
+                )
+                .select_related(
+                    "usuario",
+                    "gasto",
+                    "gasto__categoria",
+                )
+                .order_by("-created_at", "-id")[:20]
+            )
+
+            total_gastos = (
+                MovimientoCajaChica.objects.filter(
+                    caja_chica=caja,
+                    tipo=MovimientoCajaChica.TipoMovimiento.GASTO,
+                ).aggregate(
+                    total=Sum("monto")
+                )["total"] or 0
+            )
+
+        return {
+            "sucursal": self.request.sucursal_activa,
+            "caja": caja,
+            "movimientos": movimientos,
+            "total_gastos": abs(total_gastos),
+            "form": form or GastoCajaChicaForm(),
+            "puede_reponer": (
+                            self.request.user.is_superuser
+                            or (
+                                self.request.user.is_authenticated
+                                and self.request.sucursal_activa.propietario_id
+                                == self.request.user.pk
+                            )
+                        ),
+        }
+
+    def get(self, request, *args, **kwargs):
+        return render(
+            request,
+            self.template_name,
+            self.get_contexto(),
+        )
+
+    def post(self, request, *args, **kwargs):
+        caja = self.get_caja()
+
+        if not caja or not caja.activa:
+            messages.error(
+                request,
+                "La caja chica no está habilitada."
+            )
+            return redirect("gastos:caja_chica")
+
+        form = GastoCajaChicaForm(
+            request.POST,
+            request.FILES,
+        )
+
+        if form.is_valid():
+            try:
+                registrar_gasto_caja_chica(
+                    sucursal=request.sucursal_activa,
+                    categoria=form.cleaned_data["categoria"],
+                    monto=form.cleaned_data["monto"],
+                    descripcion=form.cleaned_data["descripcion"],
+                    usuario=request.user,
+                )
+
+                messages.success(
+                    request,
+                    "Gasto registrado correctamente."
+                )
+                return redirect("gastos:caja_chica")
+
+            except ValidationError as error:
+                form.add_error(None, error)
+
+        return render(
+            request,
+            self.template_name,
+            self.get_contexto(form=form),
+            status=400,
+        )
+
+
+class ReponerCajaChicaView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    View,
+):
+    def test_func(self):
+        user = self.request.user
+        sucursal = self.request.sucursal_activa
+
+        return (
+            user.is_superuser
+            or (
+                user.is_authenticated
+                and sucursal.propietario_id == user.pk
+            )
+        )
+
+    def post(self, request, *args, **kwargs):
+        try:
+            ingresar_dinero_caja_chica(
+                sucursal=request.sucursal_activa,
+                monto=request.POST.get("monto"),
+                usuario=request.user,
+                observaciones=request.POST.get(
+                    "observaciones", ""
+                ),
+            )
+
+            messages.success(
+                request,
+                "Dinero ingresado correctamente."
+            )
+
+        except ValidationError as error:
+            messages.error(request, "; ".join(error.messages))
+
+        return redirect("gastos:caja_chica")

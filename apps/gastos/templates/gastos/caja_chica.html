@@ -1,0 +1,327 @@
+
+{% extends "core/base_pos.html" %}
+
+{% block title %}Caja chica{% endblock %}
+{% block page_title %}Caja chica{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-3 py-3">
+
+    <!-- ENCABEZADO -->
+    <div class="flex items-center justify-between mb-4">
+
+        <div>
+            <h1 class="text-xl font-bold text-gray-900">
+                Caja chica
+            </h1>
+            <p class="text-sm text-gray-500">
+                {{ sucursal }}
+            </p>
+        </div>
+
+        <a
+            href="{% url 'ventas:pos_mas' %}"
+            class="px-4 py-2 bg-gray-600 text-white
+                   rounded-xl font-semibold text-sm"
+        >
+            Regresar al POS
+        </a>
+    </div>
+
+    <!-- MENSAJES -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-3 p-3 rounded-xl bg-blue-50
+                        text-blue-900 text-sm">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- SALDOS -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+
+        <div class="bg-white border border-gray-200
+                    rounded-2xl p-4 shadow-sm">
+
+            <p class="text-sm text-gray-500">
+                Saldo disponible
+            </p>
+
+            <p class="text-3xl font-bold text-[#0098CE]">
+                ${{ caja.saldo_actual|default:"0.00"|floatformat:2 }}
+            </p>
+        </div>
+
+        <div class="bg-white border border-gray-200
+                    rounded-2xl p-4 shadow-sm">
+
+            <p class="text-sm text-gray-500">
+                Fondo objetivo
+            </p>
+
+            <p class="text-3xl font-bold text-gray-900">
+                ${{ caja.fondo_objetivo|default:"0.00"|floatformat:2 }}
+            </p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- FORMULARIO -->
+        <div class="bg-white rounded-2xl border
+                    border-gray-200 p-4 shadow-sm">
+
+            <h2 class="font-bold text-lg mb-3">
+                Registrar gasto
+            </h2>
+
+            {% if caja and caja.activa %}
+
+                <form method="post"
+                      enctype="multipart/form-data"
+                      class="space-y-3">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="p-3 bg-red-50 text-red-700
+                                    rounded-lg text-sm">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">
+                            Categoría
+                        </label>
+
+                        <select
+                            name="categoria"
+                            required
+                            class="w-full border border-gray-300
+                                   rounded-xl p-3 text-sm bg-white"
+                        >
+                            <option value="">
+                                Seleccionar categoría
+                            </option>
+
+                            {% for categoria in form.categoria.field.queryset %}
+                                <option
+                                    value="{{ categoria.pk }}"
+                                    {% if form.categoria.value|stringformat:"s" == categoria.pk|stringformat:"s" %}selected{% endif %}
+                                >
+                                    {{ categoria.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        {{ form.categoria.errors }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">
+                            Importe
+                        </label>
+
+                        <input
+                            type="number"
+                            name="monto"
+                            min="0.01"
+                            step="0.01"
+                            inputmode="decimal"
+                            required
+                            value="{{ form.monto.value|default_if_none:'' }}"
+                            placeholder="0.00"
+                            class="w-full border border-gray-300
+                                   rounded-xl p-3 text-lg"
+                        >
+
+                        {{ form.monto.errors }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">
+                            Descripción
+                        </label>
+
+                        <input
+                            type="text"
+                            name="descripcion"
+                            maxlength="255"
+                            required
+                            value="{{ form.descripcion.value|default_if_none:'' }}"
+                            placeholder="¿Qué compraste?"
+                            class="w-full border border-gray-300
+                                   rounded-xl p-3 text-sm"
+                        >
+
+                        {{ form.descripcion.errors }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">
+                            Comprobante (opcional)
+                        </label>
+
+                        <input
+                            type="file"
+                            name="comprobante"
+                            accept="image/*,application/pdf"
+                            class="w-full text-sm"
+                        >
+
+                        {{ form.comprobante.errors }}
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="w-full bg-[#0098CE]
+                               hover:bg-sky-600 text-white
+                               font-bold py-3 rounded-xl"
+                    >
+                        Registrar gasto
+                    </button>
+                </form>
+
+            {% else %}
+                <div class="p-4 rounded-xl bg-amber-50
+                            text-amber-900 text-sm">
+                    La caja chica todavía no está habilitada.
+                    Solicita al administrador la apertura
+                    del fondo.
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="bg-white rounded-2xl border
+                    border-gray-200 p-4 shadow-sm">
+
+            <h2 class="font-bold text-lg mb-3">
+                Últimos movimientos
+            </h2>
+
+            <div class="overflow-y-auto max-h-[440px]">
+
+                {% for movimiento in movimientos %}
+                    <div class="flex justify-between gap-3
+                                border-b border-gray-100 py-3">
+
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold">
+                                {{ movimiento.get_tipo_display }}
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                {{ movimiento.created_at|date:"d/m/Y H:i" }}
+                            </p>
+
+                            {% if movimiento.gasto %}
+                                <p class="text-xs text-gray-600 break-words">
+                                    {{ movimiento.gasto.descripcion }}
+                                </p>
+                            {% endif %}
+
+                            <p class="text-xs text-gray-400">
+                                {{ movimiento.usuario }}
+                            </p>
+                        </div>
+
+                        <div class="text-right shrink-0">
+                            <p class="font-bold
+                                      {% if movimiento.monto < 0 %}
+                                          text-red-600
+                                      {% else %}
+                                          text-green-600
+                                      {% endif %}">
+                                ${{ movimiento.monto|floatformat:2 }}
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                Saldo:
+                                ${{ movimiento.saldo_nuevo|floatformat:2 }}
+                            </p>
+                        </div>
+                    </div>
+
+                {% empty %}
+                    <p class="text-gray-500 text-sm py-4">
+                        Aún no existen movimientos.
+                    </p>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+
+{% if puede_reponer and  user.is_superuser%}
+
+<div class="mt-4 bg-white border border-gray-200
+            rounded-2xl p-4 shadow-sm">
+
+    <h2 class="font-bold text-lg mb-3">
+        Administrar fondo de caja chica
+    </h2>
+    <form
+        method="post"
+        action="{% url 'gastos:caja_chica_reponer' %}"
+        class="grid grid-cols-1 md:grid-cols-3 gap-3"
+    >
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-semibold mb-1">
+                Importe
+            </label>
+
+            <input
+                type="number"
+                name="monto"
+                min="0.01"
+                step="0.01"
+                required
+                placeholder="200.00"
+                class="w-full border rounded-xl p-3"
+            >
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold mb-1">
+                Observaciones
+            </label>
+
+            <input
+                type="text"
+                name="observaciones"
+                maxlength="255"
+                placeholder="Entrega o reposición"
+                class="w-full border rounded-xl p-3"
+            >
+        </div>
+
+        <div class="flex items-end">
+            <button
+                type="submit"
+                class="w-full bg-green-600
+                       text-white font-bold
+                       py-3 rounded-xl"
+            >
+                Ingresar dinero
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endif %}
+
+
+</div>
+
+
+
+
+{% endblock %}
