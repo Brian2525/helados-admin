@@ -5,7 +5,8 @@ from .models import Gasto, CategoriaGasto, CajaChica, MovimientoCajaChica
 
 class GastoAdmin(admin.ModelAdmin):
     list_display = ['descripcion', 'categoria', 'monto', 'fecha', 'sucursal']
-   # list_filter = ['fecha__month', 'fecha__year']
+    list_filter = ['sucursal', 'categoria']
+
 
 
 admin.site.register(CategoriaGasto)

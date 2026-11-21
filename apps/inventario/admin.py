@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
 from .models import Producto, VarianteProducto, InventarioDiario, Receta, RecetaDetalle, MovimientoInventario, InventarioInicialDetalle, CategoriaProducto 
 
 
@@ -18,9 +20,40 @@ class CategoriaProductoAdmin(admin.ModelAdmin):
 
 # Register your models here.
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "descripcion", "registrar_venta_diaria", "activo", "tipo", "controlar_inventario", "categoria")
-    list_filter = ("activo", "tipo", "categoria")
-    search_fields = ("nombre", "descripcion")
+    list_display = (
+        "nombre",
+        "categoria",
+        "tipo",
+        "vista_previa",
+        "registrar_venta_diaria",
+        "activo",
+    )
+
+    list_filter = (
+        "activo",
+        "tipo",
+        "categoria",
+    )
+
+    search_fields = (
+        "nombre",
+        "descripcion",
+    )
+
+    readonly_fields = ("vista_previa",)
+
+    def vista_previa(self, obj):
+        if obj and obj.imagen:
+            return format_html(
+                '<img src="{}" '
+                'style="width:70px;height:70px;'
+                'object-fit:contain;border-radius:8px;">',
+                obj.imagen.url,
+            )
+        return "Sin imagen"
+
+    vista_previa.short_description = "Fotografía"
+
 
 class VarianteProductoAdmin(admin.ModelAdmin):
     list_display = ("nombre", "producto", "activo")

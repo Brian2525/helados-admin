@@ -329,6 +329,14 @@ class Producto(models.Model):
         help_text="Categoría para organizar el producto."
     )
 
+    imagen = models.ImageField(
+        upload_to="productos/",
+        null=True,
+        blank=True,
+        verbose_name="Imagen principal",
+        help_text="Imagen principal del producto para el POS."
+    )
+
 
 
     activo = models.BooleanField(
@@ -381,6 +389,25 @@ class VarianteProducto(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
+
+    imagen = models.ImageField(
+    upload_to="productos/variantes/",
+    null=True,
+    blank=True,
+    verbose_name="Imagen de variante",
+    help_text="Opcional. Reemplaza la imagen principal."
+)
+
+    @property
+    def imagen_pos_url(self):
+        if self.imagen:
+            return self.imagen.url
+
+        if self.producto.imagen:
+            return self.producto.imagen.url
+
+        return ""
+
 
     class Meta:
         ordering = ["producto__nombre", "nombre"]

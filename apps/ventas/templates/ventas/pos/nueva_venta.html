@@ -167,7 +167,8 @@ const productosPOS = {
             {
                 id: "{{ variante.id }}",
                 nombre: "{{ variante.nombre|escapejs }}",
-                precio: "{{ variante.precio_venta }}"
+                precio: "{{ variante.precio_venta }}", 
+                imagen: "{{ variante.imagen_pos_url|escapejs }}"
             },
             {% endfor %}
         ]
@@ -351,6 +352,17 @@ document.addEventListener("DOMContentLoaded", function () {
             const precio = document.createElement("div");
             precio.className = "text-blue-600 font-bold text-lg mt-2";
             precio.textContent = formatoMoneda(variante.precio);
+            if (variante.imagen) {
+            const imagen = document.createElement("img");
+
+            imagen.src = variante.imagen;
+            imagen.alt = variante.nombre;
+            imagen.loading = "lazy";
+            imagen.className =
+                "w-full h-20 object-contain mb-2 rounded-lg";
+
+            boton.appendChild(imagen);
+        }
 
             boton.appendChild(nombre);
             boton.appendChild(precio);
