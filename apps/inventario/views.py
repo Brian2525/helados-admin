@@ -14,6 +14,10 @@ from django.core.exceptions import PermissionDenied
 from apps.inventario.services_conciliacion import (
     calcular_conciliacion_diaria,
 )
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_GET
+
+
 
 from itertools import groupby
 
@@ -2053,3 +2057,90 @@ class AlertasInventarioPOSView(
                 "pos_seccion": "mas",
             },
         )
+
+
+
+@method_decorator(require_GET, name="dispatch")
+class RevisarInventarioView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    SucursalActivaMixin,
+    TemplateView,
+):
+    template_name = "inventario/revisar_inventario.html"
+
+    def get_fecha(self):
+        return timezone.localdate()
+
+    def get_existencias(self, fecha_hora_consulta):
+        return existencia_teorica_diaria(
+            sucursal=self.request.sucursal_activa,
+            fecha=timezone.localtime(fecha_hora_consulta).date(),
+            fecha_hora_fin=fecha_hora_consulta,
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        fecha_hora_consulta = timezone.now()
+
+        existencias = self.get_existencias(
+            fecha_hora_consulta=fecha_hora_consulta
+        )
+
+        inventarios = []
+        categorias = set()
+
+        for item in existencias:
+
+            variante = item["variante"]
+            producto = variante.producto
+
+            # Nombre del producto y variante
+            nombre = producto.nombre
+
+            if variante.nombre:
+                nombre = f"{producto.nombre} - {variante.nombre}"
+
+            # Categoría: usar el campo existente
+            # cuando el modelo lo tenga disponible.
+            categoria = "Sin categoría"
+
+            if hasattr(producto, "categoria") and producto.categoria:
+                categoria = str(producto.categoria)
+
+            categorias.add(categoria)
+
+            # Existencia calculada
+            cantidad = item["cantidad_teorica"]
+
+            # Si no existe inventario inicial autorizado,
+            # mantenemos la cantidad como None.
+            sin_inventario_inicial = item[
+                "sin_inventario_inicial"
+            ]
+
+            inventarios.append({
+                "variante_id": variante.id,
+                "nombre": nombre,
+                "categoria": categoria,
+                "cantidad": cantidad,
+                "unidad": "",
+                "fecha_conteo": item["fecha_ultimo_conteo"],
+                "inventario_inicial": item["inventario_inicial"],
+                "consumo_teorico": item["consumo_teorico"],
+                "movimientos_netos": item["movimientos_netos"],
+                "sin_inventario_inicial": sin_inventario_inicial,
+            })
+
+        context.update({
+            "sucursal_activa": self.request.sucursal_activa,
+            "fecha_consulta": timezone.localtime(
+                fecha_hora_consulta
+            ),
+            "inventarios": inventarios,
+            "categorias": sorted(categorias),
+            "solo_lectura": True,
+        })
+
+        return context

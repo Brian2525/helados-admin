@@ -1,0 +1,335 @@
+
+{% extends "core/base_pos.html" %}
+
+{% block title %}Revisar inventario{% endblock %}
+{% block page_title %}Revisar inventario{% endblock %}
+
+{% block content %}
+
+<div class="mx-auto max-w-6xl px-3 pb-28 sm:px-5">
+
+    <!-- ENCABEZADO -->
+    <header class="mb-4 flex items-center justify-between gap-3">
+
+        <div class="flex items-center gap-3">
+
+            <a href="{% url 'inventario:pos_inventario_menu' %}"
+               class="flex h-10 w-10 shrink-0 items-center
+                      justify-center rounded-xl border
+                      border-slate-200 bg-white text-xl
+                      text-slate-700 shadow-sm">
+                &larr;
+            </a>
+
+            <div>
+                <h1 class="text-xl font-bold text-slate-900">
+                    Revisar inventario
+                </h1>
+
+                <p class="text-xs text-slate-500">
+                    🏪 {{ sucursal_activa.nombre }}
+                    · {{ fecha_consulta|date:"d/m/Y" }}
+                </p>
+            </div>
+
+        </div>
+
+        <span class="rounded-full bg-emerald-50
+                     px-3 py-1.5 text-xs font-bold
+                     text-emerald-700">
+            🔒 Solo lectura
+        </span>
+
+    </header>
+
+    <!-- INFORMACIÓN -->
+    <div class="mb-4 rounded-xl border border-cyan-100
+                bg-cyan-50 px-4 py-3">
+
+        <p class="text-sm text-cyan-900">
+            <strong>Consulta de existencias.</strong>
+            Puedes revisar los productos y sus cantidades
+            registradas sin modificar el inventario.
+        </p>
+
+    </div>
+
+    <!-- BUSCADOR Y FILTROS -->
+    <div class="mb-4 grid grid-cols-1 gap-3
+                rounded-2xl border border-slate-200
+                bg-white p-3 shadow-sm sm:grid-cols-3">
+
+        <div class="sm:col-span-2">
+
+            <label for="buscarInventario"
+                   class="mb-1 block text-xs font-semibold
+                          text-slate-600">
+                Buscar producto
+            </label>
+
+            <input
+                type="search"
+                id="buscarInventario"
+                placeholder="Buscar por producto o variante..."
+                class="w-full rounded-xl border border-slate-200
+                       bg-slate-50 px-4 py-3 text-sm
+                       text-slate-900 outline-none
+                       focus:border-cyan-500"
+            >
+
+        </div>
+
+        <div>
+
+            <label for="filtroCategoria"
+                   class="mb-1 block text-xs font-semibold
+                          text-slate-600">
+                Categoría
+            </label>
+
+            <select id="filtroCategoria"
+                    class="w-full rounded-xl border
+                           border-slate-200 bg-slate-50
+                           px-3 py-3 text-sm text-slate-900">
+
+                <option value="">Todas las categorías</option>
+
+                {% for categoria in categorias %}
+                    <option value="{{ categoria }}">
+                        {{ categoria }}
+                    </option>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="mb-4 grid grid-cols-2 gap-3">
+
+        <div class="rounded-xl border border-slate-200
+                    bg-white px-4 py-3 shadow-sm">
+
+            <p class="text-xs font-medium text-slate-500">
+                Variantes registradas
+            </p>
+
+            <p class="mt-1 text-2xl font-bold text-slate-900">
+                {{ inventarios|length }}
+            </p>
+
+        </div>
+
+        <div class="rounded-xl border border-slate-200
+                    bg-white px-4 py-3 shadow-sm">
+
+            <p class="text-xs font-medium text-slate-500">
+                Mostrando
+            </p>
+
+            <p id="contadorVisible"
+               class="mt-1 text-2xl font-bold text-cyan-700">
+                {{ inventarios|length }}
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- TABLA DE INVENTARIO -->
+    <section class="overflow-hidden rounded-2xl border
+                    border-slate-200 bg-white shadow-sm">
+
+        <div class="flex items-center justify-between
+                    border-b border-slate-100 px-4 py-3">
+
+            <h2 class="text-sm font-bold text-slate-900">
+                Existencias actuales
+            </h2>
+
+            <span class="text-xs text-slate-400">
+                Consulta de inventario
+            </span>
+
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full min-w-[600px] text-left text-sm">
+
+                <thead class="bg-slate-50 text-xs
+                              uppercase text-slate-500">
+
+                    <tr>
+                        <th class="px-4 py-3 font-semibold">
+                            Producto / Variante
+                        </th>
+
+                        <th class="px-4 py-3 font-semibold">
+                            Categoría
+                        </th>
+
+                        <th class="px-4 py-3 text-right font-semibold">
+                            Existencia
+                        </th>
+
+                        <th class="px-4 py-3 text-right font-semibold">
+                            Último conteo
+                        </th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="tablaInventario"
+                       class="divide-y divide-slate-100">
+
+                    {% for item in inventarios %}
+
+                    <tr class="fila-inventario
+                               hover:bg-slate-50"
+                        data-busqueda="{{ item.nombre|lower }}"
+                        data-categoria="{{ item.categoria|default:'Sin categoría' }}">
+
+                        <td class="px-4 py-3">
+
+                            <p class="font-semibold text-slate-900">
+                                {{ item.nombre }}
+                            </p>
+
+                        </td>
+
+                        <td class="px-4 py-3 text-slate-600">
+                            {{ item.categoria|default:"Sin categoría" }}
+                        </td>
+
+                        <td class="px-4 py-3 text-right">
+
+                            {% if item.sin_inventario_inicial %}
+
+                                <span class="inline-flex rounded-lg
+                                            bg-amber-50 px-2 py-1
+                                            text-xs font-semibold
+                                            text-amber-700">
+                                    Sin inventario inicial
+                                </span>
+
+                            {% else %}
+
+                                <span class="font-bold
+                                    {% if item.cantidad < 0 %}
+                                        text-red-600
+                                    {% elif item.cantidad == 0 %}
+                                        text-amber-600
+                                    {% else %}
+                                        text-slate-900
+                                    {% endif %}
+                                ">
+                                    {{ item.cantidad|floatformat:"-2" }}
+                                </span>
+
+                                <span class="ml-1 text-xs text-slate-500">
+                                    {{ item.unidad }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td class="px-4 py-3 text-right text-slate-500">
+                            {% if item.fecha_conteo %}
+                                {{ item.fecha_conteo|date:"d/m/Y" }}
+                            {% else %}
+                                Sin conteo
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="4"
+                            class="px-4 py-12 text-center
+                                   text-sm text-slate-500">
+                            No hay productos para mostrar.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- SIN RESULTADOS DE BÚSQUEDA -->
+        <div id="sinResultados"
+             class="hidden px-4 py-10 text-center">
+
+            <p class="text-sm font-medium text-slate-500">
+                No se encontraron productos con esos filtros.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buscador = document.getElementById("buscarInventario");
+    const categoria = document.getElementById("filtroCategoria");
+    const filas = document.querySelectorAll(".fila-inventario");
+    const contador = document.getElementById("contadorVisible");
+    const sinResultados = document.getElementById("sinResultados");
+
+    function filtrarInventario() {
+
+        const texto = buscador.value.toLowerCase().trim();
+        const categoriaSeleccionada = categoria.value;
+
+        let visibles = 0;
+
+        filas.forEach(function (fila) {
+
+            const nombre = fila.dataset.busqueda || "";
+            const tipo = fila.dataset.categoria || "";
+
+            const coincideTexto = nombre.includes(texto);
+
+            const coincideCategoria =
+                !categoriaSeleccionada ||
+                tipo === categoriaSeleccionada;
+
+            const mostrar = coincideTexto && coincideCategoria;
+
+            fila.classList.toggle("hidden", !mostrar);
+
+            if (mostrar) {
+                visibles++;
+            }
+
+        });
+
+        contador.textContent = visibles;
+
+        sinResultados.classList.toggle(
+            "hidden",
+            visibles !== 0 || filas.length === 0
+        );
+    }
+
+    buscador.addEventListener("input", filtrarInventario);
+    categoria.addEventListener("change", filtrarInventario);
+
+});
+</script>
+
+{% include "ventas/pos/_nav_pos.html" %}
+
+{% endblock %}

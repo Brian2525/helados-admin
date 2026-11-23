@@ -1,208 +1,309 @@
 
 {% extends "core/base_pos.html" %}
+
 {% block title %}Inventario{% endblock %}
 {% block page_title %}Inventario{% endblock %}
 
 {% block content %}
-<div class="mx-auto max-w-3xl px-4 pb-28">
 
-    <!-- Encabezado -->
-    <header class="mb-7">
+<div class="mx-auto max-w-4xl px-3 pb-28 sm:px-5">
+
+    <!-- ENCABEZADO -->
+    <header class="mb-5">
+
         <div class="flex items-center gap-3">
-            <button type="button"
-                    onclick="history.back()"
-                    aria-label="Volver"
-                    class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl">
+
+            <a href="{% url 'ventas:pos_mas' %}"
+                    class="flex h-11 w-11 items-center justify-center
+                    rounded-xl border border-slate-200
+                    bg-white text-xl text-slate-700">
                 &larr;
-            </button>
+            </a>
 
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">
                     Inventario
                 </h1>
-                <p class="mt-1 text-sm text-slate-500">
+
+                <p class="mt-0.5 text-sm text-slate-500">
                     🏪 {{ sucursal_activa.nombre }}
                 </p>
             </div>
+
         </div>
+
     </header>
 
-    <!-- Operaciones -->
-    <section>
-       
+    <!-- OPERACIONES PARA TODOS -->
+    <section class="mb-6">
 
+        <h2 class="mb-3 text-xs font-bold uppercase
+                   tracking-wider text-slate-400">
+            Operaciones de inventario
+        </h2>
 
-        {% if request.user.is_superuser or request.user.perfil.inventario %}
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
-    <h2 class="mb-3 mt-8 text-xs font-bold uppercase tracking-wider text-slate-400">
-        Supervisión de inventario
-    </h2>
-
-<div class="space-y-3">
-
-    <a
-        href="{% url 'inventario:pos_alertas_inventario' %}"
-        class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:bg-slate-50"
-    >
-        <span class="text-2xl">⚠️</span>
-
-        <div class="flex-1">
-            <p class="font-bold text-slate-900">
-                Alertas de inventario
-            </p>
-            <p class="text-sm text-slate-500">
-                Revisar faltantes y sobrantes
-            </p>
-        </div>
-
-        <span class="text-slate-400">›</span>
-    </a>
-
-   
-
-    <a
-            href="{% url 'inventario:pos_inventario_inicial' %}"
-            class="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm hover:bg-gray-50"
-        >
-            <span class="text-3xl">📋</span>
-
-            <div class="flex-1">
-                <div class="font-bold text-gray-900">
-                    Inventario inicial
-                </div>
-
-                <p class="text-sm text-gray-500">
-                    Autorizar existencias iniciales
-                </p>
-            </div>
-
-            <span class="text-gray-400">›</span>
-        </a>
-       
+            <!-- REVISAR INVENTARIO -->
             <a
-                href="{% url 'inventario:pos_conciliacion_diaria' %}"
-                class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:bg-slate-50"
+                href="{% url 'inventario:revisar_inventario' %}"
+                class="group flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-cyan-400 hover:bg-cyan-50
+                       active:scale-[0.99]"
             >
-                <span class="text-3xl">📊</span>
 
-                <div class="flex-1">
-                    <p class="font-bold text-slate-900">
-                        Conciliación de inventario
-                    </p>
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-cyan-100 text-2xl">
+                    🔎
+                </span>
 
-                    <p class="mt-1 text-sm text-slate-500">
-                        Revisar faltantes, sobrantes y conteos
-                    </p>
-                </div>
+                <span class="min-w-0 flex-1">
 
-                <span class="text-slate-400">›</span>
+                    <span class="block font-semibold text-slate-900">
+                        Revisar inventario
+                    </span>
+
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Consultar existencias sin modificar
+                    </span>
+
+                </span>
+
+                <span class="text-xl text-slate-300">›</span>
+
             </a>
 
+            <!-- PREPARACIONES -->
+            <a
+                href="{% url 'inventario:preparacion_list' %}"
+                class="group flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-violet-400 hover:bg-violet-50
+                       active:scale-[0.99]"
+            >
 
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-violet-100 text-2xl">
+                    🧁
+                </span>
 
+                <span class="min-w-0 flex-1">
 
+                    <span class="block font-semibold text-slate-900">
+                        Preparar productos
+                    </span>
 
-    <a href="{% url 'inventario:merma_list' %}"
-               class="flex min-h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-red-400 active:scale-[0.99]">
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Producción y consumo de insumos
+                    </span>
 
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-100 text-2xl">
+                </span>
+
+                <span class="text-xl text-slate-300">›</span>
+
+            </a>
+
+            <!-- RECEPCIÓN -->
+            <a
+                href="{% url 'inventario:recepcion_list' %}"
+                class="group flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-blue-400 hover:bg-blue-50
+                       active:scale-[0.99]"
+            >
+
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-blue-100 text-2xl">
+                    📦
+                </span>
+
+                <span class="min-w-0 flex-1">
+
+                    <span class="block font-semibold text-slate-900">
+                        Recibir productos
+                    </span>
+
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Registrar llegada de mercancía
+                    </span>
+
+                </span>
+
+                <span class="text-xl text-slate-300">›</span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+    <!-- SUPERVISIÓN -->
+    {% if request.user.is_superuser or request.user.perfil.inventario %}
+
+    <section>
+
+        <h2 class="mb-3 text-xs font-bold uppercase
+                   tracking-wider text-slate-400">
+            Supervisión de inventario
+        </h2>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+            <!-- ALERTAS -->
+            <a
+                href="{% url 'inventario:pos_alertas_inventario' %}"
+                class="flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-amber-400 hover:bg-amber-50"
+            >
+
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-amber-100 text-2xl">
                     ⚠️
+                </span>
+
+                <span class="min-w-0 flex-1">
+                    <span class="block font-semibold text-slate-900">
+                        Alertas de inventario
+                    </span>
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Revisar faltantes y sobrantes
+                    </span>
+                </span>
+
+                <span class="text-xl text-slate-300">›</span>
+
+            </a>
+
+            <!-- INVENTARIO INICIAL -->
+            <a
+                href="{% url 'inventario:pos_inventario_inicial' %}"
+                class="flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-indigo-400 hover:bg-indigo-50"
+            >
+
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-indigo-100 text-2xl">
+                    📋
+                </span>
+
+                <span class="min-w-0 flex-1">
+                    <span class="block font-semibold text-slate-900">
+                        Inventario inicial
+                    </span>
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Autorizar existencias iniciales
+                    </span>
+                </span>
+
+                <span class="text-xl text-slate-300">›</span>
+
+            </a>
+
+            <!-- CONCILIACIÓN -->
+            <a
+                href="{% url 'inventario:pos_conciliacion_diaria' %}"
+                class="flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-emerald-400 hover:bg-emerald-50"
+            >
+
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-emerald-100 text-2xl">
+                    📊
+                </span>
+
+                <span class="min-w-0 flex-1">
+                    <span class="block font-semibold text-slate-900">
+                        Conciliación de inventario
+                    </span>
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Revisar diferencias y conteos
+                    </span>
+                </span>
+
+                <span class="text-xl text-slate-300">›</span>
+
+            </a>
+
+            <!-- MERMAS -->
+            <a
+                href="{% url 'inventario:merma_list' %}"
+                class="flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-red-400 hover:bg-red-50"
+            >
+
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-red-100 text-2xl">
+                    🗑️
                 </span>
 
                 <span class="min-w-0 flex-1">
                     <span class="block font-semibold text-slate-900">
                         Registrar merma
                     </span>
-                    <span class="mt-1 block text-sm text-slate-500">
-                        Productos dañados, rotos o caducados
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Productos dañados o caducados
                     </span>
                 </span>
-                <span class="text-2xl text-slate-300">›</span>
+
+                <span class="text-xl text-slate-300">›</span>
+
             </a>
 
+            <!-- MOVIMIENTOS -->
+            <a
+                href="{% url 'inventario:pos_movimiento_list' %}"
+                class="flex min-h-20 items-center gap-3
+                       rounded-2xl border border-slate-200
+                       bg-white p-4 shadow-sm transition
+                       hover:border-blue-400 hover:bg-blue-50"
+            >
 
-                    <!-- MOVIMIENTOS DE INVENTARIO -->
-        <a
-            href="{% url 'inventario:pos_movimiento_list' %}"
-            class="flex items-center gap-4 bg-white
-                border border-gray-200 rounded-2xl
-                px-5 py-4 shadow-sm
-                hover:border-blue-400 hover:bg-blue-50
-                transition"
-        >
-            <div class="w-12 h-12 rounded-xl bg-blue-100
-                        flex items-center justify-center text-2xl">
-                📦
-            </div>
-
-            <div class="flex-1">
-                <div class="font-bold text-gray-900">
-                    Movimientos de inventario
-                </div>
-
-                <p class="text-sm text-gray-500 mt-1">
-                    Consultar movimientos y registrar ajustes
-                </p>
-            </div>
-
-            <span class="text-gray-400 text-xl">›</span>
-        </a>
-
-</div>
-
-{% endif %}
- <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-            Operaciones de inventario
-        </h2>
-
-        <div class="space-y-3">
-
-
-            <!-- Preparaciones -->
-            <a href="{% url 'inventario:preparacion_list' %}"
-               class="flex min-h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-violet-400 active:scale-[0.99]">
-
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-2xl">
-                    🧁
+                <span class="flex h-11 w-11 shrink-0 items-center
+                             justify-center rounded-xl
+                             bg-blue-100 text-2xl">
+                    🔄
                 </span>
 
                 <span class="min-w-0 flex-1">
                     <span class="block font-semibold text-slate-900">
-                        Preparar productos
+                        Movimientos de inventario
                     </span>
-                    <span class="mt-1 block text-sm text-slate-500">
-                        Producción y consumo de insumos
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Consultar movimientos y ajustes
                     </span>
                 </span>
-                <span class="text-2xl text-slate-300">›</span>
+
+                <span class="text-xl text-slate-300">›</span>
+
             </a>
-
-            <!-- Recepciones -->
-            <a href="{% url 'inventario:recepcion_list' %}"
-               class="flex min-h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-400 active:scale-[0.99]">
-
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-2xl">
-                    📦
-                </span>
-
-                <span class="min-w-0 flex-1">
-                    <span class="block font-semibold text-slate-900">
-                        Recibir productos
-                    </span>
-                    <span class="mt-1 block text-sm text-slate-500">
-                        Registrar llegada de mercancía
-                    </span>
-                </span>
-                <span class="text-2xl text-slate-300">›</span>
-            </a>
-
-            <!-- Mermas -->
-            
 
         </div>
+
     </section>
+
+    {% endif %}
 
 </div>
 
 {% include "ventas/pos/_nav_pos.html" %}
+
 {% endblock %}

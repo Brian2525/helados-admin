@@ -29,6 +29,8 @@ from .views import (
     InventarioInicialPOSView,
     ConciliacionInventarioPOSView,
     AlertasInventarioPOSView,
+    RevisarInventarioView,
+
   
 )
 
@@ -101,6 +103,8 @@ urlpatterns = [
     path("pos/conciliacion/",ConciliacionInventarioPOSView.as_view(),name="pos_conciliacion_diaria",),
 
     path("pos/alertas/",AlertasInventarioPOSView.as_view(),name="pos_alertas_inventario",),
+
+    path("revisar/", RevisarInventarioView.as_view(),name="revisar_inventario",),
 
          
 
