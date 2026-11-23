@@ -21,12 +21,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.sucursales.models import Sucursal
 from apps.compras.models import CuentaPorPagar
 from apps.nomina.models import Empleado, Nomina
+from apps.core.permissions import tiene_permiso_operacion
+
 
 from django.db.models import Sum
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.shortcuts import redirect, render
 from django.views import View
 from django.contrib import messages
+
 
 
 
@@ -535,16 +538,18 @@ class ReponerCajaChicaView(
     View,
 ):
     def test_func(self):
-        user = self.request.user
-        sucursal = self.request.sucursal_activa
-
-        return (
-            user.is_superuser
-            or (
-                user.is_authenticated
-                and sucursal.propietario_id == user.pk
-            )
+        return tiene_permiso_operacion(
+            user=self.request.user,
+            permiso="gastos.puede_reponer_caja_chica",
+            sucursal=self.request.sucursal_activa,
         )
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            raise PermissionDenied(
+                "No tienes permiso para reponer caja chica."
+            )
+        return super().handle_no_permission()
 
     def post(self, request, *args, **kwargs):
         try:
@@ -563,6 +568,9 @@ class ReponerCajaChicaView(
             )
 
         except ValidationError as error:
-            messages.error(request, "; ".join(error.messages))
+            messages.error(
+                request,
+                "; ".join(error.messages)
+            )
 
         return redirect("gastos:caja_chica")

@@ -11,6 +11,7 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
 
     list_display = (
         "usuario",
+        "supervisor",
         "ventas",
         "gastos",
         "compras",

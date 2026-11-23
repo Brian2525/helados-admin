@@ -18,6 +18,11 @@ from django.core.exceptions import ValidationError
 from datetime import date
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
+from apps.ventas.services_anulacion import (
+    anular_venta,
+    usuario_puede_anular,
+)
+
 
 
 
@@ -289,8 +294,10 @@ class VentaDetailView(SucursalPermissionMixin, LoginRequiredMixin, DetailView):
             Venta.objects
             .filter(sucursal__in=self.get_sucursales_usuario())
             .select_related("sucursal", "usuario")
-            .prefetch_related("detalles", "detalles__producto", "detalles__variantes_elegibles")
+            .prefetch_related("detalles", "detalles__variante")
         )
+
+
 
 
 class VentaCreateView(SucursalPermissionMixin, LoginRequiredMixin, View):
@@ -424,43 +431,83 @@ class VentaUpdateView(SucursalPermissionMixin, LoginRequiredMixin, View):
         )
 
 
-class VentaAnularView(SucursalPermissionMixin, LoginRequiredMixin, View):
+class VentaAnularView(
+    LoginRequiredMixin,
+    SucursalPermissionMixin,
+    View,
+):
     template_name = "ventas/venta_confirm_anular.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if not usuario_puede_anular(request.user):
+                raise PermissionDenied(
+                    "No tienes permiso para anular ventas."
+                )
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_object(self):
         return get_object_or_404(
             Venta.objects.filter(
                 sucursal__in=self.get_sucursales_usuario()
             ),
-            pk=self.kwargs["pk"]
+            pk=self.kwargs["pk"],
         )
 
     def get(self, request, pk):
         venta = self.get_object()
 
+        if venta.estado == Venta.EstadoVenta.ANULADA:
+            messages.warning(
+                request,
+                "La venta ya se encuentra anulada."
+            )
+            return redirect(
+                "ventas:venta_detail",
+                pk=venta.pk,
+            )
+
         return render(
             request,
             self.template_name,
-            {
-                "venta": venta,
-            }
+            {"venta": venta},
         )
 
-    @transaction.atomic
     def post(self, request, pk):
-        venta = self.get_object()
+        motivo = request.POST.get(
+            "motivo_anulacion", ""
+        )
 
-        if venta.estado == Venta.EstadoVenta.ANULADA:
-            messages.warning(request, "La venta ya estaba anulada.")
-            return redirect("ventas:venta_detail", pk=venta.pk)
+        try:
+            venta = anular_venta(
+                venta_id=pk,
+                usuario=request.user,
+                motivo=motivo,
+                sucursales_autorizadas=(
+                    self.get_sucursales_usuario()
+                ),
+            )
 
-        venta.estado = Venta.EstadoVenta.ANULADA
-        venta.save(update_fields=["estado", "updated_at"])
+        except ValidationError as exc:
+            messages.error(
+                request,
+                "; ".join(exc.messages),
+            )
 
-        messages.success(request, "La venta fue anulada correctamente.")
+            return redirect(
+                "ventas:venta_anular",
+                pk=pk,
+            )
 
-        return redirect("ventas:venta_detail", pk=venta.pk)
+        messages.success(
+            request,
+            "La venta fue anulada correctamente."
+        )
 
+        return redirect(
+            "ventas:pos_transacciones"
+        )
 
 
 
@@ -1285,7 +1332,10 @@ class POSVentaExitosaView(SucursalPermissionMixin, LoginRequiredMixin, View):
         )
 
 
+
+    
 ############ END POS - PUNTO DE VENTA - #############
+
 class POSTransaccionesView(
     LoginRequiredMixin,
     SucursalActivaMixin,
@@ -1298,6 +1348,10 @@ class POSTransaccionesView(
 
         sucursal = request.sucursal_activa
         hoy = timezone.localdate()
+
+        # ---------------------------------------
+        # TRANSACCIONES DEL DÍA
+        # ---------------------------------------
 
         ventas = (
             Venta.objects
@@ -1316,6 +1370,10 @@ class POSTransaccionesView(
             .order_by("-fecha_hora")
         )
 
+        # ---------------------------------------
+        # TOTAL DE VENTAS CONFIRMADAS
+        # ---------------------------------------
+
         total_hoy = sum(
             (
                 venta.total
@@ -1325,17 +1383,46 @@ class POSTransaccionesView(
             Decimal("0.00")
         )
 
+        # ---------------------------------------
+        # PERMISOS PARA ANULAR VENTAS
+        # ---------------------------------------
+
+        puede_anular = False
+
+        if usuario_puede_anular(request.user):
+
+            sucursales_autorizadas = (
+                self.get_sucursales_usuario()
+            )
+
+            puede_anular = (
+                sucursales_autorizadas.filter(
+                    pk=sucursal.pk
+                ).exists()
+            )
+
+        # ---------------------------------------
+        # CONTEXTO
+        # ---------------------------------------
+
+        context = {
+            "ventas": ventas,
+            "total_hoy": total_hoy,
+            "fecha": hoy,
+            "sucursal_activa": sucursal,
+            "pos_seccion": "transacciones",
+            "puede_anular": puede_anular,
+        }
+
         return render(
             request,
             self.template_name,
-            {
-                "ventas": ventas,
-                "total_hoy": total_hoy,
-                "fecha": hoy,
-                "sucursal_activa": sucursal,
-                "pos_seccion": "transacciones",
-            }
+            context
         )
+
+
+
+
 
 #Vista de botón de mas (Pantalla de acciones de POS)
 class POSMasView(LoginRequiredMixin,SucursalActivaMixin,SucursalPermissionMixin,View):
@@ -1922,3 +2009,6 @@ class CierreDiarioFlowView(
             sucursal_id=sucursal.id,
             fecha=fecha.isoformat(),
         )
+
+
+

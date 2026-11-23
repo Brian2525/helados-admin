@@ -57,7 +57,7 @@ urlpatterns = [
     path("<int:pk>/editar/", VentaUpdateView.as_view(), name="venta_update"),
     path("<int:pk>/anular/", VentaAnularView.as_view(), name="venta_anular"),
 
-
+ 
 
 
     #POS 

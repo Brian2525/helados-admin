@@ -8,8 +8,8 @@ from .models import ResumenSemanal, Venta, VentaDetalle, VentaDiaria
 
 
 class VentaAdmin(admin.ModelAdmin):
-    list_display = ("sucursal" ,"fecha_hora", "total", "usuario")
-    list_filter = ("sucursal", "usuario", "fecha_hora")
+    list_display = ("sucursal" ,"fecha_hora", "total", "usuario", "estado")
+    list_filter = ("sucursal", "usuario", "fecha_hora", "estado")
     search_fields = ("sucursal__nombre", "usuario__username")
 
 

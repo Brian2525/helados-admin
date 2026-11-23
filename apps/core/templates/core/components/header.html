@@ -2,23 +2,46 @@
 
     <div class="px-8 py-4 flex justify-between items-center">
 
-        <div>
+        
+<div class="flex items-center gap-4">
 
-            <h2 class="text-2xl font-semibold text-slate-800">
+    <!-- BOTÓN INICIO -->
+    <a
+        href="{% url 'inicio' %}"
+        title="Regresar al inicio"
+        aria-label="Regresar al inicio"
+        class="
+            flex h-11 w-11 shrink-0
+            items-center justify-center
+            rounded-xl border border-slate-200
+            bg-white text-[#0098CE]
+            shadow-sm transition
+            hover:border-[#0098CE]
+            hover:bg-sky-50
+            active:scale-95
+        "
+    >
+<svg xmlns="http://w3schools.com" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+  <polyline points="9 22 9 12 15 12 15 22"/>
+</svg>
+    </a>
 
-                {% block page_title %}
-                Dashboard
-                {% endblock %}
+    <!-- TÍTULO -->
+    <div>
+        <h2 class="text-2xl font-semibold text-slate-800">
+            {% block page_title %}
+            Dashboard
+            {% endblock %}
+        </h2>
 
-            </h2>
+        <p class="mt-1 text-sm text-slate-500">
+            Bienvenido al sistema ERP
+        </p>
+    </div>
 
-            <p class="text-sm text-slate-500 mt-1">
+</div>
 
-                Bienvenido al sistema ERP
-
-            </p>
-
-        </div>
 
         <div class="flex items-center gap-4">
 

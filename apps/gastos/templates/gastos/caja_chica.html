@@ -258,7 +258,7 @@
     </div>
 
 
-{% if puede_reponer and  user.is_superuser%}
+{% if puede_reponer and  user.is_superuser or user.perfil.supervisor %}
 
 <div class="mt-4 bg-white border border-gray-200
             rounded-2xl p-4 shadow-sm">

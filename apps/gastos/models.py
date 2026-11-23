@@ -231,6 +231,9 @@ class CajaChica(models.Model):
                 name="cajachica_saldo_no_negativo"
             )
         ]
+        permissions = [
+            ("puede_reponer_caja_chica", "Puede reponer caja chica"),
+        ]
 
     def __str__(self):
         return f"Caja chica - {self.sucursal}"

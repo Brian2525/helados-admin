@@ -55,6 +55,23 @@ class Venta(models.Model):
         default=EstadoVenta.CONFIRMADA
     )
 
+    anulada_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ventas_anuladas",
+    )
+
+    anulada_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    motivo_anulacion = models.TextField(
+        blank=True,
+    )
+
     subtotal = models.DecimalField(
         max_digits=12,
         decimal_places=2,

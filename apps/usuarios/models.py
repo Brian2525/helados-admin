@@ -14,6 +14,8 @@ class PerfilUsuario(models.Model):
 
     dashboard = models.BooleanField(default=False)
 
+    supervisor = models.BooleanField(default=False) #Esta persona puede supervisar las ventas, inventario y finanzas de todas las sucursales.
+
     ventas = models.BooleanField(default=False)      # Ventas, cortes, devoluciones
 
     gastos= models.BooleanField(default=False)      # Gastos, cuentas por pagar, servicios
