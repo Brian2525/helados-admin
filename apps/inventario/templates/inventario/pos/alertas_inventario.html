@@ -1,4 +1,3 @@
-
 {% extends "core/base_pos.html" %}
 
 {% block title %}Alertas de inventario{% endblock %}
@@ -6,231 +5,519 @@
 
 {% block content %}
 
-<div class="mx-auto max-w-5xl px-4 pb-28">
+<div class="mx-auto max-w-7xl px-3 pb-28">
 
-    <header class="mb-6">
+    <!-- ENCABEZADO Y FECHA -->
+    <header class="mb-4 flex flex-wrap items-center justify-between gap-3">
+
         <div class="flex items-center gap-3">
-            <span class="text-3xl">⚠️</span>
+
+            <i data-lucide="clipboard-list"
+               class="h-7 w-7 text-[#0098CE]">
+            </i>
 
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">
+                <h1 class="text-xl font-bold text-slate-900">
                     Alertas de inventario
                 </h1>
 
-                <p class="text-sm text-slate-500">
-                    Supervisión de todas las sucursales
+                <p class="text-xs text-slate-500">
+                    Supervisión de sucursales autorizadas
                 </p>
             </div>
+
         </div>
-    </header>
 
-    <!-- FILTRO POR FECHA -->
-    <form method="get"
-          class="mb-6 rounded-2xl border border-slate-200 bg-white p-4">
-
-        <label for="fecha"
-               class="mb-2 block text-sm font-semibold text-slate-700">
-            Fecha de cierre
-        </label>
-
-        <div class="flex flex-col gap-3 sm:flex-row">
+        <form method="get" class="flex items-center gap-2">
 
             <input
                 type="date"
                 id="fecha"
                 name="fecha"
+                aria-label="Fecha de cierre"
                 value="{{ fecha|date:'Y-m-d' }}"
                 max="{{ fecha_hoy|date:'Y-m-d' }}"
                 required
-                class="rounded-xl border border-slate-300 p-3"
+                class="rounded-lg border border-slate-300
+                       bg-white px-3 py-2 text-sm"
             >
 
             <button
                 type="submit"
-                class="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-800"
+                class="rounded-lg bg-[#0098CE] px-4 py-2
+                       text-sm font-semibold text-white
+                       hover:bg-sky-700"
             >
                 Consultar
             </button>
 
-        </div>
-    </form>
+        </form>
+
+    </header>
 
     {% if aviso %}
 
-        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <div class="rounded-xl border border-amber-200
+                    bg-amber-50 p-4 text-sm text-amber-900">
             {{ aviso }}
         </div>
 
     {% else %}
 
-        <!-- RESUMEN -->
-        <section class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <!-- INDICADORES COMPACTOS -->
+        <section class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                <p class="text-sm text-slate-500">
+            <div class="rounded-xl border border-slate-200
+                        bg-white px-4 py-3">
+
+                <p class="text-xs font-medium text-slate-500">
                     Total alertas
                 </p>
-                <p class="mt-2 text-3xl font-bold text-slate-900">
+
+                <p class="text-2xl font-bold text-slate-900">
                     {{ resumen.total_alertas }}
                 </p>
+
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                <p class="text-sm text-slate-500">
+            <div class="rounded-xl border border-slate-200
+                        bg-white px-4 py-3">
+
+                <p class="text-xs font-medium text-slate-500">
                     Faltantes
                 </p>
-                <p class="mt-2 text-3xl font-bold text-red-600">
+
+                <p class="text-2xl font-bold text-red-600">
                     {{ resumen.faltantes }}
                 </p>
+
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                <p class="text-sm text-slate-500">
+            <div class="rounded-xl border border-slate-200
+                        bg-white px-4 py-3">
+
+                <p class="text-xs font-medium text-slate-500">
                     Sobrantes
                 </p>
-                <p class="mt-2 text-3xl font-bold text-blue-600">
+
+                <p class="text-2xl font-bold text-blue-600">
                     {{ resumen.sobrantes }}
                 </p>
+
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                <p class="text-sm text-slate-500">
+            <div class="rounded-xl border border-slate-200
+                        bg-white px-4 py-3">
+
+                <p class="text-xs font-medium text-slate-500">
                     Sin cierre
                 </p>
-                <p class="mt-2 text-3xl font-bold text-amber-600">
+
+                <p class="text-2xl font-bold text-amber-600">
                     {{ resumen.sin_cierre }}
                 </p>
+
             </div>
 
         </section>
 
-        <!-- LISTADO -->
-        <section>
+        <!-- INFORMACIÓN ADICIONAL -->
+        <div class="mb-4 flex flex-wrap items-center gap-x-5
+                    gap-y-2 text-xs text-slate-500">
 
-            <div class="mb-4">
-                <h2 class="text-lg font-bold text-slate-900">
-                    Incidencias detectadas
-                </h2>
-                <p class="text-sm text-slate-500">
-                    Sólo aparecen productos o sucursales
-                    que requieren atención.
-                </p>
+            <span>
+                Sucursales evaluadas:
+                <strong class="text-slate-800">
+                    {{ resumen.sucursales_evaluadas }}
+                </strong>
+            </span>
+
+            <span>
+                Conteos correctos:
+                <strong class="text-green-600">
+                    {{ resumen.correctos }}
+                </strong>
+            </span>
+
+            <span>
+                Sin conteo:
+                <strong class="text-amber-600">
+                    {{ resumen.sin_conteo }}
+                </strong>
+            </span>
+
+            <span>
+                Sin teórico:
+                <strong class="text-slate-800">
+                    {{ resumen.sin_teorico }}
+                </strong>
+            </span>
+
+            <span>
+                Sin inicial:
+                <strong class="text-slate-800">
+                    {{ resumen.sin_inicial }}
+                </strong>
+            </span>
+
+        </div>
+
+        <!-- FILTROS RÁPIDOS -->
+        <section class="mb-4 flex flex-wrap items-center
+                        justify-between gap-3">
+
+            <div class="flex flex-wrap gap-2">
+
+                <button
+                    type="button"
+                    data-filtro="todos"
+                    aria-pressed="true"
+                    class="filtro-alerta rounded-lg border
+                           border-slate-900 bg-slate-900
+                           px-3 py-2 text-xs font-semibold text-white"
+                >
+                    Todas
+                </button>
+
+                <button
+                    type="button"
+                    data-filtro="faltante"
+                    aria-pressed="false"
+                    class="filtro-alerta rounded-lg border
+                           border-slate-200 bg-white px-3 py-2
+                           text-xs font-semibold text-slate-600"
+                >
+                    Faltantes
+                </button>
+
+                <button
+                    type="button"
+                    data-filtro="sobrante"
+                    aria-pressed="false"
+                    class="filtro-alerta rounded-lg border
+                           border-slate-200 bg-white px-3 py-2
+                           text-xs font-semibold text-slate-600"
+                >
+                    Sobrantes
+                </button>
+
+                <button
+                    type="button"
+                    data-filtro="sin_cierre"
+                    aria-pressed="false"
+                    class="filtro-alerta rounded-lg border
+                           border-slate-200 bg-white px-3 py-2
+                           text-xs font-semibold text-slate-600"
+                >
+                    Sin cierre
+                </button>
+
+                <button
+                    type="button"
+                    data-filtro="otros"
+                    aria-pressed="false"
+                    class="filtro-alerta rounded-lg border
+                           border-slate-200 bg-white px-3 py-2
+                           text-xs font-semibold text-slate-600"
+                >
+                    Otras incidencias
+                </button>
+
             </div>
 
-            <div class="space-y-3">
+            <div class="flex items-center gap-2">
 
-                {% for alerta in alertas %}
+                <button
+                    type="button"
+                    id="expandir-todas"
+                    aria-label="Expandir todas las sucursales"
+                    title="Expandir todas"
+                    class="rounded-lg border border-slate-200
+                           bg-white p-2 text-slate-600"
+                >
+                    <i data-lucide="chevrons-down"
+                       class="h-4 w-4"></i>
+                </button>
 
-                <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <button
+                    type="button"
+                    id="contraer-todas"
+                    aria-label="Contraer todas las sucursales"
+                    title="Contraer todas"
+                    class="rounded-lg border border-slate-200
+                           bg-white p-2 text-slate-600"
+                >
+                    <i data-lucide="chevrons-up"
+                       class="h-4 w-4"></i>
+                </button>
 
-                    <div class="flex items-start justify-between gap-3">
+            </div>
 
-                        <div class="min-w-0 flex-1">
+        </section>
 
-                            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">
-                                {{ alerta.sucursal.nombre }}
-                            </p>
+        <!-- AGRUPAR ALERTAS POR SUCURSAL -->
+        {% regroup alertas|dictsort:"sucursal.nombre" by sucursal as grupos %}
 
-                            <h3 class="mt-1 font-bold text-slate-900">
-                                {% if alerta.variante %}
-                                    {{ alerta.variante.producto.nombre }}
-                                    — {{ alerta.variante.nombre }}
-                                {% else %}
-                                    Inventario de sucursal
-                                {% endif %}
-                            </h3>
+        <section class="space-y-3">
+
+            {% for grupo in grupos %}
+
+                <details
+                    open
+                    class="grupo-sucursal group overflow-hidden
+                           rounded-xl border border-slate-200 bg-white"
+                >
+
+                    <!-- ENCABEZADO DE SUCURSAL -->
+                    <summary class="flex cursor-pointer list-none
+                                    items-center justify-between
+                                    gap-3 bg-slate-50 px-4 py-3
+                                    [&::-webkit-details-marker]:hidden">
+
+                        <div class="flex items-center gap-3">
+
+                            <i data-lucide="store"
+                               class="h-5 w-5 text-[#0098CE]">
+                            </i>
+
+                            <h2 class="text-sm font-bold text-slate-900">
+                                {{ grupo.grouper.nombre }}
+                            </h2>
+
+                            <span class="text-xs text-slate-500">
+
+                                <span class="contador-sucursal">
+                                    {{ grupo.list|length }}
+                                </span>
+
+                                incidencias
+
+                            </span>
 
                         </div>
 
-                        {% if alerta.tipo == "faltante" %}
-                            <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">
-                                Faltante
-                            </span>
-                        {% elif alerta.tipo == "sobrante" %}
-                            <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-                                Sobrante
-                            </span>
-                        {% elif alerta.tipo == "sin_cierre" %}
-                            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
-                                Sin cierre
-                            </span>
-                        {% elif alerta.tipo == "sin_conteo" %}
-                            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
-                                Sin conteo
-                            </span>
-                        {% elif alerta.tipo == "sin_teorico" %}
-                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                                Sin referencia
-                            </span>
-                        {% else %}
-                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                                Sin inicial
-                            </span>
-                        {% endif %}
+                        <i data-lucide="chevron-down"
+                           class="h-4 w-4 text-slate-500
+                                  transition-transform
+                                  group-open:rotate-180">
+                        </i>
+
+                    </summary>
+
+                    <!-- TABLA COMPACTA -->
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full text-sm">
+
+                            <thead class="border-y border-slate-200
+                                          bg-white text-xs text-slate-500">
+
+                                <tr>
+
+                                    <th class="px-4 py-2 text-left font-medium">
+                                        Producto
+                                    </th>
+
+                                    <th class="px-3 py-2 text-left font-medium">
+                                        Incidencia
+                                    </th>
+
+                                    <th class="px-3 py-2 text-right font-medium">
+                                        Teórico
+                                    </th>
+
+                                    <th class="px-3 py-2 text-right font-medium">
+                                        Físico
+                                    </th>
+
+                                    <th class="px-4 py-2 text-right font-medium">
+                                        Diferencia
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody class="divide-y divide-slate-100">
+
+                                {% for alerta in grupo.list %}
+
+                                    <tr
+                                        data-tipo="{{ alerta.tipo }}"
+                                        class="fila-alerta hover:bg-slate-50"
+                                    >
+
+                                        <!-- PRODUCTO -->
+                                        <td class="px-4 py-3">
+
+                                            {% if alerta.variante %}
+
+                                                <span class="font-semibold text-slate-800">
+                                                    {{ alerta.variante.producto.nombre }}
+                                                </span>
+
+                                                {% if alerta.variante.nombre %}
+
+                                                    <span class="text-xs text-slate-500">
+                                                        — {{ alerta.variante.nombre }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                <span class="font-semibold text-slate-800">
+                                                    Inventario general
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                        <!-- TIPO DE INCIDENCIA -->
+                                        <td class="whitespace-nowrap px-3 py-3 text-xs">
+
+                                            {% if alerta.tipo == "faltante" %}
+
+                                                <span class="font-semibold text-red-600">
+                                                    Faltante
+                                                </span>
+
+                                            {% elif alerta.tipo == "sobrante" %}
+
+                                                <span class="font-semibold text-blue-600">
+                                                    Sobrante
+                                                </span>
+
+                                            {% elif alerta.tipo == "sin_cierre" %}
+
+                                                <span class="font-semibold text-amber-600">
+                                                    Sin cierre
+                                                </span>
+
+                                            {% elif alerta.tipo == "sin_conteo" %}
+
+                                                <span class="font-semibold text-amber-600">
+                                                    Sin conteo
+                                                </span>
+
+                                            {% elif alerta.tipo == "sin_teorico" %}
+
+                                                <span class="font-semibold text-slate-600">
+                                                    Sin teórico
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="font-semibold text-slate-600">
+                                                    Sin inicial
+                                                </span>
+
+                                            {% endif %}
+
+                                            <i
+                                                data-lucide="info"
+                                                title="{{ alerta.descripcion }}"
+                                                class="ml-1 inline-block h-3 w-3
+                                                       text-slate-400"
+                                            ></i>
+
+                                            <span class="sr-only">
+                                                {{ alerta.descripcion }}
+                                            </span>
+
+                                        </td>
+
+                                        <!-- TEÓRICO -->
+                                        <td class="px-3 py-3 text-right
+                                                   tabular-nums text-slate-600">
+
+                                            {% if alerta.teorico != None %}
+                                                {{ alerta.teorico|floatformat:"-4" }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+
+                                        </td>
+
+                                        <!-- FÍSICO -->
+                                        <td class="px-3 py-3 text-right
+                                                   font-medium tabular-nums
+                                                   text-slate-800">
+
+                                            {% if alerta.fisico != None %}
+                                                {{ alerta.fisico|floatformat:"-4" }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+
+                                        </td>
+
+                                        <!-- DIFERENCIA -->
+                                        <td class="px-4 py-3 text-right
+                                                   font-bold tabular-nums">
+
+                                            {% if alerta.diferencia != None %}
+
+                                                <span class="
+                                                    {% if alerta.diferencia < 0 %}
+                                                        text-red-600
+                                                    {% else %}
+                                                        text-blue-600
+                                                    {% endif %}
+                                                ">{% if alerta.diferencia > 0 %}+{% endif %}{{ alerta.diferencia|floatformat:"-4" }}</span>
+
+                                            {% else %}
+
+                                                <span class="text-slate-400">
+                                                    —
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
 
                     </div>
 
-                    <p class="mt-2 text-sm text-slate-500">
-                        {{ alerta.descripcion }}
+                </details>
+
+            {% empty %}
+
+                <div class="rounded-xl border border-slate-200
+                            bg-white p-6 text-center">
+
+                    <i data-lucide="clipboard-check"
+                       class="mx-auto mb-2 h-8 w-8 text-green-500">
+                    </i>
+
+                    <h3 class="font-bold text-slate-800">
+                        No se encontraron incidencias
+                    </h3>
+
+                    <p class="mt-1 text-sm text-slate-500">
+                        No hay alertas registradas para las
+                        sucursales autorizadas en esta fecha.
                     </p>
 
-                    {% if alerta.diferencia != None %}
+                </div>
 
-                        <div class="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3">
+            {% endfor %}
 
-                            <div>
-                                <p class="text-xs text-slate-500">Teórico</p>
-                                <p class="font-bold">
-                                    {{ alerta.teorico|floatformat:4 }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-xs text-slate-500">Físico</p>
-                                <p class="font-bold">
-                                    {{ alerta.fisico|floatformat:4 }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-xs text-slate-500">Diferencia</p>
-
-                                <p class="font-bold
-                                    {% if alerta.tipo == 'faltante' %}
-                                        text-red-600
-                                    {% else %}
-                                        text-blue-600
-                                    {% endif %}
-                                ">
-                                    {% if alerta.diferencia > 0 %}+{% endif %}{{ alerta.diferencia|floatformat:4 }}
-                                </p>
-                            </div>
-
-                        </div>
-
-                    {% endif %}
-
-                </article>
-
-                {% empty %}
-
-                    <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-
-                        <div class="mb-3 text-4xl">✅</div>
-
-                        <h3 class="text-lg font-bold text-slate-900">
-                            No se encontraron incidencias
-                        </h3>
-
-                        <p class="mt-2 text-sm text-slate-500">
-                            No hay alertas detectadas para
-                            la fecha seleccionada.
-                        </p>
-
-                    </div>
-
-                {% endfor %}
-
+            <!-- SIN RESULTADOS DEL FILTRO -->
+            <div
+                id="sin-resultados-filtro"
+                class="hidden rounded-xl border border-slate-200
+                       bg-white p-6 text-center text-sm text-slate-500"
+            >
+                No hay incidencias de este tipo.
             </div>
 
         </section>
@@ -240,5 +527,148 @@
 </div>
 
 {% include "ventas/pos/_nav_pos.html" %}
+
+<!-- FILTROS Y CONTROLES -->
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const botones = document.querySelectorAll(".filtro-alerta");
+    const grupos = document.querySelectorAll(".grupo-sucursal");
+
+    const sinResultados = document.getElementById(
+        "sin-resultados-filtro"
+    );
+
+    const clasesActivo = [
+        "bg-slate-900",
+        "text-white",
+        "border-slate-900"
+    ];
+
+    const clasesInactivo = [
+        "bg-white",
+        "text-slate-600",
+        "border-slate-200"
+    ];
+
+    botones.forEach(boton => {
+
+        boton.addEventListener("click", function () {
+
+            const filtro = this.dataset.filtro;
+
+            let totalVisibles = 0;
+
+            // Actualizar estilos de los botones.
+            botones.forEach(item => {
+
+                item.classList.remove(...clasesActivo);
+                item.classList.add(...clasesInactivo);
+                item.setAttribute("aria-pressed", "false");
+
+            });
+
+            this.classList.remove(...clasesInactivo);
+            this.classList.add(...clasesActivo);
+            this.setAttribute("aria-pressed", "true");
+
+            // Filtrar las incidencias por sucursal.
+            grupos.forEach(grupo => {
+
+                let visibles = 0;
+
+                const filas = grupo.querySelectorAll(".fila-alerta");
+
+                filas.forEach(fila => {
+
+                    const tipo = fila.dataset.tipo;
+
+                    let mostrar = false;
+
+                    if (filtro === "todos") {
+
+                        mostrar = true;
+
+                    } else if (filtro === "otros") {
+
+                        mostrar = [
+                            "sin_conteo",
+                            "sin_teorico",
+                            "sin_inicial"
+                        ].includes(tipo);
+
+                    } else {
+
+                        mostrar = tipo === filtro;
+
+                    }
+
+                    fila.classList.toggle("hidden", !mostrar);
+
+                    if (mostrar) {
+                        visibles++;
+                    }
+
+                });
+
+                // Actualizar contador de incidencias.
+                const contador = grupo.querySelector(
+                    ".contador-sucursal"
+                );
+
+                contador.textContent = visibles;
+
+                // Ocultar sucursales sin coincidencias.
+                grupo.classList.toggle("hidden", visibles === 0);
+
+                if (visibles > 0) {
+                    grupo.open = true;
+                }
+
+                totalVisibles += visibles;
+
+            });
+
+            if (sinResultados) {
+
+                sinResultados.classList.toggle(
+                    "hidden",
+                    totalVisibles > 0 || grupos.length === 0
+                );
+
+            }
+
+        });
+
+    });
+
+    // Expandir todas las sucursales.
+    document.getElementById("expandir-todas")
+        ?.addEventListener("click", function () {
+
+            grupos.forEach(grupo => {
+                grupo.open = true;
+            });
+
+        });
+
+    // Contraer todas las sucursales.
+    document.getElementById("contraer-todas")
+        ?.addEventListener("click", function () {
+
+            grupos.forEach(grupo => {
+                grupo.open = false;
+            });
+
+        });
+
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
+
+});
+
+</script>
 
 {% endblock %}
