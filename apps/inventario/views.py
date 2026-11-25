@@ -2009,9 +2009,6 @@ class ConciliacionInventarioPOSView(
         )
     
 
-
-
-
 class AlertasInventarioPOSView(
     LoginRequiredMixin,
     SucursalPermissionMixin,
@@ -2021,8 +2018,6 @@ class AlertasInventarioPOSView(
     template_name = (
         "inventario/pos/alertas_inventario.html"
     )
-
-    
 
     def get(self, request):
 
@@ -2041,8 +2036,12 @@ class AlertasInventarioPOSView(
         except (TypeError, ValueError):
             fecha = fecha_default
 
+        # Sucursales autorizadas del usuario.
+        sucursales = self.get_sucursales_usuario()
+
         resultado = obtener_alertas_inventario(
-            fecha=fecha
+            fecha=fecha,
+            sucursales=sucursales,
         )
 
         return render(
@@ -2057,8 +2056,7 @@ class AlertasInventarioPOSView(
                 "pos_seccion": "mas",
             },
         )
-
-
+    
 
 @method_decorator(require_GET, name="dispatch")
 class RevisarInventarioView(

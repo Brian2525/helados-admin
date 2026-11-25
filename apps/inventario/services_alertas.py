@@ -9,7 +9,7 @@ from apps.inventario.models import (
 )
 
 
-def obtener_alertas_inventario(fecha):
+def obtener_alertas_inventario(*, fecha, sucursales):   
     """
     Genera alertas de inventario para todas las
     sucursales activas.
@@ -31,7 +31,8 @@ def obtener_alertas_inventario(fecha):
         }
 
     sucursales = Sucursal.objects.filter(
-        activa=True
+        activa=True,
+        pk__in=sucursales,
     ).order_by("nombre")
 
     variantes = list(
